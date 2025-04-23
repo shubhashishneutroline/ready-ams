@@ -20,7 +20,7 @@ export default function ToggleTableTabs({
         type="single"
         value={value}
         onValueChange={(v: any) => v && setValue(name, v)}
-        className="gap-8"
+        className="gap-6"
       >
         <ToggleGroupItem
           value="today"
@@ -34,7 +34,7 @@ export default function ToggleTableTabs({
         </ToggleGroupItem>
         <ToggleGroupItem
           value="upcoming"
-          className="data-[state=on]:bg-[#E98651] data-[state=on]:border-none data-[state=on]:text-white rounded-lg border px-4"
+          className="data-[state=on]:bg-[#E98651] data-[state=on]:border-none data-[state=on]:text-white rounded-lg border px-6"
           style={{
             boxShadow:
               value === "upcoming" ? "0px 2px 4px 0px #001F5280 inset" : "",
@@ -44,7 +44,7 @@ export default function ToggleTableTabs({
         </ToggleGroupItem>
         <ToggleGroupItem
           value="completed"
-          className="data-[state=on]:bg-[#E98651] data-[state=on]:border-none data-[state=on]:text-white rounded-lg border px-4"
+          className="data-[state=on]:bg-[#E98651] data-[state=on]:border-none data-[state=on]:text-white rounded-lg border px-6"
           style={{
             boxShadow:
               value === "completed" ? "0px 2px 4px 0px #001F5280 inset" : "",

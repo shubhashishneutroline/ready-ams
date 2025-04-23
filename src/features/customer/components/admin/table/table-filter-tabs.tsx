@@ -1,13 +1,13 @@
 "use client";
 
-import ToggleTableTabs from "@/components/shared/table/toggle-table-filter";
 import { useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
+import ToggleTableTabs from "./toggle-table-filter";
 
 const TableFilterTabs = () => {
   const form = useForm({
     defaultValues: {
-      filterType: "today",
+      filterType: "all",
     },
   });
 

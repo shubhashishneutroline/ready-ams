@@ -1,25 +1,18 @@
-import Heading from "@/components/admin/heading"
-import { HandPlatter } from "lucide-react"
-import Breadcrumbs from "@/components/shared/bread-crumb"
-import CustomerForm from "@/features/customer/components/customer-form"
+import React from "react";
 
-const ServicePage = () => {
+import Table from "@/features/customer/components/admin/table/table";
+import TableFilterTabs from "@/features/customer/components/admin/table/table-filter-tabs";
+import TablePageHeader from "@/features/customer/components/admin/table/table-page-header";
+
+
+const CustomerPage = () => {
   return (
-    <main className="h-full flex flex-col">
-      <Breadcrumbs />
-      <div>
-        <Heading
-          title="Create New Customer"
-          description="Manage and View your customers"
-          icon={<HandPlatter />}
-        />
-      </div>
-      {/* Scrollable Form Container */}
-      <div className="flex-1 p-4 lg:p-6 bg-white rounded-lg shadow-xl overflow-y-auto">
-        <CustomerForm />
-      </div>
-    </main>
-  )
-}
+    <div className="container mx-auto flex flex-col gap-6">
+      <TableFilterTabs />
+      <TablePageHeader />
+      <Table />
+    </div>
+  );
+};
 
-export default ServicePage
+export default CustomerPage;

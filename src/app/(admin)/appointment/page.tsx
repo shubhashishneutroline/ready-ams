@@ -1,21 +1,14 @@
 import React from "react";
+import TableFilterTabs from "@/components/shared/table/table-filter-tabs";
+import Table from "@/features/appointment/components/admin/table/table";
+import TablePageHeader from "@/components/shared/table/table-page-header";
 
-import TableFilterTabs from "@/features/appointment/components/admin/table/table-filter-tabs";
-
-// TODO: List / Table of appointments
 const AppointmentPage = () => {
-  // tabs state
-
-  // tabs handlers based on the active tab
-  // const onSubmit = (data: any) => {
-  //   console.log(data, "data");
-
-  // };
-
-  // base on the active tab render the corresponding content
   return (
-    <div>
+    <div className="container mx-auto flex flex-col gap-6">
       <TableFilterTabs />
+      <TablePageHeader />
+      <Table />
     </div>
   );
 };
