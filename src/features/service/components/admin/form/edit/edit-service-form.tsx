@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm, FormProvider } from "react-hook-form";
-import { createService } from "@/features/service/api/api";
+import { createService, getServiceById } from "@/features/service/api/api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/custom-form-fields/input-field";
@@ -25,6 +25,7 @@ import { getBusinesses } from "@/features/business-detail/api/api";
 import { BusinessDetail } from "@/features/business-detail/types/types";
 
 import { toDate } from "@/lib/lib";
+import { useRouter, useParams } from "next/navigation";
 
 // Weekdays Interface for data for API
 export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
@@ -47,6 +48,19 @@ export const toFullDay = (day: string): string => {
   };
 
   return map[day] ?? "MONDAY"; // Fallback to MONDAY just in case
+};
+
+const toShortDay = (day: string): WeekDay => {
+  const map: Record<string, WeekDay> = {
+    MONDAY: "Mon",
+    TUESDAY: "Tue",
+    WEDNESDAY: "Wed",
+    THURSDAY: "Thu",
+    FRIDAY: "Fri",
+    SATURDAY: "Sat",
+    SUNDAY: "Sun",
+  };
+  return map[day] ?? "Mon";
 };
 
 // Default business availability (for testing, can be overridden by prop)
@@ -76,9 +90,12 @@ interface Props {
   businessAvailability?: BusinessAvailability;
 }
 
-export default function ServiceForm({
+export default function EditServiceForm({
   businessAvailability = defaultBusinessAvailability,
 }: Props) {
+  const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [businessAvailabilityData, setBusinessAvailabilityData] =
     useState<BusinessAvailability>(businessAvailability);
@@ -86,14 +103,19 @@ export default function ServiceForm({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getBusinesses();
+        const data = await getServiceById(id);
         console.log(data, "data");
-        const transformed = transformBusinessAvailabilityData(data[0]);
+        console.log(data.BusinessDetail, "businessDetail");
+        const transformed = transformBusinessAvailabilityData(
+          data.BusinessDetail
+        );
         console.log(transformed, "transformed");
-        setBusinessId(data[0].id);
+        setBusinessId(data.BusinessDetail.id);
 
         setBusinessAvailabilityData(transformed);
-
+        const formCompatibileAvailability = transformServiceAvailabilityToForm(
+          data.serviceAvailability
+        );
         // Reset form default values based on API data
         const newServiceDays = days.filter(
           (day) => !transformed.holidays?.includes(day)
@@ -107,16 +129,16 @@ export default function ServiceForm({
           }),
           {} as Record<WeekDay, [string, string][]>
         );
-
+        console.log(formCompatibileAvailability, "newServiceHours");
         form.reset({
-          serviceName: "",
-          description: "",
+          serviceName: data.title || "",
+          description: data.description || "",
           image: null,
           availabilityMode: "default",
           serviceDays: newServiceDays,
-          serviceHours: newServiceHours,
-          isAvailable: true,
-          duration: "",
+          serviceHours: formCompatibileAvailability,
+          isAvailable: data.status === "ACTIVE" ? true : false,
+          duration: data.estimatedDuration || "",
         });
       } catch (error) {
         console.error("Failed to load business availability", error);
@@ -204,7 +226,7 @@ export default function ServiceForm({
         businessId: businessId,
       };
       console.log(serviceData, "servicedata inside onSubmit");
-      await createService(serviceData);
+      // await createService(serviceData);
       toast.success("Service created successfully");
       form.reset();
     } catch (error) {
@@ -213,6 +235,7 @@ export default function ServiceForm({
     }
   };
 
+  // Function to change the business Availability into break and holiday
   function transformBusinessAvailabilityData(
     apiData: BusinessDetail
   ): BusinessAvailability {
@@ -252,6 +275,42 @@ export default function ServiceForm({
     const holidays: WeekDay[] = holiday?.map((h) => toShortDay(h.holiday));
     console.log(breaks, holiday, "inside the function");
     return { breaks, holidays };
+  }
+
+  // Function to map the service availability to form
+  function transformServiceAvailabilityToForm(serviceAvailability: any[]) {
+    const result: Record<WeekDay, [string, string][]> = {
+      Mon: [],
+      Tue: [],
+      Wed: [],
+      Thu: [],
+      Fri: [],
+      Sat: [],
+      Sun: [],
+    };
+
+    serviceAvailability.forEach((availability) => {
+      const shortDay = toShortDay(availability.weekDay);
+      const slots = availability.timeSlots.map((slot: any) => {
+        const start = new Date(slot.startTime)
+          .toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+          .replace(/^0/, "");
+        const end = new Date(slot.endTime)
+          .toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+          .replace(/^0/, "");
+        return [start, end] as [string, string];
+      });
+
+      result[shortDay].push(...slots);
+    });
+
+    return result;
   }
 
   const fetchData = async () => {

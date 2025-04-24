@@ -28,12 +28,16 @@ async function getServices(): Promise<Service[]> {
   }
 }
 
-async function getServiceById(id: string): Promise<Service | null> {
+async function getServiceById(id: string) {
   try {
-    const { data } = await api.get(`/api/service/${id}`);
-    return data;
+    const { data } = await api.get("/api/service", {
+      params: { id },
+    });
+    const service = data.find((service: Service) => service.id === id);
+
+    return service;
   } catch (error) {
-    console.error("Error fetching service:", error);
+    console.error("Error fetching customer:", error);
     throw error;
   }
 }

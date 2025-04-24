@@ -1,9 +1,9 @@
-import ServiceForm from "@/features/service/components/admin/form/add/service-form";
+import EditServiceForm from "@/features/service/components/admin/form/edit/edit-service-form";
 
 const ServicePage = () => {
   return (
     <>
-      <ServiceForm />
+      <EditServiceForm />
     </>
   );
 };

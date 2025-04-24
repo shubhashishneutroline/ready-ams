@@ -101,8 +101,8 @@ export const columns: ColumnDef<Service>[] = [
             <DropdownMenuItem className="flex gap-2 items-center justify-start">
               <Eye className="h-4 w-4 text-blue-400 " /> View
             </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => router.push(`/service/edit`)} 
+            <DropdownMenuItem
+              onClick={() => router.push(`/service/edit/${row.original.id}`)}
               className="flex gap-2 items-center justify-start"
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
