@@ -217,6 +217,7 @@ enum Showon {
   BANNER
   PUSH
   EMAIL
+  SMS
   ALL
 }
 

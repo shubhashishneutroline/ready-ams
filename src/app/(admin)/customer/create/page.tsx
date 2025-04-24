@@ -1,4 +1,4 @@
-import CustomerForm from "@/features/customer/components/admin/form/customer-form";
+import CustomerForm from "@/features/customer/components/admin/form/add/customer-form";
 
 const CustomerPage = () => {
   return (

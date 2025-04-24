@@ -14,6 +14,7 @@ interface PhoneFieldProps {
   placeholder?: string
   className?: string
   icon?: LucideIcon
+  disabled?: boolean
 }
 
 const PhoneField = ({
@@ -22,6 +23,7 @@ const PhoneField = ({
   className,
   placeholder,
   icon: Icon = PhoneCall,
+  disabled,
 }: PhoneFieldProps) => {
   const { control } = useFormContext()
   const {
@@ -40,6 +42,7 @@ const PhoneField = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        disabled={disabled}
         inputClassName={cn(
           "w-full h-10 px-12 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         )}

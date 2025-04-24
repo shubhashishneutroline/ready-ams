@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma"
+import { prisma } from "../lib/prisma";
 
 // get service by id
 async function getAnnouncementOrOfferById(id: string) {
@@ -6,7 +6,7 @@ async function getAnnouncementOrOfferById(id: string) {
     where: {
       id,
     },
-  })
+  });
 }
 
-export { getAnnouncementOrOfferById }
+export { getAnnouncementOrOfferById };

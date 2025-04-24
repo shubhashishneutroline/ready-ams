@@ -23,6 +23,7 @@ interface DatePickerFieldProps {
   name: string
   label: string
   placeholder?: string
+  disabled?: boolean
   minDate?: Date
   maxDate?: Date
   icon?: LucideIcon
@@ -33,6 +34,7 @@ const DatePickerField = ({
   name,
   label,
   placeholder = "Pick a date",
+  disabled,
   minDate = new Date(),
   maxDate = addDays(new Date(), 30),
   icon: Icon = CalendarIcon,
@@ -59,6 +61,7 @@ const DatePickerField = ({
                     "w-full justify-start text-left font-normal",
                     !field.value && "text-muted-foreground"
                   )}
+                  disabled={disabled}
                 >
                   {field.value ? (
                     format(field.value, "PPP")
@@ -74,7 +77,7 @@ const DatePickerField = ({
                 mode="single"
                 selected={field.value}
                 onSelect={(date) => field.onChange(date)}
-                disabled={(date) => date < minDate || date > maxDate}
+                disabled={(date) => !!disabled || date < minDate || date > maxDate}
                 initialFocus
               />
             </PopoverContent>

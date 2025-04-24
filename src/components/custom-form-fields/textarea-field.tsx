@@ -15,6 +15,7 @@ interface TextAreaFieldProps {
   name: string
   label: string
   placeholder?: string
+  disabled?: boolean
   icon?: LucideIcon
 }
 
@@ -22,6 +23,7 @@ const TextAreaField = ({
   name,
   label,
   placeholder,
+  disabled,
   icon: Icon = ScrollText,
 }: TextAreaFieldProps) => {
   const { control } = useFormContext()
@@ -40,6 +42,7 @@ const TextAreaField = ({
             <Textarea
               {...field}
               placeholder={placeholder}
+              disabled={disabled}
               className="resize-none h-20"
             />
           </FormControl>

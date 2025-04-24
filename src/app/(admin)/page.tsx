@@ -1,8 +1,8 @@
-import Heading from "@/components/admin/heading"
-import React from "react"
+import Heading from "@/components/admin/heading";
+import React from "react";
 
-import { CalendarDays } from "lucide-react"
-import AppointmentForm from "@/features/appointment/components/admin/form/appointment-form"
+import { CalendarDays } from "lucide-react";
+import AppointmentForm from "@/features/appointment/components/admin/form/add/appointment-form";
 
 const AdminPage = () => {
   return (
@@ -23,7 +23,7 @@ const AdminPage = () => {
     //   </div>
     // </main>
     <main>Go to appointment</main>
-  )
-}
+  );
+};
 
-export default AdminPage
+export default AdminPage;

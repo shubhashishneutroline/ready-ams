@@ -24,6 +24,7 @@ interface TimePickerFieldProps {
   className?: string
   availableTimeSlots: string[] // List of available time slots
   icon?: LucideIcon
+  disabled?: boolean
 }
 
 const TimePickerField = ({
@@ -32,6 +33,7 @@ const TimePickerField = ({
   className,
   availableTimeSlots,
   icon: Icon = Clock,
+  disabled,
 }: TimePickerFieldProps) => {
   const { control } = useFormContext()
 
@@ -39,6 +41,8 @@ const TimePickerField = ({
     field: { onChange, value },
     fieldState: { error },
   } = useController({ name, control })
+
+  console.log('TimePickerField value:', value)
 
   return (
     <div className={className}>
@@ -48,7 +52,7 @@ const TimePickerField = ({
           <FormLabel>{label}</FormLabel>
         </div>
         <FormControl>
-          <Select value={value} onValueChange={onChange}>
+          <Select value={value} onValueChange={onChange} disabled={disabled}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a time slot" />
             </SelectTrigger>

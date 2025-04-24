@@ -12,18 +12,19 @@ import { Button } from "@/components/ui/button";
 import {
   Eye,
   FilePenLine,
-  MoreHorizontal,
-  Settings,
   Trash2,
-  ArrowUpDown,
-  MoreVertical,
+  Settings,
+  MoreHorizontal,
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
+import { useRouter } from "next/router";
+import { format } from "date-fns";
+import { getServices } from "@/features/service/api/api";
+import { useEffect, useState } from "react";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+// Define the type for a payment
 export type Payment = {
   id: string;
   amount: number;
@@ -31,7 +32,24 @@ export type Payment = {
   email: string;
 };
 
-export const columns: ColumnDef<Payment>[] = [
+// Service cell component to handle async data fetching
+const ServiceCell = ({ serviceId }: { serviceId: string }) => {
+  const [serviceName, setServiceName] = useState<string>('Loading...');
+
+  useEffect(() => {
+    const fetchService = async () => {
+      const services = await getServices();
+      const service = services?.find((s: any) => s.id === serviceId);
+      setServiceName(service?.title || 'N/A');
+    };
+    fetchService();
+  }, [serviceId]);
+
+  return <div>{serviceName}</div>;
+};
+
+// Define columns for the payment table
+export const columns: ColumnDef<any>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -55,25 +73,67 @@ export const columns: ColumnDef<Payment>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "customerName",
+    header: "Customer Name",
   },
   {
     accessorKey: "email",
     header: "Email",
   },
   {
-    accessorKey: "amount",
+    accessorKey: "phone",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Amount" />
+      <DataTableColumnHeader column={column} title="Phone Number" />
     ),
+    cell: ({ row }) => {
+      const phone = row.getValue("phone") as string;
+      if (!phone) return null;
+
+      // Format as +977 986-137-8912
+      const formatted = phone.replace(
+        /^(\+\d{3})(\d{3})(\d{3})(\d{4})$/,
+        "$1 $2-$3-$4"
+      );
+      return <div>{formatted}</div>;
+    },
   },
   {
-    id: "actions",
-
+    accessorKey: "serviceId",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Service" />
+    ),
     cell: ({ row }) => {
-      const payment = row.original;
+      return <ServiceCell serviceId={row.original.serviceId} />;
+    },
+  },
 
+  {
+    accessorKey: "selectedDate",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" />
+    ),
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("selectedDate"));
+      return <div>{format(date, "dd MMMM yyyy")}</div>;
+    },
+  },
+  {
+    accessorKey: "selectedTime",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Time" />
+    ),
+    cell: ({ row }) => {
+      const time = new Date(row.getValue("selectedTime"));
+      return <div>{format(time, "hh:mm a")}</div>;
+    },
+  },
+
+  {
+    id: "actions",
+    // Actions dropdown for each row
+    cell: ({ row }) => {
+      const payment = row.original; // Access the payment object for the current row
+      // Return the actions dropdown menu for each payment row
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -88,13 +148,25 @@ export const columns: ColumnDef<Payment>[] = [
               <Settings className="h-4 w-4" />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex gap-2 items-center justify-start">
-              <Eye className="h-4 w-4 text-blue-400 " /> View
+            {/* View payment action */}
+            <DropdownMenuItem
+              onClick={() => {}}
+              className="flex gap-2 items-center justify-start"
+            >
+              <Eye className="h-4 w-4 text-blue-400" /> View
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex gap-2 items-center justify-start">
+            {/* Edit payment action */}
+            <DropdownMenuItem
+              onClick={() => {}}
+              className="flex gap-2 items-center justify-start"
+            >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex gap-2 items-center justify-start">
+            {/* Delete payment action */}
+            <DropdownMenuItem
+              onClick={() => {}}
+              className="flex gap-2 items-center justify-start"
+            >
               <Trash2 className="h-4 w-4 text-red-600" /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -19,6 +19,7 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   type?: string
   className?: string
   icon?: LucideIcon
+  disabled?: boolean
 }
 
 const InputField = ({

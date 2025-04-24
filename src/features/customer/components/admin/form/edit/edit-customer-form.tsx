@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm, FormProvider } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import InputField from "@/components/custom-form-fields/input-field"
-import SelectField from "@/components/custom-form-fields/select-field"
-import { User, Mail, Phone, UserCheck, Lock, Eye, EyeOff } from "lucide-react"
-import PhoneField from "@/components/custom-form-fields/phone-field"
+import { useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import InputField from "@/components/custom-form-fields/input-field";
+import SelectField from "@/components/custom-form-fields/select-field";
+import { User, Mail, Phone, UserCheck, Lock, Eye, EyeOff } from "lucide-react";
+import PhoneField from "@/components/custom-form-fields/phone-field";
 
 type FormData = {
-  fullName: string
-  email: string
-  phone: string
-  role: string
-  password: string
-}
+  fullName: string;
+  email: string;
+  phone: string;
+  role: string;
+  password: string;
+};
 
 interface CustomerFormProps {
-  onSubmit: (data: FormData) => void
+  onSubmit: (data: FormData) => void;
 }
 
 // Validation schema for create mode
@@ -29,16 +29,16 @@ const createSchema = z.object({
   phone: z.string().min(1, "Phone number is required"),
   role: z.string().min(1, "Role is required"),
   password: z.string().min(1, "Password is required"),
-})
+});
 
 const roleOptions = [
   { value: "customer", label: "Customer" },
   { value: "admin", label: "Admin" },
   { value: "staff", label: "Staff" },
-]
+];
 
 const CustomerForm = () => {
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
 
   // Initialize form with create schema
   const form = useForm<FormData>({
@@ -50,12 +50,12 @@ const CustomerForm = () => {
       role: "",
       password: "",
     },
-  })
+  });
 
   // Handle form submission
   const handleSubmit = (data: FormData) => {
-    console.log("Customer Form submitted:", data)
-  }
+    console.log("Customer Form submitted:", data);
+  };
 
   return (
     <FormProvider {...form}>
@@ -115,7 +115,7 @@ const CustomerForm = () => {
         </Button>
       </form>
     </FormProvider>
-  )
-}
+  );
+};
 
-export default CustomerForm
+export default CustomerForm;

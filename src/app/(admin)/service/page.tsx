@@ -1,8 +1,8 @@
-import Heading from "@/components/admin/heading"
-import { CalendarDays, Hand, HandPlatter } from "lucide-react"
-import AppointmentForm from "@/features/appointment/components/admin/form/appointment-form"
-import Breadcrumbs from "@/components/shared/bread-crumb"
-import ServiceForm from "@/features/service/components/admin/service-form"
+import Heading from "@/components/admin/heading";
+import { CalendarDays, Hand, HandPlatter } from "lucide-react";
+import AppointmentForm from "@/features/appointment/components/admin/form/add/appointment-form";
+import Breadcrumbs from "@/components/shared/bread-crumb";
+import ServiceForm from "@/features/service/components/admin/service-form";
 
 const ServicePage = () => {
   return (
@@ -20,7 +20,7 @@ const ServicePage = () => {
         <ServiceForm />
       </div>
     </main>
-  )
-}
+  );
+};
 
-export default ServicePage
+export default ServicePage;

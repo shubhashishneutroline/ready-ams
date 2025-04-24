@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -15,6 +17,9 @@ export default function TablePageHeader() {
       <div className="flex items-end justify-end">
         <Button
           type="button"
+          onClick={() => {
+            console.log("clicked");
+          }}
           className=" bg-blue-600 hover:bg-blue-700 rounded-xl h-9.5 flex gap-1 md:gap-2"
         >
           <Plus className="h-5 w-5" />

@@ -1,4 +1,4 @@
-"use client";
+
 
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { Table } from "@tanstack/react-table";

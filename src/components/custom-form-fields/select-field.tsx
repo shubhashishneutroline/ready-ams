@@ -26,6 +26,7 @@ interface SelectFieldProps {
   options: { value: string; label: string }[]
   className?: string
   icon?: LucideIcon
+  disabled?: boolean
 }
 
 const SelectField = ({
@@ -35,6 +36,7 @@ const SelectField = ({
   options,
   className,
   icon: Icon,
+  disabled,
 }: SelectFieldProps) => {
   const { control } = useFormContext()
 
@@ -49,7 +51,7 @@ const SelectField = ({
             <FormLabel>{label}</FormLabel>
           </div>
           <FormControl>
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled}>
               <SelectTrigger className={cn("w-full", className)}>
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
