@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import { useFormContext } from "react-hook-form"
+import { useFormContext } from "react-hook-form";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import { LucideIcon } from "lucide-react"
-import React from "react"
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { LucideIcon } from "lucide-react";
+import React from "react";
 
 interface SelectFieldProps {
-  name: string
-  label: string
-  placeholder?: string
-  options: { value: string; label: string }[]
-  className?: string
-  icon?: LucideIcon
-  disabled?: boolean
+  name: string;
+  label: string;
+  placeholder?: string;
+  options: { value: string; label: string }[];
+  className?: string;
+  icon?: LucideIcon;
+  disabled?: boolean;
 }
 
 const SelectField = ({
@@ -38,7 +38,7 @@ const SelectField = ({
   icon: Icon,
   disabled,
 }: SelectFieldProps) => {
-  const { control } = useFormContext()
+  const { control } = useFormContext();
 
   return (
     <FormField
@@ -51,7 +51,11 @@ const SelectField = ({
             <FormLabel>{label}</FormLabel>
           </div>
           <FormControl>
-            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={disabled}>
+            <Select
+              value={field.value}
+              onValueChange={field.onChange}
+              disabled={disabled}
+            >
               <SelectTrigger className={cn("w-full", className)}>
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
@@ -68,7 +72,7 @@ const SelectField = ({
         </FormItem>
       )}
     />
-  )
-}
+  );
+};
 
-export default SelectField
+export default SelectField;

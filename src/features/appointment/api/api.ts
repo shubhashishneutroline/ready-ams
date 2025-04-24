@@ -1,12 +1,13 @@
+import { getBaseUrl } from "@/lib/baseUrl";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:3001",
+  baseURL: getBaseUrl(),
   headers: {
     "Content-Type": "application/json",
   },
 });
-
+console.log(api.defaults.baseURL) ;
 export interface AppointmentData {
   id?: string;
   customerName: string;

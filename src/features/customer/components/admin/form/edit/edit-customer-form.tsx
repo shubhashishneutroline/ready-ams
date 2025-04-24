@@ -54,7 +54,7 @@ const createSchema = z.object({
 const roleOptions = [
   { value: "USER", label: "Customer" },
   { value: "ADMIN", label: "Admin" },
-  { value: "STAFF", label: "Staff" },
+  { value: "SUPERADMIN", label: "Super Admin" },
 ];
 
 const EditCustomerForm = () => {
@@ -81,25 +81,16 @@ const EditCustomerForm = () => {
     const fetchCustomer = async () => {
       try {
         const customer = await getCoustomersById(id);
-        // Ensure role is in uppercase and matches our options
-        const validRole = customer.role?.toUpperCase();
-        const isValidRole = roleOptions.some((opt) => opt.value === validRole);
-
-        if (!isValidRole) {
-          console.error("Invalid role received:", customer.role);
-          toast.error("Invalid role received from server");
-          return;
-        }
 
         const formData = {
           fullName: customer.name,
           email: customer.email,
           phone: customer.phone,
-          role: validRole,
+          role: customer.role,
           password: customer.password,
           isActive: Boolean(customer.isActive),
         };
-        console.log('Setting form data:', formData);
+        console.log("Setting form data:", formData);
         form.reset(formData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -114,7 +105,7 @@ const EditCustomerForm = () => {
   // Handle form submission
   const onSubmit = async (formData: FormData) => {
     try {
-      console.log('Form Data:', formData);
+      console.log("Form Data:", formData);
       const customerData: Omit<Customer, "id"> = {
         name: formData.fullName,
         email: formData.email,
@@ -123,7 +114,7 @@ const EditCustomerForm = () => {
         password: formData.password,
         isActive: Boolean(formData.isActive),
       };
-      console.log('Customer Data to Update:', customerData);
+      console.log("Customer Data to Update:", customerData);
       if (!id) {
         throw new Error("Appointment ID is required for updating");
       }

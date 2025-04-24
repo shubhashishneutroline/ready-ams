@@ -22,7 +22,7 @@ export default function TablePageHeader() {
           onClick={() => {
             router.push("/service/create");
           }}
-          className=" bg-blue-600 hover:bg-blue-700 rounded-xl h-9.5 flex gap-1 md:gap-2"
+          className=" bg-blue-600 hover:bg-blue-700 rounded-lg h-9.5 flex gap-1 md:gap-2"
         >
           <Plus className="h-5 w-5" />
           New Service

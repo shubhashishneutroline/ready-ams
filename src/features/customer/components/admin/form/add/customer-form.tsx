@@ -37,7 +37,7 @@ const createSchema = z.object({
 const roleOptions = [
   { value: "USER", label: "Customer" },
   { value: "ADMIN", label: "Admin" },
-  { value: "STAFF", label: "Staff" },
+  { value: "SUPERADMIN", label: "Super Admin" },
 ];
 
 const CustomerForm = () => {
