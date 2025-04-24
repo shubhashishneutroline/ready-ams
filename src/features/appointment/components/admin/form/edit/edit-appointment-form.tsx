@@ -9,7 +9,7 @@ import PhoneInputField from "@/components/custom-form-fields/phone-field";
 import TimePickerField from "@/components/custom-form-fields/time-field";
 import { Button } from "@/components/ui/button";
 import FormHeader from "@/components/admin/form-header";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import DatePickerField from "@/components/custom-form-fields/date-field";
 import { Mail, SlidersHorizontal, UserPen } from "lucide-react";
 import { getServices, type Service } from "@/features/service/api/api";
@@ -81,8 +81,8 @@ const formData = {
 
 export default function EditAppointmentForm() {
   const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
+
+  const id = "cm9uzwhh9000durppcudcj9vp";
   const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -122,15 +122,14 @@ export default function EditAppointmentForm() {
         ]);
 
         // Set service options
+        const options = services.map((service: Service) => ({
+          label: service.title,
+          value: service.id,
+        }));
+        setServiceOptions(options as ServiceOption[]);
 
         // If we have an appointment to edit, set the form data
         if (appointment && services) {
-          const options = services?.map((service: Service) => ({
-            label: service.title,
-            value: service.id,
-          }));
-          setServiceOptions(options);
-          console.log(serviceOptions, "options");
           const [firstName, lastName] = appointment.customerName.split(" ");
           const date = new Date(appointment.selectedDate);
           const timeDate = new Date(appointment.selectedTime);
