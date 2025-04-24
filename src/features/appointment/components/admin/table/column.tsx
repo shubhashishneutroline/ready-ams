@@ -34,13 +34,13 @@ export type Payment = {
 
 // Service cell component to handle async data fetching
 const ServiceCell = ({ serviceId }: { serviceId: string }) => {
-  const [serviceName, setServiceName] = useState<string>('Loading...');
+  const [serviceName, setServiceName] = useState<string>("Loading...");
 
   useEffect(() => {
     const fetchService = async () => {
       const services = await getServices();
       const service = services?.find((s: any) => s.id === serviceId);
-      setServiceName(service?.title || 'N/A');
+      setServiceName(service?.title || "N/A");
     };
     fetchService();
   }, [serviceId]);
@@ -117,22 +117,21 @@ export const columns: ColumnDef<any>[] = [
       return <div>{format(date, "dd MMMM yyyy")}</div>;
     },
   },
-  {
-    accessorKey: "selectedTime",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Time" />
-    ),
-    cell: ({ row }) => {
-      const time = new Date(row.getValue("selectedTime"));
-      return <div>{format(time, "hh:mm a")}</div>;
-    },
-  },
+  // {
+  //   accessorKey: "selectedTime",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Time" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const time = new Date(row.getValue("selectedTime"));
+  //     return <div>{format(time, "hh:mm a")}</div>;
+  //   },
+  // },
 
   {
     id: "actions",
     // Actions dropdown for each row
     cell: ({ row }) => {
-      const payment = row.original; // Access the payment object for the current row
       const router = useRouter();
       // Return the actions dropdown menu for each payment row
       return (
@@ -151,14 +150,18 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuSeparator />
             {/* View payment action */}
             <DropdownMenuItem
-              onClick={() => router.push(`/appointment/view/${row.original.id}`)}
+              onClick={() =>
+                router.push(`/appointment/view/${row.original.id}`)
+              }
               className="flex gap-2 items-center justify-start"
             >
               <Eye className="h-4 w-4 text-blue-400" /> View
             </DropdownMenuItem>
             {/* Edit payment action */}
             <DropdownMenuItem
-              onClick={() => router.push(`/appointment/${row.original.id}/edit`)}
+              onClick={() =>
+                router.push(`/appointment/${row.original.id}/edit`)
+              }
               className="flex gap-2 items-center justify-start"
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
