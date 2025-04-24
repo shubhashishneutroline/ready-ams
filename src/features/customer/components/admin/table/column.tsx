@@ -72,9 +72,7 @@ export const columns: ColumnDef<Customer>[] = [
     ),
     cell: ({ row }) => {
       const role = row.original.role;
-      return (
-        <div className="">{capitalizeFirstChar(role.toLocaleLowerCase())}</div>
-      );
+      return <div className="">{role}</div>;
     },
   },
   {
