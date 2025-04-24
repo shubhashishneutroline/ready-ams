@@ -1,28 +1,21 @@
-"use client"
+"use client";
 
-import { useForm, FormProvider, useFormContext } from "react-hook-form"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+import { useForm, FormProvider, useFormContext } from "react-hook-form";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import {
-  CalendarDays,
-  Clock,
-  History,
-  Hourglass,
-  Plus,
-  Trash2,
-} from "lucide-react"
-import BusinessHourSelector from "./business-hour-selector"
-import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs"
-import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field"
-import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field"
+} from "@/components/ui/select";
+import { CalendarDays, History, Hourglass } from "lucide-react";
+import BusinessHourSelector from "./business-hour-selector";
+import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs";
+import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field";
+import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field";
 
 // Default form values
 const defaultValues = {
@@ -49,7 +42,7 @@ const defaultValues = {
     Sat: { work: [], break: [] },
     Sun: { work: [], break: [] },
   },
-}
+};
 
 const timeOptions = [
   "08:00 AM",
@@ -65,13 +58,13 @@ const timeOptions = [
   "06:00 PM",
   "07:00 PM",
   "08:00 PM",
-]
+];
 
 export default function BusinessSettingsForm() {
-  const form = useForm({ defaultValues })
-  const { watch } = form
+  const form = useForm({ defaultValues });
+  const { watch } = form;
 
-  const onSubmit = (data: any) => console.log("Final Submit:", data)
+  const onSubmit = (data: any) => console.log("Final Submit:", data);
 
   return (
     <FormProvider {...form}>
@@ -102,13 +95,13 @@ export default function BusinessSettingsForm() {
         </div>
       </form>
     </FormProvider>
-  )
+  );
 }
 
 // Time Zone Selector
 const TimeZoneField = ({ name }: { name: string }) => {
-  const { watch, setValue } = useFormContext()
-  const value = watch(name)
+  const { watch, setValue } = useFormContext();
+  const value = watch(name);
   return (
     <div className="space-y-1 ">
       <div className="flex gap-2 items-center">
@@ -134,8 +127,8 @@ const TimeZoneField = ({ name }: { name: string }) => {
         </SelectContent>
       </Select>
     </div>
-  )
-}
+  );
+};
 
 // // Business Days Selector
 // const BusinessDaysField = ({ name, holidayFieldName }: any) => {

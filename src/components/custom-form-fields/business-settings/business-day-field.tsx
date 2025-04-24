@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useFormContext } from "react-hook-form"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox" // ShadCN Checkbox
-import { cn } from "@/lib/utils"
-import { CalendarDays } from "lucide-react"
+import { useFormContext } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox"; // ShadCN Checkbox
+import { cn } from "@/lib/utils";
+import { CalendarDays } from "lucide-react";
 
-const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 // Business Days Selector
 const BusinessDaysField = ({
@@ -15,16 +15,16 @@ const BusinessDaysField = ({
   holidayFieldName,
   icon: Icon = CalendarDays,
 }: any) => {
-  const { watch, setValue } = useFormContext()
-  const selected = watch(name) || []
-  const holidays = watch(holidayFieldName) || []
+  const { watch, setValue } = useFormContext();
+  const selected = watch(name) || [];
+  const holidays = watch(holidayFieldName) || [];
 
   const toggle = (day: string) => {
     const updated = selected.includes(day)
       ? selected.filter((d: string) => d !== day)
-      : [...selected, day]
-    setValue(name, updated)
-  }
+      : [...selected, day];
+    setValue(name, updated);
+  };
 
   return (
     <div className="space-y-1">
@@ -34,8 +34,8 @@ const BusinessDaysField = ({
       </div>
       <div className="flex gap-4 flex-wrap">
         {days.map((day) => {
-          const isSelected = selected.includes(day)
-          const isDisabled = holidays.includes(day)
+          const isSelected = selected.includes(day);
+          const isDisabled = holidays.includes(day);
 
           return (
             <div key={day} className="flex items-center gap-2">
@@ -60,11 +60,11 @@ const BusinessDaysField = ({
                 {day}
               </Button>
             </div>
-          )
+          );
         })}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default BusinessDaysField
+export default BusinessDaysField;
