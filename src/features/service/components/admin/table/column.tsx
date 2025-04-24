@@ -22,13 +22,14 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
-import { Customer } from "@/features/customer/api/api";
+
 import { capitalizeFirstChar } from "../../../../../utils/utils";
+import { Service } from "@/features/service/api/api";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 
-export const columns: ColumnDef<Customer>[] = [
+export const columns: ColumnDef<Service>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -52,45 +53,30 @@ export const columns: ColumnDef<Customer>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
-    header: "Name",
+    accessorKey: "title",
+    header: "Title",
   },
   {
-    accessorKey: "email",
-    header: "Email",
+    accessorKey: "description",
+    header: "Description",
   },
   {
-    accessorKey: "phone",
+    accessorKey: "status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Phone" />
+      <DataTableColumnHeader column={column} title="Status" />
     ),
   },
   {
-    accessorKey: "role",
+    accessorKey: "estimatedDuration",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Role" />
-    ),
-    cell: ({ row }) => {
-      const role = row.original.role;
-      return (
-        <div className="">{capitalizeFirstChar(role.toLocaleLowerCase())}</div>
-      );
-    },
-  },
-  {
-    accessorKey: "isActive",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Active" />
+      <DataTableColumnHeader column={column} title="Estimated Duration" />
     ),
     cell: ({ row }) => {
-      const isActive = row.original.isActive;
-      return (
-        <div className="">
-          {capitalizeFirstChar(isActive ? "Active" : "Inactive")}
-        </div>
-      );
+      const estimatedDuration = row.original.estimatedDuration;
+      return <div className="">{estimatedDuration}</div>;
     },
   },
+
   {
     id: "actions",
 
@@ -112,14 +98,11 @@ export const columns: ColumnDef<Customer>[] = [
               <Settings className="h-4 w-4" />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => router.push(`/customer/view/${row.original.id}`)}
-              className="flex gap-2 items-center justify-start"
-            >
+            <DropdownMenuItem className="flex gap-2 items-center justify-start">
               <Eye className="h-4 w-4 text-blue-400 " /> View
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push(`/customer/edit/${row.original.id}`)}
+            <DropdownMenuItem 
+              onClick={() => router.push(`/service/edit`)} 
               className="flex gap-2 items-center justify-start"
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit

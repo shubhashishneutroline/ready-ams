@@ -2,9 +2,9 @@
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+
 import { LucideIcon } from "lucide-react";
-const { useFormContext } = require("react-hook-form");
+import { useFormContext } from "react-hook-form";
 const AvailabilityTabs = ({
   name,
   icon: Icon,

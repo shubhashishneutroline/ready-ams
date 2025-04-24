@@ -9,7 +9,7 @@ import PhoneInputField from "@/components/custom-form-fields/phone-field";
 import TimePickerField from "@/components/custom-form-fields/time-field";
 import { Button } from "@/components/ui/button";
 import FormHeader from "@/components/admin/form-header";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DatePickerField from "@/components/custom-form-fields/date-field";
 import { Mail, SlidersHorizontal, UserPen } from "lucide-react";
 import { getServices, type Service } from "@/features/service/api/api";
@@ -80,8 +80,8 @@ const formData = {
 
 export default function ViewAppointmentForm() {
   const router = useRouter();
-
-  const id = "cm9uzwhh9000durppcudcj9vp";
+  const params = useParams();
+  const id = params.id as string;
   const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

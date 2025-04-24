@@ -12,6 +12,8 @@ export interface Customer {
   email: string;
   phone: string;
   password: string;
+  role: string;
+  isActive?: boolean;
   address?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -56,6 +58,7 @@ async function updateCustomer(id: string, customerData: Omit<Customer, "id">) {
       ...customerData,
       id,
     });
+    console.log(data, "inside Update func");
     return data;
   } catch (error) {
     console.error("Error updating Customer:", error);

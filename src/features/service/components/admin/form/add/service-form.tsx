@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useForm, FormProvider } from "react-hook-form"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import InputField from "@/components/custom-form-fields/input-field"
-import TextAreaField from "@/components/custom-form-fields/textarea-field"
-import ImageUploadField from "@/components/custom-form-fields/image-upload"
-import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs"
-import ServiceDaySelector from "@/components/custom-form-fields/serivce/service-day-selector"
-import ServiceHoursSelector from "@/components/custom-form-fields/serivce/service-hours-selector"
-import ToggleSwitch from "@/components/custom-form-fields/toggle-switch"
-import DurationSelect from "@/components/custom-form-fields/duration-select"
-import { CalendarClock, ImageUp, ScrollText, UserRoundCog } from "lucide-react"
+import { useForm, FormProvider } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import InputField from "@/components/custom-form-fields/input-field";
+import TextAreaField from "@/components/custom-form-fields/textarea-field";
+import ImageUploadField from "@/components/custom-form-fields/image-upload";
+import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs";
+import ServiceDaySelector from "@/components/custom-form-fields/serivce/service-day-selector";
+import ServiceHoursSelector from "@/components/custom-form-fields/serivce/service-hours-selector";
+import ToggleSwitch from "@/components/custom-form-fields/toggle-switch";
+import DurationSelect from "@/components/custom-form-fields/duration-select";
+import { CalendarClock, ImageUp, ScrollText, UserRoundCog } from "lucide-react";
 
 // For Edit Form this has to be the data structure to pass in the form
 const fetchedService = {
@@ -33,7 +33,7 @@ const fetchedService = {
   },
   isAvailable: true,
   duration: "60", // in minutes
-}
+};
 
 const defaultServiceHours = {
   Mon: [["09:00 AM", "05:00 PM"]],
@@ -43,13 +43,13 @@ const defaultServiceHours = {
   Fri: [["09:00 AM", "05:00 PM"]],
   Sat: [["09:00 AM", "05:00 PM"]],
   Sun: [["09:00 AM", "05:00 PM"]],
-}
+};
 
 export default function ServiceForm() {
   // for edit form
   const form = useForm({
     defaultValues: fetchedService,
-  })
+  });
 
   // const form = useForm({
   //   defaultValues: {
@@ -65,8 +65,8 @@ export default function ServiceForm() {
   // })
 
   const onSubmit = (data: any) => {
-    console.log("Submitted Data:", data)
-  }
+    console.log("Submitted Data:", data);
+  };
 
   return (
     <FormProvider {...form}>
@@ -102,5 +102,5 @@ export default function ServiceForm() {
         </div>
       </form>
     </FormProvider>
-  )
+  );
 }

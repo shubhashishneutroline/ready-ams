@@ -19,7 +19,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { getServices } from "@/features/service/api/api";
 import { useEffect, useState } from "react";
@@ -133,6 +133,7 @@ export const columns: ColumnDef<any>[] = [
     // Actions dropdown for each row
     cell: ({ row }) => {
       const payment = row.original; // Access the payment object for the current row
+      const router = useRouter();
       // Return the actions dropdown menu for each payment row
       return (
         <DropdownMenu>
@@ -150,14 +151,14 @@ export const columns: ColumnDef<any>[] = [
             <DropdownMenuSeparator />
             {/* View payment action */}
             <DropdownMenuItem
-              onClick={() => {}}
+              onClick={() => router.push(`/appointment/view/${row.original.id}`)}
               className="flex gap-2 items-center justify-start"
             >
               <Eye className="h-4 w-4 text-blue-400" /> View
             </DropdownMenuItem>
             {/* Edit payment action */}
             <DropdownMenuItem
-              onClick={() => {}}
+              onClick={() => router.push(`/appointment/${row.original.id}/edit`)}
               className="flex gap-2 items-center justify-start"
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit

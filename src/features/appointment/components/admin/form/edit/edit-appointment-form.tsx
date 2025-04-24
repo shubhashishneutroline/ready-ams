@@ -9,7 +9,7 @@ import PhoneInputField from "@/components/custom-form-fields/phone-field";
 import TimePickerField from "@/components/custom-form-fields/time-field";
 import { Button } from "@/components/ui/button";
 import FormHeader from "@/components/admin/form-header";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DatePickerField from "@/components/custom-form-fields/date-field";
 import { Mail, SlidersHorizontal, UserPen } from "lucide-react";
 import { getServices, type Service } from "@/features/service/api/api";
@@ -81,8 +81,8 @@ const formData = {
 
 export default function EditAppointmentForm() {
   const router = useRouter();
-
-  const id = "cm9uzwhh9000durppcudcj9vp";
+  const params = useParams();
+  const id = params.id as string;
   const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -115,54 +115,50 @@ export default function EditAppointmentForm() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch services first
-        const services = await getServices();
-        const options = services.map((service: Service) => ({
-          label: service.title,
-          value: service.id,
-        }));
-        setServiceOptions(options);
-        console.log("Service options loaded:", options);
+        // Load both services and appointment data before resetting form
+        const [services, appointment] = await Promise.all([
+          getServices(),
+          id ? getAppointmentById(id) : null,
+        ]);
 
-        // Only proceed to fetch appointment after services are loaded
-        if (id) {
-          const appointment = await getAppointmentById(id);
-          if (appointment) {
-            console.log("Appointment loaded:", appointment);
-            const [firstName, lastName] = appointment.customerName.split(" ");
-            const date = new Date(appointment.selectedDate);
-            const timeDate = new Date(appointment.selectedTime);
+        // Set service options
 
-            // Get hours and minutes
-            let hours = timeDate.getHours();
-            const minutes = timeDate.getMinutes();
-            const meridiem = hours >= 12 ? "PM" : "AM";
+        // If we have an appointment to edit, set the form data
+        if (appointment && services) {
+          const options = services?.map((service: Service) => ({
+            label: service.title,
+            value: service.id,
+          }));
+          setServiceOptions(options);
+          console.log(serviceOptions, "options");
+          const [firstName, lastName] = appointment.customerName.split(" ");
+          const date = new Date(appointment.selectedDate);
+          const timeDate = new Date(appointment.selectedTime);
 
-            // Convert to 12-hour format
-            hours = hours % 12;
-            hours = hours ? hours : 12; // Convert 0 to 12
+          // Get hours and minutes
+          let hours = timeDate.getHours();
+          const minutes = timeDate.getMinutes();
+          const meridiem = hours >= 12 ? "PM" : "AM";
 
-            // Format with leading zeros
-            const time = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")} ${meridiem}`;
-            // Debug logs
-            console.log("Appointment service ID:", appointment.serviceId);
+          // Convert to 12-hour format
+          hours = hours % 12;
+          hours = hours ? hours : 12; // Convert 0 to 12
 
-            // Find the matching service option
+          // Format with leading zeros
+          const time = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")} ${meridiem}`;
 
-            // Set form with debug log
-
-            form.reset({
-              firstName,
-              lastName,
-              email: appointment.email,
-              phone: appointment.phone,
-              service: appointment.serviceId,
-              date: date,
-              time: time,
-              message: appointment.message || "",
-              status: appointment.status || AppointmentStatus.SCHEDULED,
-            });
-          }
+          // Now that we have both services and appointment data, reset the form
+          form.reset({
+            firstName,
+            lastName,
+            email: appointment.email,
+            phone: appointment.phone,
+            service: appointment.serviceId,
+            date: date,
+            time: time,
+            message: appointment.message || "",
+            status: appointment.status || AppointmentStatus.SCHEDULED,
+          });
         }
       } catch (error) {
         console.error("Error fetching data:", error);

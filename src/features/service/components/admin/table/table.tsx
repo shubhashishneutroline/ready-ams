@@ -1,9 +1,9 @@
-import { Customer, getCustomers } from "@/features/customer/api/api";
 import { columns } from "./column";
 import { DataTable } from "./data-table";
+import { getServices } from "../../../api/api";
 
 export default async function Table() {
-  const data = await getCustomers();
+  const data = await getServices();
 
   return (
     <div className="container mx-auto">

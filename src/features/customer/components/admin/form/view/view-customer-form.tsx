@@ -1,17 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/custom-form-fields/input-field";
 import SelectField from "@/components/custom-form-fields/select-field";
-import { User, Mail, Phone, UserCheck, Lock, Eye, EyeOff } from "lucide-react";
+import {
+  User,
+  Mail,
+  UserCheck,
+  Lock,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  ShieldAlert,
+} from "lucide-react";
 import PhoneField from "@/components/custom-form-fields/phone-field";
-import { useRouter } from "next/navigation";
-import { createCustomer } from "@/features/customer/api/api";
+import {
+  Customer,
+  getCoustomersById,
+  getCustomers,
+  updateCustomer,
+} from "@/features/customer/api/api";
 import { toast, Toaster } from "sonner";
+import { useParams, useRouter } from "next/navigation";
+import ToggleSwitch from "@/components/custom-form-fields/toggle-switch";
 
 type FormData = {
   fullName: string;
@@ -19,6 +34,7 @@ type FormData = {
   phone: string;
   role: string;
   password: string;
+  isActive: boolean;
 };
 
 interface CustomerFormProps {
@@ -32,6 +48,7 @@ const createSchema = z.object({
   phone: z.string().min(1, "Phone number is required"),
   role: z.string().min(1, "Role is required"),
   password: z.string().min(1, "Password is required"),
+  isActive: z.boolean(),
 });
 
 const roleOptions = [
@@ -40,10 +57,12 @@ const roleOptions = [
   { value: "STAFF", label: "Staff" },
 ];
 
-const CustomerForm = () => {
-  const [showPassword, setShowPassword] = useState(false);
-
+const ViewCustomerForm = () => {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialize form with create schema
   const form = useForm<FormData>({
@@ -54,27 +73,67 @@ const CustomerForm = () => {
       phone: "95129871987391",
       role: "",
       password: "",
+      isActive: false,
     },
   });
+  // fetch the cusotmer data
+  useEffect(() => {
+    const fetchCustomer = async () => {
+      try {
+        const customer = await getCoustomersById(id);
+        // Ensure role is in uppercase and matches our options
+        const validRole = customer.role?.toUpperCase();
+        const isValidRole = roleOptions.some((opt) => opt.value === validRole);
+
+        if (!isValidRole) {
+          console.error("Invalid role received:", customer.role);
+          toast.error("Invalid role received from server");
+          return;
+        }
+
+        form.reset({
+          fullName: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          role: validRole,
+          password: customer.password,
+          isActive: customer.isActive,
+        });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load appointment data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCustomer();
+  }, []);
 
   // Handle form submission
-  const handleSubmit = async (formData: FormData) => {
+  const onSubmit = async (formData: FormData) => {
     try {
-      const customerdata = {
+      const customerData: Omit<Customer, "id"> = {
         name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
         role: formData.role,
         password: formData.password,
-        isActive: true,
+        isActive: formData.isActive,
       };
-      console.log(customerdata, "customerdata");
-      await createCustomer(customerdata);
-      toast.success("Appointment created successfully");
-      handleBack();
+      console.log(customerData, "appointmentData");
+      if (!id) {
+        throw new Error("Appointment ID is required for updating");
+      }
+
+      const response = await updateCustomer(id, customerData);
+
+      if (response) {
+        toast.success("Customer updated successfully!");
+        router.push("/customer");
+      }
     } catch (error) {
-      console.error("Error creating appointment:", error);
-      toast.error("Failed to create appointment");
+      console.error("Error updating customer:", error);
+      toast.error("Failed to update customer");
     }
   };
 
@@ -87,7 +146,7 @@ const CustomerForm = () => {
       <Toaster position="top-center" />
       <FormProvider {...form}>
         <form
-          onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6 h-full"
         >
           <div className="space-y-4">
@@ -96,6 +155,7 @@ const CustomerForm = () => {
               label="Full Name"
               placeholder="Enter Service Name"
               icon={User}
+              disabled
             />
             <InputField
               name="email"
@@ -103,15 +163,25 @@ const CustomerForm = () => {
               type="email"
               placeholder="Enter Email Address"
               icon={Mail}
+              disabled
             />
-            <PhoneField name="phone" label="Phone" />
+            <PhoneField name="phone" label="Phone" disabled />
+
             <SelectField
               name="role"
               label="Role"
               placeholder="Select a Role"
               options={roleOptions}
               icon={UserCheck}
+              disabled
             />
+            <ToggleSwitch
+              name="isActive"
+              label="Active"
+              icon={<ShieldAlert className="size-4 text-gray-500" />}
+              disabled
+            />
+
             <div className="relative">
               <InputField
                 name="password"
@@ -119,6 +189,7 @@ const CustomerForm = () => {
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter Password"
                 icon={Lock}
+                disabled
               />
               <Button
                 type="button"
@@ -146,12 +217,6 @@ const CustomerForm = () => {
             >
               ← Back
             </Button>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
-            >
-              Create User
-            </Button>
           </div>
         </form>
       </FormProvider>
@@ -159,4 +224,4 @@ const CustomerForm = () => {
   );
 };
 
-export default CustomerForm;
+export default ViewCustomerForm;
