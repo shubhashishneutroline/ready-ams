@@ -225,6 +225,7 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
         <div className="flex flex-wrap gap-3">
           {serviceDays.map((d) => (
             <Button
+              type="button"
               key={d}
               variant={d === activeDay ? "default" : "outline"}
               className={cn(
@@ -289,6 +290,7 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
 
                 {idx > 0 && (
                   <Button
+                    type="button"
                     size="icon"
                     variant="ghost"
                     className="absolute -right-8 top-0"
@@ -302,7 +304,12 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
           );
         })}
 
-        <Button variant="outline" className="text-xs gap-1" onClick={addSlot}>
+        <Button
+          type="button"
+          variant="outline"
+          className="text-xs gap-1"
+          onClick={addSlot}
+        >
           <Plus className="w-3 h-3" /> Add Time Slot
         </Button>
 

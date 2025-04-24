@@ -236,7 +236,6 @@ enum ExpirationDuration {
 }
 
 // Business Details
-
 model BusinessDetail {
   id                         String            @id @default(cuid()) // Unique ID
   name                       String // Business name
@@ -287,9 +286,15 @@ enum AvailabilityType {
   SUPPORT
 }
 
+enum BusinessTimeType {
+  WORK
+  BREAK
+}
+
 model BusinessTime {
   id                     String               @id @default(cuid()) // Unique ID
   businessAvailability   BusinessAvailability @relation(fields: [businessAvailabilityId], references: [id], onDelete: Cascade)
+  type                   BusinessTimeType      @default(WORK)
   businessAvailabilityId String // Foreign key
   startTime              DateTime // Start time
   endTime                DateTime // End time

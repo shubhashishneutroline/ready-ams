@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useForm, FormProvider } from "react-hook-form"
-import { useEffect } from "react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import InputField from "@/components/custom-form-fields/input-field"
-import TextAreaField from "@/components/custom-form-fields/textarea-field"
-import ReminderSelectField from "./select-field"
-import CheckboxGroupField from "./checbox-group-field"
-import ScheduleField from "./schedule-field"
-import RadioGroupField from "./radio-group-field"
+import { useForm, FormProvider } from "react-hook-form";
+import { useEffect } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import InputField from "@/components/custom-form-fields/input-field";
+import TextAreaField from "@/components/custom-form-fields/textarea-field";
+import ReminderSelectField from "./select-field";
+import CheckboxGroupField from "./checbox-group-field";
+import ScheduleField from "./schedule-field";
+import RadioGroupField from "./radio-group-field";
 import {
   AudioWaveform,
   BetweenHorizonalStart,
@@ -19,7 +19,7 @@ import {
   Send,
   SlidersHorizontal,
   Trash2,
-} from "lucide-react"
+} from "lucide-react";
 
 const reminderTypes = [
   "Upcoming",
@@ -27,9 +27,9 @@ const reminderTypes = [
   "Cancellation",
   "Missed",
   "Custom",
-]
+];
 
-const whenOptions = {
+const whenOptions: any = {
   Upcoming: [
     "48 hours before appointment",
     "24 hours before appointment",
@@ -57,11 +57,11 @@ const whenOptions = {
     "Schedule follow-up",
   ],
   Custom: ["Schedule reminder"],
-}
+};
 
-const sendViaOptions = ["Email", "SMS", "Push Notification"]
-const autoDeleteOptions = ["7 days", "30 days", "Never"]
-const defaultMessages = {
+const sendViaOptions = ["Email", "SMS", "Push Notification"];
+const autoDeleteOptions = ["7 days", "30 days", "Never"];
+const defaultMessages: any = {
   "Follow-up":
     "Thank you for visiting us on {selected_appointment_date} for {selected_service_name}. We value your feedback! Please take a moment to share your experience.",
   Upcoming:
@@ -72,7 +72,7 @@ const defaultMessages = {
     "Your appointment on {selected_appointment_date} was cancelled. Let us know if you'd like to rebook.",
   Custom: "Custom reminder for your appointment. Please check your schedule.",
   Default: "Reminder for your appointment. Please check your schedule.",
-}
+};
 
 export default function ReminderForm() {
   const form = useForm({
@@ -89,26 +89,26 @@ export default function ReminderForm() {
       autoDelete: "7 days",
       message: defaultMessages["Follow-up"],
     },
-  })
+  });
 
-  const { watch, setValue, handleSubmit } = form
-  const selectedType = watch("type")
+  const { watch, setValue, handleSubmit } = form;
+  const selectedType = watch("type");
 
   useEffect(() => {
     setValue(
       "message",
       defaultMessages[selectedType] || defaultMessages["Default"]
-    )
-  }, [selectedType, setValue])
+    );
+  }, [selectedType, setValue]);
 
   const onSubmit = (data: any) => {
-    console.log("Reminder submitted:", data)
-  }
+    console.log("Reminder submitted:", data);
+  };
 
   const serviceOptions = [
     { value: "consultation", label: "Consultation" },
     { value: "follow-up", label: "Follow-Up" },
-  ]
+  ];
 
   return (
     <FormProvider {...form}>
@@ -151,12 +151,12 @@ export default function ReminderForm() {
                 {selectedType === "Follow-up"
                   ? "📌 Follow up with users after their appointment, requesting feedback or next steps."
                   : selectedType === "Missed"
-                  ? "📌 Reminder sent for missed appointments."
-                  : selectedType === "Cancellation"
-                  ? "📌 Notify users about cancelled appointments."
-                  : selectedType === "Custom"
-                  ? "📌 Create a custom reminder with flexible scheduling."
-                  : "📌 Notify users about their upcoming appointments."}
+                    ? "📌 Reminder sent for missed appointments."
+                    : selectedType === "Cancellation"
+                      ? "📌 Notify users about cancelled appointments."
+                      : selectedType === "Custom"
+                        ? "📌 Create a custom reminder with flexible scheduling."
+                        : "📌 Notify users about their upcoming appointments."}
               </p>
             </div>
 
@@ -194,13 +194,13 @@ export default function ReminderForm() {
                 name="when"
                 label=""
                 options={whenOptions[selectedType]?.filter(
-                  (label) => !label.toLowerCase().includes("schedule")
+                  (label: any) => !label.toLowerCase().includes("schedule")
                 )}
               />
               <ScheduleField
                 name="when"
                 label={
-                  whenOptions[selectedType]?.find((label) =>
+                  whenOptions[selectedType]?.find((label:any) =>
                     label.toLowerCase().includes("schedule")
                   ) || "Schedule reminder"
                 }
@@ -243,5 +243,5 @@ export default function ReminderForm() {
         </Card>
       </form>
     </FormProvider>
-  )
+  );
 }

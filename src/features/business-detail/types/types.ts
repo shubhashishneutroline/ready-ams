@@ -12,6 +12,7 @@ export enum WeekDays {
   MONDAY = "MONDAY",
   TUESDAY = "TUESDAY",
   THURSDAY = "THURSDAY",
+  WEDNESDAY = "WEDNESDAY",
   FRIDAY = "FRIDAY",
   SATURDAY = "SATURDAY",
   SUNDAY = "SUNDAY",
@@ -29,9 +30,15 @@ export enum HolidayType {
   SUPPORT = "SUPPORT",
 }
 
+// Enum for BusinessTimeType
+export enum BusinessTimeType {
+  WORK = "WORK",
+  BREAK = "BREAK",
+}
 // Interface for BusinessTime (Working hours)
 export interface BusinessTime {
   id: string;
+  type: BusinessTimeType;
   startTime: string; // ISO string for start time
   endTime: string; // ISO string for end time
 }
@@ -62,7 +69,6 @@ export interface BusinessAddress {
   googleMap: string; // Google Map URL for the address
 }
 
-
 export interface BusinessDetail {
   id: string;
   name: string; // Business name
@@ -77,4 +83,3 @@ export interface BusinessDetail {
   holiday: Holiday[]; // General holidays for the business
   supportBusinessDetail?: SupportBusinessDetail; // Optional support business details
 }
-

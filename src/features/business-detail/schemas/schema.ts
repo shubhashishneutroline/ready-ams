@@ -1,7 +1,14 @@
-import { BusinessAddress, BusinessStatus,HolidayType, WeekDays, AvailabilityType, } from "../types/types";
+import {
+  BusinessAddress,
+  BusinessStatus,
+  HolidayType,
+  WeekDays,
+  AvailabilityType,
+  BusinessTimeType,
+} from "../types/types";
 import { z } from "zod";
 
- /* Zod schema for BusinessTime (Working hours) */
+/* Zod schema for BusinessTime (Working hours) */
 const businessTimeSchema = z.object({
   startTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Start time must be a valid ISO date string",
@@ -9,6 +16,7 @@ const businessTimeSchema = z.object({
   endTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "End time must be a valid ISO date string",
   }),
+  type: z.nativeEnum(BusinessTimeType),
 });
 
 // Zod schema for BusinessAvailability (Business availability)
@@ -22,9 +30,12 @@ const businessAvailabilitySchema = z.object({
 const holidaySchema = z.object({
   holiday: z.nativeEnum(WeekDays),
   type: z.nativeEnum(HolidayType),
-  date: z.string().optional().refine((val) => !val || !isNaN(Date.parse(val)), {
-    message: "Holiday date must be a valid ISO date string if provided",
-  }),
+  date: z
+    .string()
+    .optional()
+    .refine((val) => !val || !isNaN(Date.parse(val)), {
+      message: "Holiday date must be a valid ISO date string if provided",
+    }),
 });
 
 // Zod schema for BusinessAddress
@@ -48,8 +59,10 @@ export const businessDetailSchema = z.object({
   address: z.array(businessAddressSchema),
   businessAvailability: z.array(businessAvailabilitySchema),
   holiday: z.array(holidaySchema),
-  supportBusinessDetail: z.object({
-    supportPhone: z.string().optional(),
-    supportEmail: z.string().optional(),
-  }).optional(),
+  supportBusinessDetail: z
+    .object({
+      supportPhone: z.string().optional(),
+      supportEmail: z.string().optional(),
+    })
+    .optional(),
 });

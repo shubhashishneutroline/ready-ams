@@ -117,16 +117,16 @@ export const columns: ColumnDef<any>[] = [
       return <div>{format(date, "dd MMMM yyyy")}</div>;
     },
   },
-  // {
-  //   accessorKey: "selectedTime",
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title="Time" />
-  //   ),
-  //   cell: ({ row }) => {
-  //     const time = new Date(row.getValue("selectedTime"));
-  //     return <div>{format(time, "hh:mm a")}</div>;
-  //   },
-  // },
+  {
+    accessorKey: "selectedTime",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Time" />
+    ),
+    cell: ({ row }) => {
+      const time = new Date(row.getValue("selectedTime"));
+      return <div>{format(time, "hh:mm a")}</div>;
+    },
+  },
 
   {
     id: "actions",

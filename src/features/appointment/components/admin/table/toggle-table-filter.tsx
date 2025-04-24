@@ -15,7 +15,7 @@ export default function ToggleTableTabs({
   const value = watch(name);
 
   return (
-    <div className="space-y-2">
+    <div className="flex-wrap space-y-2">
       <ToggleGroup
         type="single"
         value={value}

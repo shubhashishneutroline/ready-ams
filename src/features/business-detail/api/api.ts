@@ -1,12 +1,12 @@
+import { getBaseUrl } from "@/lib/baseUrl";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:3001",
+  baseURL: getBaseUrl(),
   headers: {
     "Content-Type": "application/json",
   },
 });
-
 export interface Business {
   id?: string;
   name: string;
@@ -20,9 +20,9 @@ export interface Business {
   updatedAt?: string;
 }
 
-async function getBusinesses(): Promise<Business[]> {
+async function getBusinesses() {
   try {
-    const { data } = await api.get("/api/business");
+    const { data } = await api.get("/api/business-detail");
     return data;
   } catch (error) {
     console.error("Error fetching businesses:", error);
@@ -30,9 +30,9 @@ async function getBusinesses(): Promise<Business[]> {
   }
 }
 
-async function getBusinessById(id: string): Promise<Business | null> {
+async function getBusinessById(id: string) {
   try {
-    const { data } = await api.get(`/api/business/${id}`);
+    const { data } = await api.get(`/api/business-detail`);
     return data;
   } catch (error) {
     console.error("Error fetching business:", error);
@@ -40,11 +40,9 @@ async function getBusinessById(id: string): Promise<Business | null> {
   }
 }
 
-async function createBusiness(
-  businessData: Omit<Business, "id">
-): Promise<Business> {
+async function createBusiness(businessData: Omit<Business, "id">) {
   try {
-    const { data } = await api.post("/api/business", businessData);
+    const { data } = await api.post("/api/business-detail", businessData);
     return data;
   } catch (error) {
     console.error("Error creating business:", error);
@@ -52,12 +50,9 @@ async function createBusiness(
   }
 }
 
-async function updateBusiness(
-  id: string,
-  businessData: Omit<Business, "id">
-): Promise<Business> {
+async function updateBusiness(id: string, businessData: Omit<Business, "id">) {
   try {
-    const { data } = await api.put(`/api/business`, {
+    const { data } = await api.put(`/api/business-detail`, {
       ...businessData,
       id,
     });
@@ -68,9 +63,9 @@ async function updateBusiness(
   }
 }
 
-async function deleteBusiness(id: string): Promise<void> {
+async function deleteBusiness(id: string) {
   try {
-    await api.delete(`/api/business/${id}`);
+    await api.delete(`/api/business-detail/${id}`);
   } catch (error) {
     console.error("Error deleting business:", error);
     throw error;

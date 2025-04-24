@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useForm, FormProvider } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import InputField from "@/components/custom-form-fields/input-field"
-import SelectField from "@/components/custom-form-fields/select-field"
+import { useForm, FormProvider, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import InputField from "@/components/custom-form-fields/input-field";
+import SelectField from "@/components/custom-form-fields/select-field";
 import {
   Building2,
   Briefcase,
@@ -22,20 +22,37 @@ import {
   MapPinHouse,
   Pin,
   MapPinned,
-} from "lucide-react"
-import FileUploadField from "@/components/custom-form-fields/image-upload"
+} from "lucide-react";
+import FileUploadField from "@/components/custom-form-fields/image-upload";
+import { getBusinesses } from "../api/api";
+import { useEffect, useState } from "react";
 
 const industryOptions = [
-  { value: "retail", label: "Retail" },
-  { value: "hospitality", label: "Hospitality" },
-  { value: "technology", label: "Technology" },
-  { value: "healthcare", label: "Healthcare" },
-]
+  { label: "Salon & Spa", value: "Salon & Spa" },
+  { label: "Medical & Health", value: "Medical & Health" },
+  { label: "Automotive Services", value: "Automotive Services" },
+  { label: "Home Repair & Maintenance", value: "Home Repair & Maintenance" },
+  { label: "Fitness & Wellness", value: "Fitness & Wellness" },
+  { label: "Education & Training", value: "Education & Training" },
+  { label: "Legal & Consulting", value: "Legal & Consulting" },
+  { label: "IT Services", value: "IT Services" },
+];
 
 const visibilityOptions = [
-  { value: "public", label: "Public" },
-  { value: "private", label: "Private" },
-]
+  { label: "Active", value: "ACTIVE" },
+  { label: "Inactive", value: "INACTIVE" },
+  { label: "Pending", value: "PENDING" },
+  { label: "Suspended", value: "SUSPENDED" },
+];
+
+const addressSchema = z.object({
+  city: z.string().min(1, "City is required"),
+  street: z.string().min(1, "Street is required"),
+  state: z.string().min(1, "State is required"),
+  zipCode: z.string().min(1, "ZIP code is required"),
+  country: z.string().min(1, "Country is required"),
+  googleMap: z.string().optional(),
+});
 
 const schema = z.object({
   businessName: z.string().min(1, "Business name is required"),
@@ -55,9 +72,54 @@ const schema = z.object({
   taxId: z.any().optional(),
   logo: z.any().refine((file) => file !== null, "Business logo is required"),
   visibility: z.string().min(1, "Visibility selection is required"),
-})
+  addresses: z.array(addressSchema), // This allows an array of address objects
+});
 
 const BusinessDetailForm = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [addressLength, setaddressLength] = useState(0);
+
+  useEffect(() => {
+    const fetchBusinessDetails = async () => {
+      try {
+        const business = await getBusinesses();
+        const dataToEdit = business[0];
+        const formData = {
+          businessName: dataToEdit.name || "",
+          industry: dataToEdit.industry || "",
+          phone: dataToEdit.phone || "",
+          email: dataToEdit.email || "",
+          website: dataToEdit.website || "",
+          registrationNumber: dataToEdit.businessRegistrationNumber || "",
+          taxId: dataToEdit.taxId || null,
+          logo: dataToEdit.logo || null,
+          visibility: dataToEdit.status || "",
+          addresses:
+            dataToEdit.addresses?.length > 0
+              ? dataToEdit.addresses
+              : [
+                  {
+                    city: "",
+                    street: "",
+                    state: "",
+                    zipCode: "",
+                    country: "",
+                    googleMap: "",
+                  },
+                ],
+        };
+        form.reset(formData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // toast.error("Failed to load appointment data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchBusinessDetails();
+  }, []);
+
   const form = useForm({
     defaultValues: {
       businessName: "",
@@ -75,17 +137,33 @@ const BusinessDetailForm = () => {
       taxId: null,
       logo: null,
       visibility: "",
+      addresses: [
+        {
+          city: "",
+          street: "",
+          state: "",
+          zipCode: "",
+          country: "",
+          googleMap: "",
+        },
+      ],
     },
     resolver: zodResolver(schema),
-  })
+  });
+  const { control, reset } = form;
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "addresses",
+  });
 
   const onSubmit = (data: any) => {
-    console.log("Business Detail Form submitted:", data)
-  }
+    console.log("Business Detail Form submitted:", data);
+  };
 
   const onSaveAndExit = () => {
-    console.log("Save and exit clicked")
-  }
+    console.log("Save and exit clicked");
+  };
 
   return (
     <FormProvider {...form}>
@@ -134,7 +212,7 @@ const BusinessDetailForm = () => {
 
         {/* Business Address */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Business Address</h3>
+          {/* <h3 className="text-lg font-semibold">Business Address</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
               name="city"
@@ -172,8 +250,47 @@ const BusinessDetailForm = () => {
               type="url"
               placeholder="Enter google map url"
               icon={Map}
-            />
-          </div>
+            /> */}
+          {fields.map((field, index) => {
+            console.log(field, "fields");
+            return (
+              <div
+                key={field.id}
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              >
+                <InputField
+                  name={`addresses[${index}].city`}
+                  label="City"
+                  placeholder="Enter city"
+                />
+                <InputField
+                  name={`addresses[${index}].street`}
+                  label="Street"
+                  placeholder="Enter street"
+                />
+                <InputField
+                  name={`addresses[${index}].state`}
+                  label="State"
+                  placeholder="Enter state"
+                />
+                <InputField
+                  name={`addresses[${index}].zipCode`}
+                  label="ZIP Code"
+                  placeholder="Enter ZIP code"
+                />
+                <InputField
+                  name={`addresses[${index}].country`}
+                  label="Country"
+                  placeholder="Enter country"
+                />
+                <InputField
+                  name={`addresses[${index}].googleMap`}
+                  label="Google Map"
+                  placeholder="Google Map URL"
+                />
+              </div>
+            );
+          })}
         </div>
 
         {/* Legal & Compliance */}
@@ -234,7 +351,7 @@ const BusinessDetailForm = () => {
         </div>
       </form>
     </FormProvider>
-  )
-}
+  );
+};
 
-export default BusinessDetailForm
+export default BusinessDetailForm;

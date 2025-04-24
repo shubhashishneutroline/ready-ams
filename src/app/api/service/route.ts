@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
             },
           })),
         },
-        businessDetailId: parsedData.businessDetailId,
+        // businessDetailId: parsedData.businessDetailId,
       },
     });
 
@@ -126,7 +126,7 @@ export async function PUT(req: NextRequest) {
         description: parsedData.description,
         estimatedDuration: parsedData.estimatedDuration,
         status: parsedData.status,
-        businessDetailId: parsedData.businessDetailId,
+        // businessDetailId: parsedData.businessDetailId,
         serviceAvailability: {
           create: parsedData.serviceAvailability?.map((availability) => ({
             weekDay: availability.weekDay,

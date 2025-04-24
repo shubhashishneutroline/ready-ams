@@ -18,3 +18,18 @@ export const toMin = (t: string) => {
   if (ap === "AM" && h === 12) h = 0;
   return h * 60 + m;
 };
+
+export const toDate = (timeString: string): string => {
+  const today = new Date();
+  const [hours, minutes, modifier] = timeString.split(/[: ]/);
+  let hour = parseInt(hours, 10);
+
+  if (modifier === "PM" && hour !== 12) {
+    hour += 12;
+  } else if (modifier === "AM" && hour === 12) {
+    hour = 0;
+  }
+
+  today.setHours(hour, parseInt(minutes, 10), 0, 0);
+  return today.toISOString(); // Return the date in ISO 8601 format
+};

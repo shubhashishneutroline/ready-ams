@@ -16,6 +16,7 @@ import BusinessHourSelector from "./business-hour-selector";
 import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs";
 import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field";
 import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field";
+import { BusinessDetail, WeekDays } from "../types/types";
 
 // Default form values
 const defaultValues = {

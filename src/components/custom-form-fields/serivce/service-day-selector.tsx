@@ -60,6 +60,7 @@ export default function ServiceDaySelector({
       <div className="flex flex-wrap gap-3">
         {availableDays.map((day) => (
           <Button
+            type="button"
             key={day}
             variant={selectedDays.includes(day) ? "default" : "outline"}
             className={cn(
