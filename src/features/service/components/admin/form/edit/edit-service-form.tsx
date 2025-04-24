@@ -1,7 +1,11 @@
 "use client";
 
 import { useForm, FormProvider } from "react-hook-form";
-import { createService, getServiceById } from "@/features/service/api/api";
+import {
+  createService,
+  getServiceById,
+  updateService,
+} from "@/features/service/api/api";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/custom-form-fields/input-field";
@@ -48,6 +52,11 @@ export const toFullDay = (day: string): string => {
   };
 
   return map[day] ?? "MONDAY"; // Fallback to MONDAY just in case
+};
+
+type ServiceFormData = {
+  serviceDays: WeekDay[];
+  serviceHours: Record<WeekDay, [string, string][]>;
 };
 
 const toShortDay = (day: string): WeekDay => {
@@ -214,23 +223,20 @@ export default function EditServiceForm({
         description: data.description,
         estimatedDuration: parseInt(data.duration),
         status: data.isAvailable ? "ACTIVE" : "INACTIVE",
-        serviceAvailability: data.serviceDays.map((day) => ({
-          weekDay: toFullDay(day),
-          timeSlots: (data.serviceHours[day] || []).map(
-            ([startTime, endTime]) => ({
-              startTime: toDate(startTime),
-              endTime: toDate(endTime),
-            })
-          ),
-        })),
+        serviceAvailability: transformToServiceAvailability({
+          serviceDays: data.serviceDays,
+          serviceHours: data.serviceHours,
+        }),
         businessId: businessId,
       };
-      console.log(serviceData, "servicedata inside onSubmit");
-      // await createService(serviceData);
+      console.log(data, "data inside onSubmit");
+      console.log(serviceData, "serviceData inside onSubmit");
+
+      await updateService(id, serviceData);
       toast.success("Service created successfully");
       form.reset();
     } catch (error) {
-      toast.error("Failed to create service");
+      toast.error("Failed to updated service");
       console.error("Error creating service:", error);
     }
   };
@@ -311,6 +317,21 @@ export default function EditServiceForm({
     });
 
     return result;
+  }
+
+  // Function to map the form day and timeslot into the onSubmit
+  function transformToServiceAvailability(formData: ServiceFormData) {
+    return formData.serviceDays
+      .filter((day) => (formData.serviceHours[day] ?? []).length > 0)
+      .map((day) => {
+        return {
+          weekDay: toFullDay(day),
+          timeSlots: formData.serviceHours[day].map(([start, end]) => ({
+            startTime: toDate(start),
+            endTime: toDate(end),
+          })),
+        };
+      });
   }
 
   const fetchData = async () => {
