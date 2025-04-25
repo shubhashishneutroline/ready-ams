@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 
-import { Plus } from "lucide-react"
+import { Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,18 +12,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { createFAQ, updateFAQ } from "@/features/faq/api/api";
 
 interface FAQ {
-  id: string
-  question: string
-  answer: string
+  id: string;
+  question: string;
+  answer: string;
 }
 
-const FAQSection = () => {
+const FAQHeader = () => {
   const [faqs, setFaqs] = useState<FAQ[]>([
     {
       id: "1",
@@ -55,48 +56,59 @@ const FAQSection = () => {
       answer:
         "Yes, offers and announcements appear as notifications and/or as banners in the app.",
     },
-  ])
+  ]);
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingFAQ, setEditingFAQ] = useState<FAQ | null>(null)
-  const [newQuestion, setNewQuestion] = useState("")
-  const [newAnswer, setNewAnswer] = useState("")
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingFAQ, setEditingFAQ] = useState<FAQ | null>(null);
+  const [newQuestion, setNewQuestion] = useState("");
+  const [newAnswer, setNewAnswer] = useState("");
 
   const handleAddFAQ = () => {
-    setEditingFAQ(null)
-    setNewQuestion("")
-    setNewAnswer("")
-    setDialogOpen(true)
-  }
+    setEditingFAQ(null);
+    setNewQuestion("");
+    setNewAnswer("");
+    setDialogOpen(true);
+  };
 
   const handleEditFAQ = (faq: FAQ) => {
-    setEditingFAQ(faq)
-    setNewQuestion(faq.question)
-    setNewAnswer(faq.answer)
-    setDialogOpen(true)
-  }
+    setEditingFAQ(faq);
+    setNewQuestion(faq.question);
+    setNewAnswer(faq.answer);
+    setDialogOpen(true);
+  };
 
-  const handleSaveFAQ = () => {
-    if (editingFAQ) {
-      setFaqs(
-        faqs.map((faq) =>
-          faq.id === editingFAQ.id
-            ? { ...faq, question: newQuestion, answer: newAnswer }
-            : faq
-        )
-      )
-    } else {
-      setFaqs([
-        ...faqs,
-        {
-          id: (faqs.length + 1).toString(),
-          question: newQuestion,
-          answer: newAnswer,
-        },
-      ])
+  const handleSaveFAQ = async () => {
+    const faqData = {
+      question: newQuestion,
+      answer: newAnswer,
+      category: "GENERAL", // set your category
+      isActive: true,
+      lastUpdatedById: "cm9p5clgp0008vdfwn01046su",
+      createdById: "cm9p5clgp0008vdfwn01046su",
+    };
+
+    try {
+      if (editingFAQ) {
+        // Call update API
+        const updated = await updateFAQ(editingFAQ.id, faqData);
+        setFaqs((prevFaqs) =>
+          prevFaqs?.map((faq) =>
+            faq.id === editingFAQ.id ? { ...faq, ...updated } : faq
+          )
+        );
+      } else {
+        // Call create API
+        const created = await createFAQ({
+          id: "", // backend can auto-generate
+          ...faqData,
+        });
+        setFaqs((prevFaqs) => [...(prevFaqs || []), created]);
+      }
+      setDialogOpen(false);
+    } catch (error) {
+      console.error("Error saving FAQ:", error);
     }
-    setDialogOpen(false)
-  }
+  };
 
   return (
     <div>
@@ -153,7 +165,7 @@ const FAQSection = () => {
         📌 Following queries will be displayed to users in FAQs section
       </h4>
     </div>
-  )
-}
+  );
+};
 
-export default FAQSection
+export default FAQHeader;

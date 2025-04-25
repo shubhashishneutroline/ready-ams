@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm, FormProvider } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import InputField from "@/components/custom-form-fields/input-field"
-import TextAreaField from "@/components/custom-form-fields/textarea-field"
-import SelectField from "@/components/custom-form-fields/select-field"
+import { useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import InputField from "@/components/custom-form-fields/input-field";
+import TextAreaField from "@/components/custom-form-fields/textarea-field";
+import SelectField from "@/components/custom-form-fields/select-field";
 import {
   User,
   Mail,
@@ -24,8 +24,9 @@ import {
   MinusIcon,
   ListIcon,
   User2,
-} from "lucide-react"
-import FileUploadField from "@/components/custom-form-fields/image-upload"
+} from "lucide-react";
+import FileUploadField from "@/components/custom-form-fields/image-upload";
+import { createTicket } from "../api/api";
 
 const schema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -36,23 +37,28 @@ const schema = z.object({
   description: z.string().min(1, "Description is required"),
   priorityLevel: z.string().min(1, "Priority level is required"),
   attachment: z.instanceof(File).optional(),
-})
+});
 
 const issueCategoryOptions = [
-  { value: "general", label: "General Inquiry" },
-  { value: "technical", label: "Technical Issue" },
-  { value: "billing", label: "Billing Question" },
-]
+  { value: "GENERAL", label: "General Inquiry" },
+  { value: "TECHNICAL", label: "Technical Issue" },
+  { value: "BILLING", label: "Billing Question" },
+  { value: "SUPPORT", label: "Support" },
+  { value: "SECURITY", label: "Security" },
+  { value: "MAINTENANCE", label: "Maintenance" },
+  { value: "FEEDBACK", label: "Feedback" },
+];
 
 const priorityLevelOptions = [
-  { value: "low", label: "Low" },
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
-]
+  { value: "LOW", label: "Low" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "HIGH", label: "High" },
+  { value: "URGENT", label: "Urgent" },
+];
 
 const AdminSupportForm = () => {
-  const [submitted, setSubmitted] = useState(false)
-  const [fileName, setFileName] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -63,27 +69,44 @@ const AdminSupportForm = () => {
       subject: "",
       description: "",
       priorityLevel: "",
-      attachment: null,
+      attachment: undefined,
     },
     resolver: zodResolver(schema),
-  })
+  });
 
-  const onSubmit = (data: any) => {
-    console.log("Admin Support Form submitted:", data)
-    setSubmitted(true)
-  }
+  const onSubmit = async (data: any) => {
+    const { issueCategory, subject, description, priorityLevel, attachment } =
+      data;
+
+    const updatedData = {
+      userType: "ADMIN",
+      subject,
+      ticketDescription: description,
+      category: issueCategory,
+      priority: priorityLevel,
+      status: "OPEN",
+      assignedTo: "",
+      resolutionDescription: "",
+      proofFiles: attachment ? attachment.name : "",
+      initiatedById: "cm9gu8ms60000vdg0zdnsxb6z",
+      userId: "cm9gu8ms60000vdg0zdnsxb6z",
+    };
+    console.log("Admin Support Form submitted:", updatedData);
+    await createTicket(updatedData);
+    setSubmitted(true);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      form.setValue("attachment", file)
-      setFileName(file.name)
+      form.setValue("attachment", file);
+      setFileName(file.name);
     }
-  }
+  };
 
   if (submitted) {
     return (
-      <div className="text-center space-y-4">
+      <div className="text-center space-y-4 h-full">
         <h3 className="text-2xl font-bold flex items-center justify-center gap-2">
           <CheckCircle className="size-6 text-green-500" />
           Thank You for Reaching Out!
@@ -100,7 +123,7 @@ const AdminSupportForm = () => {
           Got questions? We’re here to help! Reach out to us anytime. 🚀
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -194,7 +217,7 @@ const AdminSupportForm = () => {
         </Button>
       </form>
     </FormProvider>
-  )
-}
+  );
+};
 
-export default AdminSupportForm
+export default AdminSupportForm;
