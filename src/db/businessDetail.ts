@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma"
+import { prisma } from "../lib/prisma";
 
 // get service by id
 async function getBusinessDetailById(id: string) {
@@ -6,7 +6,16 @@ async function getBusinessDetailById(id: string) {
     where: {
       id,
     },
-  })
+    include: {
+      address: true, // Include the address relation
+      holiday: true, // Include the holiday relation
+      businessAvailability: {
+        include: {
+          timeSlots: true,
+        },
+      },
+    },
+  });
 }
 
-export { getBusinessDetailById }
+export { getBusinessDetailById };

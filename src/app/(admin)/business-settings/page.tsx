@@ -21,7 +21,7 @@ const BusinessPage = () => {
           icon={<CalendarDays />}
         />
       </div>
-      <Card className="h-full overflow-y-auto p-4 md:p-6">
+      <Card className="h-full overflow-x-hidden overflow-y-auto p-4 md:p-6">
         <PageTabs
           activeTab={activeTab}
           onTabChange={(tab) => setActiveTab(tab)}

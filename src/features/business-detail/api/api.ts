@@ -32,7 +32,7 @@ async function getBusinesses() {
 
 async function getBusinessById(id: string) {
   try {
-    const { data } = await api.get(`/api/business-detail`);
+    const { data } = await api.get(`/api/business-detail/${id}`);
     return data;
   } catch (error) {
     console.error("Error fetching business:", error);

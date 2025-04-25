@@ -21,6 +21,8 @@ export interface Service {
 async function getServices(): Promise<Service[]> {
   try {
     const { data } = await api.get("/api/service");
+    console.log(data, "data in get service give the interface of this data");
+
     return data;
   } catch (error) {
     console.error("Error fetching services:", error);
@@ -70,9 +72,12 @@ async function updateService(
   }
 }
 
-async function deleteService(id: string): Promise<void> {
+async function deleteService(service: any) {
   try {
-    await api.delete(`/api/service/${id}`);
+    const { data } = await api.delete(`/api/service/`, {
+      data: service,
+    });
+    return data;
   } catch (error) {
     console.error("Error deleting service:", error);
     throw error;

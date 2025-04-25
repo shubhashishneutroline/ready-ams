@@ -1,25 +1,18 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useForm, FormProvider } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import InputField from "@/components/custom-form-fields/input-field"
-import SelectField from "@/components/custom-form-fields/select-field"
-import {
-  CheckCircle,
-  Building2,
-  Mail,
-  Phone,
-  MapPin,
-  Map,
-  Calendar,
-} from "lucide-react"
-import BusinessHourSelector from "@/features/business-detail/components/business-hour-selector"
-import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field"
+import { useState, useEffect } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import InputField from "@/components/custom-form-fields/input-field";
+import SelectField from "@/components/custom-form-fields/select-field";
+import { CheckCircle, Building2, Mail, Phone, MapPin, Map } from "lucide-react";
+import BusinessHourSelector from "@/features/business-detail/components/business-hour-selector";
+import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field";
+import { transformBusinessData } from "@/features/support-detail/action/action";
 
 // Define holiday date options (mocked for now)
 const dateOptions = [
@@ -27,7 +20,7 @@ const dateOptions = [
   { value: "2025-01-02", label: "Jan 2, 2025" },
   { value: "2025-12-25", label: "Dec 25, 2025" },
   { value: "2025-12-26", label: "Dec 26, 2025" },
-]
+];
 
 const schema = z.object({
   businessName: z.string().min(1, "Business name is required"),
@@ -45,10 +38,12 @@ const schema = z.object({
   holidays: z.array(z.string()).optional(),
   //   holidayStart: z.string().min(1, "Holiday start date is required"),
   //   holidayEnd: z.string().min(1, "Holiday end date is required"),
-})
+});
 
 const ContactInformationForm = () => {
-  const [useBusinessInfo, setUseBusinessInfo] = useState(true)
+  const [useBusinessInfo, setUseBusinessInfo] = useState(true);
+
+  // Empty dependency array to fetch data only once on mount
 
   const form = useForm({
     defaultValues: {
@@ -64,9 +59,9 @@ const ContactInformationForm = () => {
       //   holidayEnd: "",
     },
     resolver: zodResolver(schema),
-  })
+  });
 
-  const { reset, watch } = form
+  const { reset, watch } = form;
 
   // Mock fetching business details
   const fetchBusinessDetails = () => {
@@ -102,24 +97,29 @@ const ContactInformationForm = () => {
       holidays: ["Sat", "Sun"],
       //   holidayStart: "2025-12-25",
       //   holidayEnd: "2025-12-26",
-    }
-  }
+    };
+  };
 
   useEffect(() => {
+    const fetchData = () => {
+      transformBusinessData().then((businessDetails) => {
+        reset(businessDetails); // Update the form with fetched data
+      });
+    };
+
     if (useBusinessInfo) {
-      const businessDetails = fetchBusinessDetails()
-      reset(businessDetails)
+      fetchData(); // Fetch the business details and reset the form
     }
-  }, [useBusinessInfo, reset])
+  }, [useBusinessInfo, reset]);
 
   const onSubmit = (data: any) => {
-    console.log("Contact Information submitted:", data)
+    console.log("Contact Information submitted:", data);
     if (!useBusinessInfo) {
-      console.log("Saving as new support details")
+      console.log("Saving as new support details");
     }
-  }
+  };
 
-  const businessDays = watch("businessDays")
+  const businessDays = watch("businessDays");
 
   return (
     <FormProvider {...form}>
@@ -135,7 +135,7 @@ const ContactInformationForm = () => {
           <div className="flex items-center gap-2">
             <Switch
               checked={useBusinessInfo}
-              onCheckedChange={setUseBusinessInfo}
+              onCheckedChange={() => setUseBusinessInfo(!useBusinessInfo)}
             />
             <div className="flex items-center gap-2">
               <CheckCircle className="size-4 text-gray-500" />
@@ -195,7 +195,7 @@ const ContactInformationForm = () => {
         </Button>
       </form>
     </FormProvider>
-  )
-}
+  );
+};
 
-export default ContactInformationForm
+export default ContactInformationForm;

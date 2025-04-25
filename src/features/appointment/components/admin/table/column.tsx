@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { getServices } from "@/features/service/api/api";
 import { useEffect, useState } from "react";
+import { deleteAppointment } from "@/features/appointment/api/api";
 
 // Define the type for a payment
 export type Payment = {
@@ -160,7 +161,7 @@ export const columns: ColumnDef<any>[] = [
             {/* Edit payment action */}
             <DropdownMenuItem
               onClick={() =>
-                router.push(`/appointment/${row.original.id}/edit`)
+                router.push(`/appointment/edit/${row.original.id}`)
               }
               className="flex gap-2 items-center justify-start"
             >
@@ -168,7 +169,7 @@ export const columns: ColumnDef<any>[] = [
             </DropdownMenuItem>
             {/* Delete payment action */}
             <DropdownMenuItem
-              onClick={() => {}}
+              onClick={() => deleteAppointment(row.original)}
               className="flex gap-2 items-center justify-start"
             >
               <Trash2 className="h-4 w-4 text-red-600" /> Delete

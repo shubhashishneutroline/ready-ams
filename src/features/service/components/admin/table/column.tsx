@@ -24,7 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
 
 import { capitalizeFirstChar } from "../../../../../utils/utils";
-import { Service } from "@/features/service/api/api";
+import { deleteService, Service } from "@/features/service/api/api";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -107,7 +107,10 @@ export const columns: ColumnDef<Service>[] = [
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex gap-2 items-center justify-start">
+            <DropdownMenuItem
+              onClick={() => deleteService(row.original)}
+              className="flex gap-2 items-center justify-start"
+            >
               <Trash2 className="h-4 w-4 text-red-600" /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

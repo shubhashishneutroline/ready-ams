@@ -6,6 +6,24 @@ async function getServiceById(id: string) {
     where: {
       id: id,
     },
+    include: {
+      appointments: true,
+      serviceAvailability: {
+        include: {
+          timeSlots: true,
+        },
+      },
+      BusinessDetail: {
+        include: {
+          businessAvailability: {
+            include: {
+              timeSlots: true,
+            },
+          },
+          holiday: true,
+        },
+      },
+    },
   });
 }
 

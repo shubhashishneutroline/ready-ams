@@ -69,7 +69,7 @@ async function updateCustomer(id: string, customerData: Omit<Customer, "id">) {
 
 async function deleteCustomer(customer: Omit<Customer, "id">) {
   try {
-    const { data } = await api.delete(`/api/ustomer`, {
+    const { data } = await api.delete(`/api/user`, {
       data: customer,
     });
     return data;
