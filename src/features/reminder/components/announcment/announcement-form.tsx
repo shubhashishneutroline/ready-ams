@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useForm, FormProvider } from "react-hook-form"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import InputField from "@/components/custom-form-fields/input-field"
-import TextAreaField from "@/components/custom-form-fields/textarea-field"
-import RadioGroupField from "@/components/custom-form-fields/reminder/radio-group-field"
-import CheckboxGroupField from "@/components/custom-form-fields/reminder/checbox-group-field"
-import AnnouncementRadioScheduleField from "./radio-schecule-field"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
+import { useForm, FormProvider } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import InputField from "@/components/custom-form-fields/input-field";
+import TextAreaField from "@/components/custom-form-fields/textarea-field";
+import RadioGroupField from "@/components/custom-form-fields/reminder/radio-group-field";
+import CheckboxGroupField from "@/components/custom-form-fields/reminder/checbox-group-field";
+import AnnouncementRadioScheduleField from "./radio-schecule-field";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Delete,
   Megaphone,
@@ -17,68 +17,71 @@ import {
   Pen,
   PenLine,
   ShieldUser,
-} from "lucide-react"
+} from "lucide-react";
 
-const targetAudienceOptions = ["All", "Appointments Users", "Cancelled Users"]
-const showOnOptions = ["Top Banner", "Push Notification", "Email", "All"]
-const autoDeleteOptions = ["1 days", "3 days", "7 days", "30 days", "Never"]
-const scheduleOptions = ["Immediately", "Schedule"]
+import AnnouncementCheckboxGroupField from "@/components/custom-form-fields/reminder/announcement-checkbox-group-feild";
+import { transformFormToPayload } from "@/features/announcement-offer/action/action";
+import { createAnnouncement } from "@/features/announcement-offer/api/api";
 
-const schema = z.object({
-  title: z.string().min(1, "Title is required"),
-  message: z.string().min(1, "Message is required"),
-  targetAudience: z.string().min(1, "Target audience selection is required"),
-  schedule: z.string().min(1, "Schedule option is required"),
-  scheduleDate: z
-    .string()
-    .optional()
-    .refine(
-      (value, ctx) => {
-        if (ctx.parent.schedule === "Schedule" && !value) {
-          return false
-        }
-        return true
-      },
-      { message: "Schedule date is required" }
-    ),
-  scheduleTime: z
-    .string()
-    .optional()
-    .refine(
-      (value, ctx) => {
-        if (ctx.parent.schedule === "Schedule" && !value) {
-          return false
-        }
-        return true
-      },
-      { message: "Schedule time is required" }
-    ),
-  showOn: z
-    .array(z.string())
-    .min(1, "At least one show on option must be selected"),
-  autoDelete: z.string().min(1, "Auto-delete option is required"),
-})
+const targetAudienceOptions = ["All", "Appointments Users", "Cancelled Users"];
+const showOnOptions = ["Top Banner", "Push Notification", "Email", "All"];
+const autoDeleteOptions = ["1 days", "3 days", "7 days", "30 days", "Never"];
+const scheduleOptions = ["Immediately", "Schedule"];
+
+const schema = z
+  .object({
+    title: z.string().min(1, "Title is required"),
+    message: z.string().min(1, "Message is required"),
+    targetAudience: z.string().min(1, "Target audience selection is required"),
+    schedule: z.string().min(1, "Schedule option is required"),
+    scheduleDate: z.date().optional(),
+    scheduleTime: z.string().optional(),
+    showOn: z
+      .array(z.string())
+      .min(1, "At least one show on option must be selected"),
+    autoDelete: z.string().min(1, "Auto-delete option is required"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.schedule === "Schedule") {
+      if (!data.scheduleDate) {
+        ctx.addIssue({
+          path: ["scheduleDate"],
+          message: "Schedule date is required",
+          code: z.ZodIssueCode.custom,
+        });
+      }
+      if (!data.scheduleTime) {
+        ctx.addIssue({
+          path: ["scheduleTime"],
+          message: "Schedule time is required",
+          code: z.ZodIssueCode.custom,
+        });
+      }
+    }
+  });
 
 export default function AnnouncementForm() {
   const form = useForm({
     defaultValues: {
       title: "",
       message: "",
-      targetAudience: "",
+      targetAudience: "All",
       schedule: "Immediately",
-      scheduleDate: "",
+      scheduleDate: new Date(),
       scheduleTime: "",
       showOn: [],
       autoDelete: "7 days",
     },
     resolver: zodResolver(schema),
-  })
+  });
 
-  const { handleSubmit } = form
+  const { handleSubmit } = form;
 
   const onSubmit = (data: any) => {
-    console.log("Announcement submitted:", data)
-  }
+    console.log(data, "onSubmit data before transformation");
+    console.log("Announcement submitted:", transformFormToPayload(data));
+    createAnnouncement(transformFormToPayload(data));
+  };
 
   return (
     <FormProvider {...form}>
@@ -119,7 +122,7 @@ export default function AnnouncementForm() {
             />
 
             {/* Show On */}
-            <CheckboxGroupField
+            <AnnouncementCheckboxGroupField
               name="showOn"
               label="Show on"
               options={showOnOptions}
@@ -144,5 +147,5 @@ export default function AnnouncementForm() {
         </div>
       </form>
     </FormProvider>
-  )
+  );
 }

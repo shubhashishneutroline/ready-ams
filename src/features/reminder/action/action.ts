@@ -1,4 +1,5 @@
 import { getServices } from "@/features/service/api/api";
+import { ReminderType } from "../types/types";
 
 export const serviceOption = await getServices();
 
@@ -22,7 +23,7 @@ type TransformedReminderData = {
   services: string[];
   notifications: { method: string }[];
   reminderOffset: {
-    sendOffset: string | null;
+    sendOffset: string | number | null;
     sendBefore: boolean;
     scheduledAt?: string | null;
   }[];
@@ -32,7 +33,7 @@ const labelToOffset: Record<string, number> = {
   "48 hours before appointment": 2880,
   "24 hours before appointment": 1440,
   "1 hours before appointment": 60,
-  "Same day after appointment": 0,
+  "Same day after appointment": 60,
   "1 days after appointment": 1440,
   "2 days after appointment": 2880,
   "15 minutes after missed": 15,
@@ -49,15 +50,27 @@ const labelToOffset: Record<string, number> = {
 export function transformReminderPayloadWithOffset(
   data: RawReminderData
 ): TransformedReminderData {
+  const reminderTypeMap: Record<string, ReminderType> = {
+    upcoming: ReminderType.REMINDER,
+    follow_up: ReminderType.FOLLOW_UP,
+    cancellation: ReminderType.CANCELLATION,
+    missed: ReminderType.MISSED,
+    custom: ReminderType.CUSTOM,
+  };
   return {
-    type: data.type,
+    type: reminderTypeMap[data.type.toLowerCase()] ?? ReminderType.FOLLOW_UP,
     title: data.subject,
     description: data.description,
     message: data.message,
 
     services: [data.service],
 
-    notifications: data.sendVia.map((method) => ({ method })),
+    notifications: data.sendVia.map((method) => {
+      const upper = method.toUpperCase();
+      return {
+        method: upper === "PUSH NOTIFICATION" ? "PUSH" : upper,
+      };
+    }),
 
     reminderOffset: data.when.map((label) => {
       if (label.toLowerCase().includes("schedule")) {
@@ -66,13 +79,13 @@ export function transformReminderPayloadWithOffset(
         date.setHours(hours);
         date.setMinutes(minutes);
         return {
-          sendOffset: null,
+          sendOffset: 10,
           sendBefore: false,
           scheduledAt: date.toISOString(),
         };
       } else {
         return {
-          sendOffset: labelToOffset[label]?.toString() ?? label,
+          sendOffset: labelToOffset[label] ?? (Number(label) || null),
           sendBefore: label.toLowerCase().includes("before"),
           scheduledAt: null,
         };

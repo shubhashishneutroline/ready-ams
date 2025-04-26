@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useFormContext } from "react-hook-form"
-import { FormItem, FormLabel } from "@/components/ui/form"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import InputField from "@/components/custom-form-fields/input-field"
-import { ClockIcon, LucideIcon } from "lucide-react"
-import DatePickerField from "@/components/custom-form-fields/date-field"
+import { useFormContext } from "react-hook-form";
+import { FormItem, FormLabel } from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import InputField from "@/components/custom-form-fields/input-field";
+import { Clock1, Clock12, ClockIcon, LucideIcon } from "lucide-react";
+import DatePickerField from "@/components/custom-form-fields/date-field";
 
 interface RadioScheduleFieldProps {
-  name: string
-  label: string
-  dateFieldName: string
-  timeFieldName: string
-  options: string[]
-  icon?: LucideIcon
+  name: string;
+  label: string;
+  dateFieldName: string;
+  timeFieldName: string;
+  options: string[];
+  icon?: LucideIcon;
 }
 
 const AnnouncementRadioScheduleField = ({
@@ -24,7 +24,7 @@ const AnnouncementRadioScheduleField = ({
   options,
   icon: Icon,
 }: RadioScheduleFieldProps) => {
-  const { watch, setValue } = useFormContext()
+  const { watch, setValue } = useFormContext();
 
   return (
     <FormItem className="space-y-1">
@@ -58,14 +58,14 @@ const AnnouncementRadioScheduleField = ({
             label="Time"
             type="time"
             className="w-[120px] h-[32px]"
-            icon={<ClockIcon className="size-4" />}
+            icon={Clock12}
             value={watch(timeFieldName)}
             onChange={(e) => setValue(timeFieldName, e.target.value)}
           />
         </div>
       )}
     </FormItem>
-  )
-}
+  );
+};
 
-export default AnnouncementRadioScheduleField
+export default AnnouncementRadioScheduleField;

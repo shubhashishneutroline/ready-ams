@@ -24,6 +24,7 @@ import {
   serviceOption,
   transformReminderPayloadWithOffset,
 } from "@/features/reminder/action/action";
+import { createReminder } from "@/features/reminder/api/api";
 
 const reminderTypes = [
   "Upcoming",
@@ -131,10 +132,12 @@ export default function ReminderForm() {
     setValue("scheduleTime", "");
   }, [selectedType, setValue]);
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     console.log("Reminder submitted:", data);
     const transformedData = transformReminderPayloadWithOffset(data);
     console.log("Transformed data:", transformedData);
+
+    await createReminder(transformedData);
   };
 
   return (

@@ -40,7 +40,7 @@ export interface Notification {
 
 // Interface for Reminder
 export interface Reminder {
-  id: string; // Unique ID for the reminder
+  id?: string; // Unique ID for the reminder
   type: ReminderType; // Type of the reminder (e.g., REMINDER, FOLLOW_UP)
   title: string; // Title of the reminder
   description?: string; // Optional description of the reminder
