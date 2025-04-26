@@ -1,5 +1,6 @@
 import { getServices } from "@/features/service/api/api";
 import { ReminderType } from "../types/types";
+import { getReminder } from "../api/api";
 
 export const serviceOption = await getServices();
 
@@ -93,3 +94,10 @@ export function transformReminderPayloadWithOffset(
     }),
   };
 }
+
+export const fetchRemider = async () => {
+  const reminderData = await getReminder();
+  return reminderData;
+};
+
+

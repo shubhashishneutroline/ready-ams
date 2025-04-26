@@ -51,7 +51,12 @@ const ServicePage = async () => {
     businessId = "";
   }
 
-  return <ServiceForm businessAvailability={businessAvailability} />;
+  return (
+    <ServiceForm
+      businessAvailability={businessAvailability}
+      businessId={businessId}
+    />
+  );
 };
 
 export default ServicePage;

@@ -4,6 +4,7 @@ import { TargetAudience } from "../types/types";
 const schema = z.object({
   title: z.string().min(1),
   message: z.string().min(1),
+  description: z.string().min(1),
   audience: z.string().min(1),
   schedule: z.string().min(1), // e.g. "Immediately" or "Schedule"
   scheduleDate: z.string().optional(), // format: yyyy-mm-dd
@@ -55,6 +56,7 @@ export const transformFormToPayload = (values: any) => {
   return {
     title: values.title,
     message: values.message,
+    description: values.description,
     audience: audienceMap[values.targetAudience],
     isImmediate,
     scheduledAt,

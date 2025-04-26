@@ -129,7 +129,7 @@ export default function ServiceForm({
             })
           ),
         })),
-        businessId: businessId,
+        businessDetailId: businessId,
       };
       console.log(serviceData, "servicedata inside onSubmit");
       await createService(serviceData);

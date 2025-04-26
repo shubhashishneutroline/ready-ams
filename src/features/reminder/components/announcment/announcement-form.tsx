@@ -32,6 +32,7 @@ const schema = z
   .object({
     title: z.string().min(1, "Title is required"),
     message: z.string().min(1, "Message is required"),
+    description: z.string().min(1, "Description is required"),
     targetAudience: z.string().min(1, "Target audience selection is required"),
     schedule: z.string().min(1, "Schedule option is required"),
     scheduleDate: z.date().optional(),
@@ -65,6 +66,7 @@ export default function AnnouncementForm() {
     defaultValues: {
       title: "",
       message: "",
+      description: "",
       targetAudience: "All",
       schedule: "Immediately",
       scheduleDate: new Date(),
@@ -93,6 +95,12 @@ export default function AnnouncementForm() {
             label="Title"
             placeholder="Enter Service Name"
             icon={PenLine}
+          />
+          {/* Description Field */}
+          <TextAreaField
+            name="description"
+            label="Description"
+            placeholder="Enter description"
           />
 
           {/* Message */}

@@ -22,32 +22,26 @@ import { DataTableColumnHeader } from "@/components/shared/table/data-table-colu
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { getServices } from "@/features/service/api/api";
-import { useEffect, useState } from "react";
+
 import { deleteAppointment } from "@/features/appointment/api/api";
 
-// Define the type for a payment
-export type Payment = {
-  id: string;
-  amount: number;
-  status: "pending" | "processing" | "success" | "failed";
-  email: string;
-};
-
 // Service cell component to handle async data fetching
-const ServiceCell = ({ serviceId }: { serviceId: string }) => {
-  const [serviceName, setServiceName] = useState<string>("Loading...");
+// const ServiceCell = ({ serviceId }: { serviceId: string }) => {
+//   const [serviceName, setServiceName] = useState<string>("Loading...");
 
-  useEffect(() => {
-    const fetchService = async () => {
-      const services = await getServices();
-      const service = services?.find((s: any) => s.id === serviceId);
-      setServiceName(service?.title || "N/A");
-    };
-    fetchService();
-  }, [serviceId]);
+//   useEffect(() => {
+//     const fetchService = async () => {
+//       const services = await getServices();
+// const service = services?.find((s: any) => s.id === serviceId);
+// setServiceName(service?.title || "N/A");
+//     };
+//     fetchService();
+//   }, [serviceId]);
 
-  return <div>{serviceName}</div>;
-};
+//   return <div>{serviceName}</div>;
+// };
+
+const serviceData = await getServices();
 
 // Define columns for the payment table
 export const columns: ColumnDef<any>[] = [
@@ -104,7 +98,10 @@ export const columns: ColumnDef<any>[] = [
       <DataTableColumnHeader column={column} title="Service" />
     ),
     cell: ({ row }) => {
-      return <ServiceCell serviceId={row.original.serviceId} />;
+      const selectedService = serviceData?.find(
+        (s: any) => s.id === row.original.serviceId
+      );
+      return <div>{selectedService?.title || "N/A"}</div>;
     },
   },
 

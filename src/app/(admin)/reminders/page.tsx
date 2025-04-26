@@ -1,36 +1,21 @@
-"use client"
-import { useState } from "react"
-import Heading from "@/components/admin/heading"
-import { CalendarDays } from "lucide-react"
-import Breadcrumbs from "@/components/shared/bread-crumb"
-import PageTabs from "@/features/business-detail/components/page-tabs"
-import { Card } from "@/components/ui/card"
-import ReminderForm from "@/components/custom-form-fields/reminder/reminder-form"
-import AnnouncementForm from "@/features/reminder/components/announcment/announcement-form"
+import { getAnnouncement } from "@/features/announcement-offer/api/api";
 
-const ReminderPage = () => {
-  const [activeTab, setActiveTab] = useState("Reminder")
+import ReminderTabsPage from "@/features/reminder/components/reminder/reminder-page";
+
+import { getReminder } from "@/features/reminder/api/api";
+
+const ReminderPage = async () => {
+  const ReminderData = await getReminder();
+  const AnnouncementData = await getAnnouncement();
 
   return (
     <main className="h-full flex flex-col">
-      <Breadcrumbs />
-      <div>
-        <Heading
-          title="Business Settings"
-          description="Manage and Customize your business"
-          icon={<CalendarDays />}
-        />
-      </div>
-      <Card className="h-full overflow-y-auto p-4 md:p-6">
-        <PageTabs
-          isReminder
-          activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab)}
-        />
-        {activeTab === "Reminder" ? <ReminderForm /> : <AnnouncementForm />}
-      </Card>
+      <ReminderTabsPage
+        reminderData={ReminderData}
+        announcementData={AnnouncementData}
+      />
     </main>
-  )
-}
+  );
+};
 
-export default ReminderPage
+export default ReminderPage;

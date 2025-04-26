@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 import { DataTableColumnToggle } from "@/components/shared/table/data-table-toggle-column";
-import TableSearch from "../../../../../components/shared/table/table-search";
+import TableSearch from "@/components/shared/table/table-search";
 import { DataTablePagination } from "@/components/shared/table/data-table-pagination";
 
 interface DataTableProps<TData, TValue> {
@@ -63,7 +63,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center">
-        <TableSearch table={table} name="customerName" />
+        <TableSearch table={table} name="title" />
 
         <DataTableColumnToggle table={table} />
       </div>
