@@ -1,6 +1,6 @@
 // src/features/service/schemas/schema.ts
-import { z } from "zod";
-import { Status, WeekDays } from "../types/types";
+import { z } from "zod"
+import { Status, WeekDays } from "../types/types"
 
 export const serviceSchema = z.object({
   id: z.string().optional(),
@@ -40,4 +40,4 @@ export const serviceSchema = z.object({
     )
     .optional(),
   businessDetailId: z.string().min(1, "Business ID is required"),
-});
+})

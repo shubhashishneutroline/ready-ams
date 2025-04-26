@@ -1,32 +1,32 @@
-"use client";
+"use client"
 
-import { useForm, FormProvider } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import InputField from "@/components/custom-form-fields/input-field";
-import TextAreaField from "@/components/custom-form-fields/textarea-field";
-import ImageUploadField from "@/components/custom-form-fields/image-upload";
-import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs";
-import ServiceDaySelector from "@/components/custom-form-fields/serivce/service-day-selector";
-import ServiceHoursSelector from "@/components/custom-form-fields/serivce/service-hours-selector";
-import ToggleSwitch from "@/components/custom-form-fields/toggle-switch";
-import DurationSelect from "@/components/custom-form-fields/duration-select";
+import { useForm, FormProvider } from "react-hook-form"
+import { Button } from "@/components/ui/button"
+import InputField from "@/components/custom-form-fields/input-field"
+import TextAreaField from "@/components/custom-form-fields/textarea-field"
+import ImageUploadField from "@/components/custom-form-fields/image-upload"
+import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs"
+import ServiceDaySelector from "@/components/custom-form-fields/serivce/service-day-selector"
+import ServiceHoursSelector from "@/components/custom-form-fields/serivce/service-hours-selector"
+import ToggleSwitch from "@/components/custom-form-fields/toggle-switch"
+import DurationSelect from "@/components/custom-form-fields/duration-select"
 import {
   CalendarClock,
   ImageUp,
   ScrollText,
   UserRoundCog,
   Info,
-} from "lucide-react";
-import { toast, Toaster } from "sonner";
-import { toDate } from "@/lib/lib";
-import { createService } from "@/features/service/api/api";
+} from "lucide-react"
+import { toast, Toaster } from "sonner"
+import { toDate } from "@/lib/lib"
+import { createService } from "@/features/service/api/api"
 
 // Business availability data
-export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
+export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
 export type BusinessAvailability = {
-  breaks: Record<WeekDay, [string, string][]>;
-  holidays: WeekDay[];
-};
+  breaks: Record<WeekDay, [string, string][]>
+  holidays: WeekDay[]
+}
 
 export const toFullDay = (day: string): string => {
   const map: Record<string, string> = {
@@ -37,10 +37,10 @@ export const toFullDay = (day: string): string => {
     Fri: "FRIDAY",
     Sat: "SATURDAY",
     Sun: "SUNDAY",
-  };
+  }
 
-  return map[day] ?? "MONDAY"; // Fallback to MONDAY just in case
-};
+  return map[day] ?? "MONDAY" // Fallback to MONDAY just in case
+}
 // Default business availability (for testing, can be overridden by prop)
 const defaultBusinessAvailability: BusinessAvailability = {
   breaks: {
@@ -57,28 +57,28 @@ const defaultBusinessAvailability: BusinessAvailability = {
     Sun: [],
   },
   holidays: ["Sat", "Sun"],
-};
+}
 
 /* Format availability settings note */
 const formatAvailabilityNote = () => {
-  return "Holidays and break times are set in Business Availability. Update in Business Settings > Business Availability.";
-};
+  return "Holidays and break times are set in Business Availability. Update in Business Settings > Business Availability."
+}
 
 interface Props {
-  businessAvailability?: BusinessAvailability;
-  businessId?: string;
+  businessAvailability?: BusinessAvailability
+  businessId?: string
 }
 
 export default function ServiceForm({
   businessAvailability = defaultBusinessAvailability,
   businessId,
 }: Props) {
-  const days: WeekDay[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const days: WeekDay[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
   // Dynamically set default serviceDays to exclude holidays
   const defaultServiceDays = days.filter(
     (day) => !businessAvailability.holidays.includes(day)
-  );
+  )
 
   // Dynamically set default serviceHours, empty for holidays
   const defaultServiceHours = days.reduce(
@@ -89,7 +89,7 @@ export default function ServiceForm({
         : [["09:00 AM", "05:00 PM"]],
     }),
     {} as Record<WeekDay, [string, string][]>
-  );
+  )
 
   const form = useForm({
     defaultValues: {
@@ -102,17 +102,17 @@ export default function ServiceForm({
       isAvailable: true,
       duration: "",
     },
-  });
+  })
 
   const onSubmit = async (data: {
-    serviceName: string;
-    description: string;
-    image: File | null;
-    availabilityMode: string;
-    serviceDays: WeekDay[];
-    serviceHours: Record<WeekDay, [string, string][]>;
-    isAvailable: boolean;
-    duration: string;
+    serviceName: string
+    description: string
+    image: File | null
+    availabilityMode: string
+    serviceDays: WeekDay[]
+    serviceHours: Record<WeekDay, [string, string][]>
+    isAvailable: boolean
+    duration: string
   }) => {
     try {
       const serviceData = {
@@ -130,16 +130,16 @@ export default function ServiceForm({
           ),
         })),
         businessDetailId: businessId,
-      };
-      console.log(serviceData, "servicedata inside onSubmit");
-      await createService(serviceData);
-      toast.success("Service created successfully");
-      form.reset();
+      }
+      console.log(serviceData, "servicedata inside onSubmit")
+      await createService(serviceData)
+      toast.success("Service created successfully")
+      form.reset()
     } catch (error) {
-      toast.error("Failed to create service");
-      console.error("Error creating service:", error);
+      toast.error("Failed to create service")
+      console.error("Error creating service:", error)
     }
-  };
+  }
 
   return (
     <FormProvider {...form}>
@@ -187,7 +187,7 @@ export default function ServiceForm({
         </div>
       </form>
     </FormProvider>
-  );
+  )
 }
 
 // "use client";
