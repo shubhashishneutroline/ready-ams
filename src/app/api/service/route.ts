@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
             },
           })),
         },
-        // businessDetailId: parsedData.businessDetailId,
+        businessDetailId: parsedData.businessDetailId,
       },
     });
 

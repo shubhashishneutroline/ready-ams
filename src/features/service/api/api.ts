@@ -21,8 +21,6 @@ export interface Service {
 async function getServices(): Promise<Service[]> {
   try {
     const { data } = await api.get("/api/service");
-    console.log(data, "data in get service give the interface of this data");
-
     return data;
   } catch (error) {
     console.error("Error fetching services:", error);

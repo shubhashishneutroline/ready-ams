@@ -2,7 +2,7 @@ import { BusinessAvailability } from "@/features/business-detail/types/types";
 import { Holiday } from "@/features/business-detail/types/types";
 
 export interface SupportBusinessDetail {
-    id: string;
+  id: string;
   supportBusinessName: string;
   supportEmail: string;
   supportPhone: string;

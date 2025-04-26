@@ -26,6 +26,7 @@ import {
 import FileUploadField from "@/components/custom-form-fields/image-upload";
 import { getBusinesses } from "../api/api";
 import { useEffect, useState } from "react";
+import { business } from "../action/action";
 
 const industryOptions = [
   { label: "Salon & Spa", value: "Salon & Spa" },
@@ -80,12 +81,31 @@ const BusinessDetailForm = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [addressLength, setaddressLength] = useState(0);
 
+  // Inside your useEffect where you fetch data
   useEffect(() => {
-    const fetchBusinessDetails = async () => {
+    const fetchBusinessDetails = () => {
       try {
-        const business = await getBusinesses();
-        const dataToEdit = business[0];
-        const formData = {
+        const data = business;
+        const dataToEdit = data[0];
+        console.log(dataToEdit, "dataToEdit");
+
+        // Prepare addresses data - ensure it's an array with at least one item
+        const addresses =
+          dataToEdit.addresses && dataToEdit.addresses.length > 0
+            ? dataToEdit.addresses
+            : [
+                {
+                  city: "",
+                  street: "",
+                  state: "",
+                  zipCode: "",
+                  country: "",
+                  googleMap: "",
+                },
+              ];
+
+        // Reset the form with all data, including addresses
+        form.reset({
           businessName: dataToEdit.name || "",
           industry: dataToEdit.industry || "",
           phone: dataToEdit.phone || "",
@@ -95,31 +115,28 @@ const BusinessDetailForm = () => {
           taxId: dataToEdit.taxId || null,
           logo: dataToEdit.logo || null,
           visibility: dataToEdit.status || "",
-          addresses:
-            dataToEdit.addresses?.length > 0
-              ? dataToEdit.addresses
-              : [
-                  {
-                    city: "",
-                    street: "",
-                    state: "",
-                    zipCode: "",
-                    country: "",
-                    googleMap: "",
-                  },
-                ],
-        };
-        form.reset(formData);
+          addresses: addresses.map((address: any) => ({
+            country: address.country || "",
+            city: address.city || "",
+            street: address.street || "",
+            state: address.state || "",
+            zipCode: address.zipCode || "",
+            googleMap: address.googleMap || "",
+          })),
+        });
+
+        // Optional: Update some state to track number of addresses
+        setaddressLength(addresses.length);
       } catch (error) {
         console.error("Error fetching data:", error);
-        // toast.error("Failed to load appointment data");
+        // toast.error("Failed to load business data");
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchBusinessDetails();
   }, []);
-
   const form = useForm({
     defaultValues: {
       businessName: "",
@@ -211,8 +228,8 @@ const BusinessDetailForm = () => {
         </div>
 
         {/* Business Address */}
-        <div className="space-y-4">
-          {/* <h3 className="text-lg font-semibold">Business Address</h3>
+        {/* <div className="space-y-4"> */}
+        {/* <h3 className="text-lg font-semibold">Business Address</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
               name="city"
@@ -251,46 +268,56 @@ const BusinessDetailForm = () => {
               placeholder="Enter google map url"
               icon={Map}
             /> */}
-          {fields.map((field, index) => {
-            console.log(field, "fields");
-            return (
-              <div
-                key={field.id}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-              >
+        {/* </div> */}
+
+        {/* Business Address */}
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Business Address</h3>
+          </div>
+
+          {fields.map((field, index) => (
+            <div key={field.id} className="border p-4 rounded-md relative">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
                   name={`addresses[${index}].city`}
                   label="City"
                   placeholder="Enter city"
+                  icon={MapPinHouse}
                 />
                 <InputField
                   name={`addresses[${index}].street`}
                   label="Street"
                   placeholder="Enter street"
+                  icon={LocateFixed}
                 />
                 <InputField
                   name={`addresses[${index}].state`}
                   label="State"
                   placeholder="Enter state"
+                  icon={MapPinned}
                 />
                 <InputField
                   name={`addresses[${index}].zipCode`}
                   label="ZIP Code"
                   placeholder="Enter ZIP code"
+                  icon={Pin}
                 />
                 <InputField
                   name={`addresses[${index}].country`}
                   label="Country"
                   placeholder="Enter country"
+                  icon={MapPin}
                 />
                 <InputField
                   name={`addresses[${index}].googleMap`}
                   label="Google Map"
                   placeholder="Google Map URL"
+                  icon={Map}
                 />
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
         {/* Legal & Compliance */}

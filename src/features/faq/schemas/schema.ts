@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod";
 
 // Zod schema for FAQ validation
 export const faqSchema = z.object({
@@ -10,4 +10,4 @@ export const faqSchema = z.object({
   order: z.number().optional(),
   lastUpdatedById: z.string(),
   createdById: z.string(),
-})
+});

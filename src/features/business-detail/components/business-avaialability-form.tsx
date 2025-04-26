@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
-import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,7 +16,7 @@ import BusinessHourSelector from "./business-hour-selector";
 import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs";
 import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field";
 import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field";
-import { BusinessDetail, WeekDays } from "../types/types";
+import { business, transformFormData } from "../action/action";
 
 // Default form values
 const defaultValues = {
@@ -65,7 +65,20 @@ export default function BusinessSettingsForm() {
   const form = useForm({ defaultValues });
   const { watch } = form;
 
-  const onSubmit = (data: any) => console.log("Final Submit:", data);
+  const data = business[0];
+
+  const onSubmit = (formData: any) => {
+    const updatedData = transformFormData(
+      formData,
+      data.businessAvailability,
+      data.id
+    );
+    const updatedBusiness = {
+      ...data,
+      ...updatedData,
+    };
+    console.log(updatedBusiness);
+  };
 
   return (
     <FormProvider {...form}>

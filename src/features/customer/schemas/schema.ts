@@ -1,24 +1,72 @@
-import { z } from "zod"
+import { ZA } from "country-flag-icons/react/3x2";
+import {
+  BusinessAddress,
+  BusinessStatus,
+  HolidayType,
+  WeekDays,
+  AvailabilityType,
+} from "../types/types";
+import { z } from "zod";
 
-// Zod schema for Address
-export const addressSchema = z.object({
-  street: z.string().min(1, "Street is required"),
-  city: z.string().min(1, "City is required"),
-  country: z.string().min(1, "Country is required"),
-  zipCode: z.string().min(1, "Zip code is required"),
-})
-
-// Zod schema for Role (Enum)
-export const roleSchema = z.enum(["USER", "ADMIN", "SUPERADMIN"])
-
-// Zod schema for User
-export const userSchema = z.object({
+/* Zod schema for BusinessTime (Working hours) */
+const businessTimeSchema = z.object({
   id: z.string().optional(),
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
-  name: z.string().min(1, "Name is required"),
-  phone: z.string().optional(),
-  role: roleSchema,
-  isActive: z.boolean().optional().default(true), // Optional, defaults to true
-  address: addressSchema.optional(), // Optional address
-})
+  startTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "Start time must be a valid ISO date string",
+  }),
+  endTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: "End time must be a valid ISO date string",
+  }),
+});
+
+// Zod schema for BusinessAvailability (Business availability)
+const businessAvailabilitySchema = z.object({
+  id: z.string().optional(),
+  weekDay: z.nativeEnum(WeekDays),
+  type: z.nativeEnum(AvailabilityType),
+  timeSlots: z.array(businessTimeSchema),
+});
+
+// Zod schema for Holiday (Holidays for business)
+const holidaySchema = z.object({
+  id: z.string().optional(),
+  holiday: z.nativeEnum(WeekDays),
+  type: z.nativeEnum(HolidayType),
+  date: z
+    .string()
+    .optional()
+    .refine((val) => !val || !isNaN(Date.parse(val)), {
+      message: "Holiday date must be a valid ISO date string if provided",
+    }),
+});
+
+// Zod schema for BusinessAddress
+const businessAddressSchema = z.object({
+  id: z.string().optional(),
+  street: z.string(),
+  city: z.string(),
+  country: z.string(),
+  zipCode: z.string(),
+  googleMap: z.string(),
+});
+
+// Zod schema for BusinessDetail
+export const businessDetailSchema = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  industry: z.string(),
+  email: z.string().email(),
+  phone: z.string(),
+  website: z.string().url().optional(),
+  businessRegistrationNumber: z.string(),
+  status: z.nativeEnum(BusinessStatus),
+  address: z.array(businessAddressSchema),
+  businessAvailability: z.array(businessAvailabilitySchema),
+  holiday: z.array(holidaySchema),
+  supportBusinessDetail: z
+    .object({
+      supportPhone: z.string().optional(),
+      supportEmail: z.string().optional(),
+    })
+    .optional(),
+});

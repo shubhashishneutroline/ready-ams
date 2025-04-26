@@ -20,6 +20,10 @@ import {
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
+import {
+  serviceOption,
+  transformReminderPayloadWithOffset,
+} from "@/features/reminder/action/action";
 
 const reminderTypes = [
   "Upcoming",
@@ -91,6 +95,17 @@ export default function ReminderForm() {
     },
   });
 
+  const serviceUpdatedOptions = serviceOption;
+  console.log(serviceUpdatedOptions, "serviceUpdatedOptions");
+  function mapServicesToSelectOptions(services: any) {
+    return services.map((service: any) => ({
+      value: service.id,
+      label: service.title,
+    }));
+  }
+
+  const serviceOptions = mapServicesToSelectOptions(serviceUpdatedOptions);
+
   const { watch, setValue, handleSubmit } = form;
   const selectedType = watch("type");
 
@@ -99,16 +114,28 @@ export default function ReminderForm() {
       "message",
       defaultMessages[selectedType] || defaultMessages["Default"]
     );
+
+    // Reset 'when' options based on selected type
+    const defaultWhenOptions = whenOptions[selectedType]?.filter(
+      (label: string) => !label.toLowerCase().includes("schedule")
+    );
+
+    if (defaultWhenOptions?.length) {
+      setValue("when", [defaultWhenOptions[0]]);
+    } else {
+      setValue("when", []);
+    }
+
+    // Also reset schedule fields
+    setValue("scheduleDate", "");
+    setValue("scheduleTime", "");
   }, [selectedType, setValue]);
 
   const onSubmit = (data: any) => {
     console.log("Reminder submitted:", data);
+    const transformedData = transformReminderPayloadWithOffset(data);
+    console.log("Transformed data:", transformedData);
   };
-
-  const serviceOptions = [
-    { value: "consultation", label: "Consultation" },
-    { value: "follow-up", label: "Follow-Up" },
-  ];
 
   return (
     <FormProvider {...form}>
@@ -200,7 +227,7 @@ export default function ReminderForm() {
               <ScheduleField
                 name="when"
                 label={
-                  whenOptions[selectedType]?.find((label:any) =>
+                  whenOptions[selectedType]?.find((label: any) =>
                     label.toLowerCase().includes("schedule")
                   ) || "Schedule reminder"
                 }

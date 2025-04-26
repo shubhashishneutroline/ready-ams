@@ -1,23 +1,22 @@
-"use client"
+"use client";
 
-import { useFormContext } from "react-hook-form"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useFormContext } from "react-hook-form";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form"
-import { Label } from "@/components/ui/label"
-import { AudioWaveform, LucideIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { LucideIcon } from "lucide-react";
 
 interface CheckboxGroupFieldProps {
-  name: string
-  label: string
-  options: string[]
-  className?: string
-  icon?: LucideIcon
+  name: string;
+  label: string;
+  options: string[];
+  className?: string;
+  icon?: LucideIcon;
 }
 
 const CheckboxGroupField = ({
@@ -27,19 +26,19 @@ const CheckboxGroupField = ({
   className,
   icon: Icon,
 }: CheckboxGroupFieldProps) => {
-  const { control, setValue, watch } = useFormContext()
+  const { control, setValue, watch } = useFormContext();
 
   const toggleCheckbox = (value: string) => {
-    const current = watch(name)
+    const current = watch(name);
     if (current.includes(value)) {
       setValue(
         name,
         current.filter((v: string) => v !== value)
-      )
+      );
     } else {
-      setValue(name, [...current, value])
+      setValue(name, [...current, value]);
     }
-  }
+  };
 
   return (
     <FormField
@@ -68,7 +67,7 @@ const CheckboxGroupField = ({
         </FormItem>
       )}
     />
-  )
-}
+  );
+};
 
-export default CheckboxGroupField
+export default CheckboxGroupField;
