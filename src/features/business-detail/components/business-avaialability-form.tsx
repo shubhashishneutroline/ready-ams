@@ -77,7 +77,7 @@ export default function BusinessSettingsForm() {
       ...data,
       ...updatedData,
     };
-    console.log(updatedBusiness);
+    console.log(updatedBusiness, "updated business");
   };
 
   return (
