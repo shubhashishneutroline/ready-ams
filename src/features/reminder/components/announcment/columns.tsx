@@ -34,6 +34,7 @@ import {
 import { AnnouncementOrOffer } from "@/features/announcement-offer/types/types";
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
+import { deleteAnnouncement } from "@/features/announcement-offer/api/api";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -51,6 +52,23 @@ import { Badge } from "@/components/ui/badge";
 // 		"updatedAt": "2025-04-21T11:41:44.051Z"
 // 	},
 
+export const formatDateAndTime = (dateString: string) => {
+  const date = new Date(dateString);
+
+  const formattedDate = date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  const formattedTime = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return { formattedDate, formattedTime };
+};
 const serviceData = await getServices();
 
 export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
@@ -164,17 +182,57 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
       );
     },
   },
-  {
-    accessorKey: "isImmediate",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Immediately" />
-    ),
-  },
+  // {
+  //   accessorKey: "isImmediate",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Immediately" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const isImmediate = row.getValue("isImmediate") as boolean;
+
+  //     const getImmediateLabel = (value: boolean) => {
+  //       switch (value) {
+  //         case true:
+  //           return "Active";
+  //         default:
+  //           return "In-Active";
+  //       }
+  //     };
+
+  //     const getImmediateVariant = (value: boolean) => {
+  //       switch (value) {
+  //         case true:
+  //           return "default"; // primary badge
+  //         case false:
+  //           return "destructive"; // red badge
+  //         default:
+  //           return "outline"; // outlined badge
+  //       }
+  //     };
+
+  //     return (
+  //       <Badge variant={getImmediateVariant(isImmediate)}>
+  //         {getImmediateLabel(isImmediate)}
+  //       </Badge>
+  //     );
+  //   },
+  // },
   {
     accessorKey: "scheduledAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Scheduled At" />
     ),
+    cell: ({ row }) => {
+      const scheduledAt = row.getValue("scheduledAt") as string;
+      const { formattedDate, formattedTime } = formatDateAndTime(scheduledAt);
+
+      return (
+        <div className="flex flex-col">
+          <span>{formattedDate}</span>
+          <span className="text-muted-foreground text-xs">{formattedTime}</span>
+        </div>
+      );
+    },
   },
   //   {
   //     accessorKey: "services",
@@ -247,7 +305,7 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                // deleteCustomer(row.original);
+                deleteAnnouncement(row.original);
               }}
               className="flex gap-2 items-center justify-start"
             >

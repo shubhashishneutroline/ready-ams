@@ -82,10 +82,10 @@ async function updateAnnouncement(
 }
 
 // Delete announcement
-async function deleteAnnouncement(id: string) {
+async function deleteAnnouncement(formData: any) {
   try {
     const { data } = await api.delete(`/api/announcement-offer`, {
-      data: { id },
+      data: formData,
     });
     return data;
   } catch (error) {

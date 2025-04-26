@@ -6,8 +6,8 @@ import { Plus } from "lucide-react";
 interface TablePageHeaderProps {
   title: string;
   description: string;
-  newButton: string;
-  handleClick: () => void;
+  newButton?: string;
+  handleClick?: () => void;
 }
 
 export default function TablePageHeader({
@@ -24,16 +24,18 @@ export default function TablePageHeader({
         </div>
         <p className="text-sm md:text-base text-gray-600">{description}</p>
       </div>
-      <div className="flex items-end justify-end">
-        <Button
-          type="button"
-          onClick={handleClick}
-          className=" bg-blue-600 hover:bg-blue-700 rounded-lg h-9.5 flex gap-1 md:gap-2"
-        >
-          <Plus className="h-5 w-5" />
-          {newButton}
-        </Button>
-      </div>
+      {newButton && handleClick && (
+        <div className="flex items-end justify-end">
+          <Button
+            type="button"
+            onClick={handleClick}
+            className="bg-blue-600 hover:bg-blue-700 rounded-lg h-9.5 flex gap-1 md:gap-2"
+          >
+            <Plus className="h-5 w-5" />
+            {newButton}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

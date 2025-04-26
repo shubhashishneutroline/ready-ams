@@ -23,7 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 // import { Customer, deleteCustomer } from "@/features/customer/api/api";
 // import { capitalizeFirstChar } from "@/utils/utils";
 import { getServices } from "@/features/service/api/api";
-import { Reminder } from "../../api/api";
+import { deleteReminder, Reminder } from "../../api/api";
 import { shortenText } from "../../lib/lib";
 import {
   TooltipProvider,
@@ -31,6 +31,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -177,8 +178,18 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => {
-                // deleteCustomer(row.original);
+              onClick={async () => {
+                try {
+                  await deleteReminder(row.original); // wait for delete to complete
+
+                  toast.success("Reminder deleted successfully."); // ✅ success toast
+
+                  setTimeout(() => {
+                    window.location.reload(); // 🔄 reload after short delay
+                  }, 1000); // 1 second delay to let user see the toast
+                } catch (error) {
+                  toast.error("Failed to delete reminder."); // ❌ error toast
+                }
               }}
               className="flex gap-2 items-center justify-start"
             >

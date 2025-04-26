@@ -31,5 +31,14 @@ async function createTicket(ticketData: SupportTicket) {
     throw error;
   }
 }
+async function getTicketById(id: string) {
+  try {
+    const { data } = await api.get("/api/ticket", { params: { id } });
+    return data;
+  } catch (error) {
+    console.error("Error creating ticket:", error);
+    throw error;
+  }
+}
 
-export { createTicket };
+export { createTicket, getTicketById };
