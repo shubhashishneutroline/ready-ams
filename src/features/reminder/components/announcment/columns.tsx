@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,8 +6,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import {
   Eye,
   FilePenLine,
@@ -16,25 +16,25 @@ import {
   Trash2,
   ArrowUpDown,
   MoreVertical,
-} from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "lucide-react"
+import { ColumnDef } from "@tanstack/react-table"
+import { Checkbox } from "@/components/ui/checkbox"
 // import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
 // import { Customer, deleteCustomer } from "@/features/customer/api/api";
 // import { capitalizeFirstChar } from "@/utils/utils";
-import { getServices } from "@/features/service/api/api";
-import { Reminder } from "../../api/api";
-import { shortenText } from "../../lib/lib";
+import { getServices } from "@/features/service/api/api"
+import { Reminder } from "../../api/api"
+import { shortenText } from "../../lib/lib"
 import {
   TooltipProvider,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { AnnouncementOrOffer } from "@/features/announcement-offer/types/types";
-import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
-import { Badge } from "@/components/ui/badge";
-import { deleteAnnouncement } from "@/features/announcement-offer/api/api";
+} from "@/components/ui/tooltip"
+import { AnnouncementOrOffer } from "@/features/announcement-offer/types/types"
+import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
+import { Badge } from "@/components/ui/badge"
+import { deleteAnnouncement } from "@/features/announcement-offer/api/api"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -53,23 +53,23 @@ import { deleteAnnouncement } from "@/features/announcement-offer/api/api";
 // 	},
 
 export const formatDateAndTime = (dateString: string) => {
-  const date = new Date(dateString);
+  const date = new Date(dateString)
 
   const formattedDate = date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  });
+  })
 
   const formattedTime = date.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
-  });
+  })
 
-  return { formattedDate, formattedTime };
-};
-const serviceData = await getServices();
+  return { formattedDate, formattedTime }
+}
+const serviceData = await getServices()
 
 export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
   {
@@ -102,8 +102,8 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
     accessorKey: "description",
     header: "Description",
     cell: ({ row }) => {
-      const fullMessage = row.getValue("description") as string;
-      const shortMessage = shortenText(fullMessage);
+      const fullMessage = row.getValue("description") as string
+      const shortMessage = shortenText(fullMessage)
 
       return (
         <TooltipProvider>
@@ -116,7 +116,7 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      );
+      )
     },
   },
 
@@ -124,8 +124,8 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
     accessorKey: "message",
     header: "Message",
     cell: ({ row }) => {
-      const fullMessage = row.getValue("message") as string;
-      const shortMessage = shortenText(fullMessage);
+      const fullMessage = row.getValue("message") as string
+      const shortMessage = shortenText(fullMessage)
 
       return (
         <TooltipProvider>
@@ -138,7 +138,7 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      );
+      )
     },
   },
   {
@@ -147,39 +147,39 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
       <DataTableColumnHeader column={column} title="Audience" />
     ),
     cell: ({ row }) => {
-      const audience = row.getValue("audience") as string;
+      const audience = row.getValue("audience") as string
 
       const getAudienceLabel = (value: string) => {
         switch (value) {
           case "APPOINTED_USERS":
-            return "Appointed";
+            return "Appointed"
           case "CANCELLED_USERS":
-            return "Cancelled";
+            return "Cancelled"
           case "ALL":
-            return "All";
+            return "All"
           default:
-            return "Unknown";
+            return "Unknown"
         }
-      };
+      }
 
       const getAudienceVariant = (value: string) => {
         switch (value) {
           case "APPOINTED_USERS":
-            return "default"; // primary badge
+            return "default" // primary badge
           case "CANCELLED_USERS":
-            return "destructive"; // red badge
+            return "destructive" // red badge
           case "ALL":
-            return "secondary"; // grey badge
+            return "secondary" // grey badge
           default:
-            return "outline"; // outlined badge
+            return "outline" // outlined badge
         }
-      };
+      }
 
       return (
         <Badge variant={getAudienceVariant(audience)}>
           {getAudienceLabel(audience)}
         </Badge>
-      );
+      )
     },
   },
   // {
@@ -223,15 +223,15 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
       <DataTableColumnHeader column={column} title="Scheduled At" />
     ),
     cell: ({ row }) => {
-      const scheduledAt = row.getValue("scheduledAt") as string;
-      const { formattedDate, formattedTime } = formatDateAndTime(scheduledAt);
+      const scheduledAt = row.getValue("scheduledAt") as string
+      const { formattedDate, formattedTime } = formatDateAndTime(scheduledAt)
 
       return (
         <div className="flex flex-col">
           <span>{formattedDate}</span>
           <span className="text-muted-foreground text-xs">{formattedTime}</span>
         </div>
-      );
+      )
     },
   },
   //   {
@@ -274,8 +274,8 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
     id: "actions",
 
     cell: ({ row }) => {
-      const payment = row.original;
-      const router = useRouter();
+      const payment = row.original
+      const router = useRouter()
 
       return (
         <DropdownMenu>
@@ -291,21 +291,18 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
               <Settings className="h-4 w-4" />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => router.push(`/customer/view/${row.original.id}`)}
-              className="flex gap-2 items-center justify-start"
-            >
+            <DropdownMenuItem className="flex gap-2 items-center justify-start">
               <Eye className="h-4 w-4 text-blue-400 " /> View
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => router.push(`/customer/edit/${row.original.id}`)}
+              onClick={() => router.push(`/reminders/edit/${row.original.id}`)}
               className="flex gap-2 items-center justify-start"
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                deleteAnnouncement(row.original);
+                deleteAnnouncement(row.original)
               }}
               className="flex gap-2 items-center justify-start"
             >
@@ -313,7 +310,7 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      );
+      )
     },
   },
-];
+]

@@ -7,6 +7,11 @@ async function getReminderById(id: string) {
     where: {
       id,
     },
+    include: {
+      services: true,
+      notifications: true,
+      reminderOffset: true,
+    },
   })
 }
 

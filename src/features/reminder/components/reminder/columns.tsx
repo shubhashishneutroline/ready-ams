@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,8 +6,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import {
   Eye,
   FilePenLine,
@@ -16,27 +16,27 @@ import {
   Trash2,
   ArrowUpDown,
   MoreVertical,
-} from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "lucide-react"
+import { ColumnDef } from "@tanstack/react-table"
+import { Checkbox } from "@/components/ui/checkbox"
 // import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
 // import { Customer, deleteCustomer } from "@/features/customer/api/api";
 // import { capitalizeFirstChar } from "@/utils/utils";
-import { getServices } from "@/features/service/api/api";
-import { deleteReminder, Reminder } from "../../api/api";
-import { shortenText } from "../../lib/lib";
+import { getServices } from "@/features/service/api/api"
+import { deleteReminder, Reminder } from "../../api/api"
+import { shortenText } from "../../lib/lib"
 import {
   TooltipProvider,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { toast } from "sonner";
+} from "@/components/ui/tooltip"
+import { toast } from "sonner"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 
-const serviceData = await getServices();
+const serviceData = await getServices()
 
 export const reminderColumns: ColumnDef<Reminder>[] = [
   {
@@ -69,8 +69,8 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
     accessorKey: "description",
     header: "Description",
     cell: ({ row }) => {
-      const fullMessage = row.getValue("description") as string;
-      const shortMessage = shortenText(fullMessage);
+      const fullMessage = row.getValue("description") as string
+      const shortMessage = shortenText(fullMessage)
 
       return (
         <TooltipProvider>
@@ -83,7 +83,7 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      );
+      )
     },
   },
 
@@ -91,8 +91,8 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
     accessorKey: "message",
     header: "Message",
     cell: ({ row }) => {
-      const fullMessage = row.getValue("message") as string;
-      const shortMessage = shortenText(fullMessage);
+      const fullMessage = row.getValue("message") as string
+      const shortMessage = shortenText(fullMessage)
 
       return (
         <TooltipProvider>
@@ -105,17 +105,17 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      );
+      )
     },
   },
   {
     accessorKey: "services",
     header: "Services",
     cell: ({ row }) => {
-      const services = row.getValue("services") as { title: string }[];
-      const serviceTitles = services.map((s) => s.title).join(", ");
+      const services = row.getValue("services") as { title: string }[]
+      const serviceTitles = services.map((s) => s.title).join(", ")
 
-      const shortServiceTitles = shortenText(serviceTitles);
+      const shortServiceTitles = shortenText(serviceTitles)
 
       return (
         <TooltipProvider>
@@ -128,7 +128,7 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      );
+      )
     },
   },
   //   {
@@ -148,8 +148,8 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
     id: "actions",
 
     cell: ({ row }) => {
-      const payment = row.original;
-      const router = useRouter();
+      const payment = row.original
+      const router = useRouter()
 
       return (
         <DropdownMenu>
@@ -165,14 +165,11 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
               <Settings className="h-4 w-4" />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => router.push(`/customer/view/${row.original.id}`)}
-              className="flex gap-2 items-center justify-start"
-            >
+            <DropdownMenuItem className="flex gap-2 items-center justify-start">
               <Eye className="h-4 w-4 text-blue-400 " /> View
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => router.push(`/customer/edit/${row.original.id}`)}
+              onClick={() => router.push(`/reminders/edit/${row.original.id}`)}
               className="flex gap-2 items-center justify-start"
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
@@ -180,15 +177,15 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
             <DropdownMenuItem
               onClick={async () => {
                 try {
-                  await deleteReminder(row.original); // wait for delete to complete
+                  await deleteReminder(row.original) // wait for delete to complete
 
-                  toast.success("Reminder deleted successfully."); // ✅ success toast
+                  toast.success("Reminder deleted successfully.") // ✅ success toast
 
                   setTimeout(() => {
-                    window.location.reload(); // 🔄 reload after short delay
-                  }, 1000); // 1 second delay to let user see the toast
+                    window.location.reload() // 🔄 reload after short delay
+                  }, 1000) // 1 second delay to let user see the toast
                 } catch (error) {
-                  toast.error("Failed to delete reminder."); // ❌ error toast
+                  toast.error("Failed to delete reminder.") // ❌ error toast
                 }
               }}
               className="flex gap-2 items-center justify-start"
@@ -197,7 +194,7 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      );
+      )
     },
   },
-];
+]

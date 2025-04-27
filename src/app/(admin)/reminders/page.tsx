@@ -1,21 +1,19 @@
-import { getAnnouncement } from "@/features/announcement-offer/api/api";
+import { getAnnouncement } from "@/features/announcement-offer/api/api"
 
-import ReminderTabsPage from "@/features/reminder/components/reminder/reminder-page";
+import ReminderTabsPage from "@/features/reminder/components/reminder/reminder-page"
 
-import { getReminder } from "@/features/reminder/api/api";
+import { getReminder } from "@/features/reminder/api/api"
+
+export const ReminderData = await getReminder()
+export const AnnouncementData = await getAnnouncement()
 
 const ReminderPage = async () => {
-  const ReminderData = await getReminder();
-  const AnnouncementData = await getAnnouncement();
-
   return (
-    <main className="h-full flex flex-col">
-      <ReminderTabsPage
-        reminderData={ReminderData}
-        announcementData={AnnouncementData}
-      />
-    </main>
-  );
-};
+    <ReminderTabsPage
+      reminderData={ReminderData}
+      announcementData={AnnouncementData}
+    />
+  )
+}
 
-export default ReminderPage;
+export default ReminderPage

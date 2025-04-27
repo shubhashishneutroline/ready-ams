@@ -51,33 +51,46 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
     if (!existingService) {
       return NextResponse.json({ error: "Service not found" }, { status: 404 })
     }
-
-    // update service
-    const updatedService = await prisma.service.update({
+    // Service Availability TimeSlot update logic
+    const deledtedService = await prisma.service.delete({
       where: { id },
-      data: {
-        title: parsedData.title,
-        description: parsedData.description,
-        estimatedDuration: parsedData.estimatedDuration,
-        status: parsedData.status,
-        businessDetailId: parsedData.businessDetailId,
-        serviceAvailability: {
-          create: parsedData.serviceAvailability?.map((availability) => ({
-            weekDay: availability.weekDay,
-            timeSlots: {
-              create: availability.timeSlots?.map((timeSlot) => ({
-                startTime: timeSlot.startTime,
-                endTime: timeSlot.endTime,
-              })),
-            },
-          })),
-        },
-      },
     })
+    if (deledtedService) {
+      const updatedService = await prisma.service.create({
+        data: {
+          id: id,
+          title: parsedData.title,
+          description: parsedData.description,
+          estimatedDuration: parsedData.estimatedDuration,
+          status: parsedData.status,
+          businessDetailId: parsedData.businessDetailId,
+          serviceAvailability: {
+            create: parsedData.serviceAvailability?.map((availability) => ({
+              weekDay: availability.weekDay,
+              timeSlots: {
+                create: availability.timeSlots?.map((timeSlot) => ({
+                  startTime: timeSlot.startTime,
+                  endTime: timeSlot.endTime,
+                })),
+              },
+            })),
+          },
+        },
+      })
+      if (updatedService) {
+        return NextResponse.json(
+          { message: "Service updated successfully", service: updatedService },
+          { status: 200 }
+        )
+      }
+    }
+    // update service
+
+    // -------------------------_//
 
     return NextResponse.json(
-      { message: "Service updated successfully", service: updatedService },
-      { status: 200 }
+      { message: "Something went wrong" },
+      { status: 400 }
     )
   } catch (error) {
     if (error instanceof ZodError) {

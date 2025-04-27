@@ -54,7 +54,7 @@ async function createService(
   }
 }
 
-async function updateService(
+async function  updateService(
   id: string,
   serviceData: Omit<Service, "id">
 ): Promise<Service> {

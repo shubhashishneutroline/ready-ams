@@ -55,8 +55,14 @@ const priorityLevelOptions = [
   { value: "HIGH", label: "High" },
   { value: "URGENT", label: "Urgent" },
 ];
+const statusOptions = [
+  { value: "OPEN", label: "Open" },
+  { value: "IN_PROGESS", label: "In Progress" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "URGENT", label: "Urgent" },
+]
 
-const AdminSupportForm = () => {
+const CustomerSupportForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
 
@@ -131,10 +137,10 @@ const AdminSupportForm = () => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
           <InputField
-            name="fullName"
-            label="Full Name"
-            placeholder="Admin Name"
-            icon={User}
+            name="subject"
+            label="Subject"
+            placeholder="Enter subject | issue"
+            icon={MinusIcon}
           />
           <InputField
             name="email"
@@ -157,12 +163,7 @@ const AdminSupportForm = () => {
             options={issueCategoryOptions}
             icon={ListIcon}
           />
-          <InputField
-            name="subject"
-            label="Subject"
-            placeholder="Enter subject | issue"
-            icon={MinusIcon}
-          />
+
           <TextAreaField
             name="description"
             label="Description"
@@ -217,7 +218,7 @@ const AdminSupportForm = () => {
         </Button>
       </form>
     </FormProvider>
-  );
+  )
 };
 
-export default AdminSupportForm;
+export default CustomerSupportForm

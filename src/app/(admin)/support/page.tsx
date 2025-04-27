@@ -1,26 +1,27 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import PageTabs from "@/features/business-detail/components/page-tabs";
-import { Card } from "@/components/ui/card";
-import ContactInformationForm from "@/features/help-support/components/contact-info";
-import FAQSection from "@/features/help-support/components/faq";
-import AdminSupportForm from "@/features/help-support/components/admin-support";
-import Breadcrumbs from "@/components/shared/bread-crumb";
-import Heading from "@/components/admin/heading";
-import { UserCog } from "lucide-react";
-import CustomerTickerPage from "@/features/help-support/components/customer-ticket-page";
+import { useState } from "react"
+import PageTabs from "@/features/business-detail/components/page-tabs"
+import { Card } from "@/components/ui/card"
+import ContactInformationForm from "@/features/help-support/components/contact-info"
+import FAQSection from "@/features/help-support/components/faq"
+import AdminSupportForm from "@/features/help-support/components/admin-support"
+import Breadcrumbs from "@/components/shared/bread-crumb"
+import Heading from "@/components/admin/heading"
+import { UserCog } from "lucide-react"
+import CustomerTickerPage from "@/features/help-support/components/customer-ticket-page"
+import CustomerTicketPage from "@/features/help-support/components/customer-ticket-page"
 const SupportPage = () => {
-  const [activeTab, setActiveTab] = useState("Contact Information");
-  const [mActiveTab, setMActiveTab] = useState("Contact");
+  const [activeTab, setActiveTab] = useState("Contact Information")
+  const [mActiveTab, setMActiveTab] = useState("Contact")
 
   const tabs = [
     "Contact Information",
     "Frequently Asked Questions (FAQs)",
     "Customer Support",
     "Admin Support",
-  ];
-  const mTabs = ["Contact", "FAQs", "Issues", "Support"];
+  ]
+  const mTabs = ["Contact", "FAQs", "Issues", "Support"]
 
   return (
     <div>
@@ -51,14 +52,14 @@ const SupportPage = () => {
         {(activeTab === "Frequently Asked Questions (FAQs)" ||
           activeTab === "FAQs") && <FAQSection />}
         {(activeTab === "Customer Support" || activeTab === "Issues") && (
-          <CustomerTickerPage />
+          <CustomerTicketPage />
         )}
         {(activeTab === "Admin Support" || activeTab === "Support") && (
           <AdminSupportForm />
         )}
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default SupportPage;
+export default SupportPage

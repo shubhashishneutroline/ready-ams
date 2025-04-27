@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   DropdownMenu,
@@ -7,21 +7,20 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import {
   Eye,
   FilePenLine,
   Trash2,
   Settings,
   MoreHorizontal,
-} from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { deleteTicket } from "@/features/help-support/api/api";
+} from "lucide-react"
+import { ColumnDef } from "@tanstack/react-table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
+import { useRouter } from "next/navigation"
+import { format } from "date-fns"
 
 // Service cell component to handle async data fetching
 // const ServiceCell = ({ serviceId }: { serviceId: string }) => {
@@ -42,7 +41,9 @@ import { deleteTicket } from "@/features/help-support/api/api";
 // const serviceData = await getServices();
 
 // Define columns for the payment table
-export const columns: ColumnDef<any>[] = [
+export const ticketColumns = (
+  handleEdit: (ticket: any) => void
+): ColumnDef<any>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -98,26 +99,26 @@ export const columns: ColumnDef<any>[] = [
       <DataTableColumnHeader column={column} title="Created At" />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue("createdAt"));
-      return <div>{format(date, "dd MMMM yyyy")}</div>;
+      const date = new Date(row.getValue("createdAt"))
+      return <div>{format(date, "dd MMMM yyyy")}</div>
     },
   },
-  {
-    accessorKey: "selectedTime",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Time" />
-    ),
-    cell: ({ row }) => {
-      const time = new Date(row.getValue("selectedTime"));
-      return <div>{format(time, "hh:mm a")}</div>;
-    },
-  },
+  // {
+  //   accessorKey: "selectedTime",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Time" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const time = new Date(row.getValue("selectedTime"));
+  //     return <div>{format(time, "hh:mm a")}</div>;
+  //   },
+  // },
 
   {
     id: "actions",
     // Actions dropdown for each row
     cell: ({ row }) => {
-      const router = useRouter();
+      const router = useRouter()
       // Return the actions dropdown menu for each payment row
       return (
         <DropdownMenu>
@@ -144,23 +145,23 @@ export const columns: ColumnDef<any>[] = [
             </DropdownMenuItem>
             {/* Edit payment action */}
             <DropdownMenuItem
-              onClick={() =>
-                router.push(`/appointment/edit/${row.original.id}`)
-              }
+              onClick={() => {
+                handleEdit(row.original) // 🔥 trigger modal here
+              }}
               className="flex gap-2 items-center justify-start"
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
             </DropdownMenuItem>
             {/* Delete payment action */}
             <DropdownMenuItem
-              onClick={() => deleteAppointment(row.original)}
+              //   onClick={() => deleteAppointment(row.original)}
               className="flex gap-2 items-center justify-start"
             >
               <Trash2 className="h-4 w-4 text-red-600" /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      );
+      )
     },
   },
-];
+]
