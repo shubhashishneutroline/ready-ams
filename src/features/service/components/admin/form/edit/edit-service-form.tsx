@@ -20,6 +20,7 @@ import {
 import { toast, Toaster } from "sonner"
 import { timeOptions, toMin } from "@/lib/lib"
 import { updateService } from "@/features/service/api/api"
+import { useRouter } from "next/navigation"
 
 // Define types
 export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
@@ -73,18 +74,22 @@ const formatAvailabilityNote = () => {
 
 export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
   // Derive holidays dynamically
-  const holidays: WeekDay[] = serviceDetail.BusinessDetail.holiday.map((h) => {
-    const dayMap: Record<string, WeekDay> = {
-      MONDAY: "Mon",
-      TUESDAY: "Tue",
-      WEDNESDAY: "Wed",
-      THURSDAY: "Thu",
-      FRIDAY: "Fri",
-      SATURDAY: "Sat",
-      SUNDAY: "Sun",
+  const holidays: WeekDay[] = serviceDetail.BusinessDetail.holiday.map(
+    (h: any) => {
+      const dayMap: Record<string, WeekDay> = {
+        MONDAY: "Mon",
+        TUESDAY: "Tue",
+        WEDNESDAY: "Wed",
+        THURSDAY: "Thu",
+        FRIDAY: "Fri",
+        SATURDAY: "Sat",
+        SUNDAY: "Sun",
+      }
+      return dayMap[h.holiday]
     }
-    return dayMap[h.holiday]
-  })
+  )
+
+  const router = useRouter()
 
   // Derive breaks dynamically
   const businessBreaks: Record<WeekDay, [string, string][]> = {
@@ -97,7 +102,7 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
     Sun: [],
   }
 
-  serviceDetail.BusinessDetail.businessAvailability.forEach((avail) => {
+  serviceDetail.BusinessDetail.businessAvailability.forEach((avail: any) => {
     const dayMap: Record<string, WeekDay> = {
       MONDAY: "Mon",
       TUESDAY: "Tue",
@@ -110,9 +115,9 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
     const weekDay = dayMap[avail.weekDay]
     if (weekDay) {
       const breaks = avail.timeSlots
-        .filter((slot) => slot.type === "BREAK")
+        .filter((slot: any) => slot.type === "BREAK")
         .map(
-          (slot) =>
+          (slot: any) =>
             [formatTime(slot.startTime), formatTime(slot.endTime)] as [
               string,
               string,
@@ -139,10 +144,10 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
         Sun: "SUNDAY",
       }[day]
       const availability = serviceDetail.serviceAvailability.find(
-        (sa) => sa.weekDay === serviceDay
+        (sa: any) => sa.weekDay === serviceDay
       )
       if (availability) {
-        const timeSlots = availability.timeSlots.map((slot) => {
+        const timeSlots = availability.timeSlots.map((slot: any) => {
           const start = formatTime(slot.startTime)
           const end = formatTime(slot.endTime)
           // Snap to nearest timeOptions entry
@@ -240,6 +245,8 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
       console.log("servicedata inside onSubmit:", serviceData)
       await updateService(serviceDetail.id, serviceData)
       toast.success("Service updated successfully")
+      router.push("/service")
+
       form.reset()
     } catch (error: any) {
       toast.error(
@@ -247,6 +254,10 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
       )
       console.error("Error updating service:", error)
     }
+  }
+
+  const handleBack = () => {
+    router.push("/service")
   }
 
   return (
@@ -287,10 +298,23 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
               <ToggleSwitch name="isAvailable" label="Availability" />
               <DurationSelect name="duration" label="Duration:" />
             </div>
-            <Button type="submit" className="w-full">
-              Save
-            </Button>
           </div>
+        </div>
+        <div className="flex flex-col gap-3 md:flex-row justify-between mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+            onClick={handleBack}
+          >
+            ← Back
+          </Button>
+          <Button
+            type="submit"
+            className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+          >
+            Create Service
+          </Button>
         </div>
       </form>
     </FormProvider>

@@ -1,16 +1,16 @@
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { useRouter } from "next/router";
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
+import { useRouter } from "next/router"
 
 export default function TablePageHeader() {
-  const router = useRouter();
+  const router = useRouter()
   const handleBack = () => {
-    router.push("/appointment/create");
-  };
+    router.push("/appointment/create")
+  }
   return (
-    <div className="flex w-full justify-between">
+    <div className="flex w-full justify-end">
       <div className="flex flex-col">
-        <div className="text-lg md:text-xl lg:text-2xl  font-semibold text-gray-700">
+        <div className="text-md md:text-lg lg:text-xl  font-semibold text-gray-700">
           Appointments
         </div>
         <p className="text-sm md:text-base text-gray-600">
@@ -28,5 +28,5 @@ export default function TablePageHeader() {
         </Button>
       </div>
     </div>
-  );
+  )
 }

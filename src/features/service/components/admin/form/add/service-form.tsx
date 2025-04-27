@@ -20,6 +20,8 @@ import {
 import { toast, Toaster } from "sonner"
 import { toDate } from "@/lib/lib"
 import { createService } from "@/features/service/api/api"
+import { useRouter } from "next/navigation"
+
 
 // Business availability data
 export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
@@ -80,6 +82,8 @@ export default function ServiceForm({
     (day) => !businessAvailability.holidays.includes(day)
   )
 
+  const router = useRouter()
+
   // Dynamically set default serviceHours, empty for holidays
   const defaultServiceHours = days.reduce(
     (acc, day) => ({
@@ -134,11 +138,15 @@ export default function ServiceForm({
       console.log(serviceData, "servicedata inside onSubmit")
       await createService(serviceData)
       toast.success("Service created successfully")
-      form.reset()
+      router.push("/service")
     } catch (error) {
       toast.error("Failed to create service")
       console.error("Error creating service:", error)
     }
+  }
+
+  const handleBack = () => {
+    router.push("/service")
   }
 
   return (
@@ -180,10 +188,23 @@ export default function ServiceForm({
               <ToggleSwitch name="isAvailable" label="Availability" />
               <DurationSelect name="duration" label="Duration:" />
             </div>
-            <Button type="submit" className="w-full">
-              Save
-            </Button>
           </div>
+        </div>
+        <div className="flex flex-col gap-3 md:flex-row justify-between mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+            onClick={handleBack}
+          >
+            ← Back
+          </Button>
+          <Button
+            type="submit"
+            className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+          >
+            Create Service
+          </Button>
         </div>
       </form>
     </FormProvider>

@@ -1,6 +1,7 @@
 import Header from "@/components/admin/header"
 import SidebarDesktop from "@/components/admin/sidebar-desktop"
 import SidebarMobile from "@/components/admin/sidebar-mobile"
+import { Toaster } from "sonner"
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -27,6 +28,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           <Header />
 
           {/* Main Content */}
+          <Toaster position="bottom-right" />
           <div className="flex-1 overflow-y-auto shadow">{children}</div>
         </div>
       </div>

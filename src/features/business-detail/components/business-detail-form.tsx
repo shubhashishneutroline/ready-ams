@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { useForm, FormProvider, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import InputField from "@/components/custom-form-fields/input-field";
-import SelectField from "@/components/custom-form-fields/select-field";
+import { useForm, FormProvider, useFieldArray } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Button } from "@/components/ui/button"
+import InputField from "@/components/custom-form-fields/input-field"
+import SelectField from "@/components/custom-form-fields/select-field"
 import {
   Building2,
   Briefcase,
@@ -22,11 +22,16 @@ import {
   MapPinHouse,
   Pin,
   MapPinned,
-} from "lucide-react";
-import FileUploadField from "@/components/custom-form-fields/image-upload";
-import { getBusinesses } from "../api/api";
-import { useEffect, useState } from "react";
-import { business } from "../action/action";
+} from "lucide-react"
+import FileUploadField from "@/components/custom-form-fields/image-upload"
+import { useEffect, useState } from "react"
+import {
+  business,
+  businessId,
+  transformBusinessData,
+  transformFormData,
+} from "../action/action"
+import { getBusinessById } from "../api/api"
 
 const industryOptions = [
   { label: "Salon & Spa", value: "Salon & Spa" },
@@ -37,14 +42,14 @@ const industryOptions = [
   { label: "Education & Training", value: "Education & Training" },
   { label: "Legal & Consulting", value: "Legal & Consulting" },
   { label: "IT Services", value: "IT Services" },
-];
+]
 
 const visibilityOptions = [
   { label: "Active", value: "ACTIVE" },
   { label: "Inactive", value: "INACTIVE" },
   { label: "Pending", value: "PENDING" },
   { label: "Suspended", value: "SUSPENDED" },
-];
+]
 
 const addressSchema = z.object({
   city: z.string().min(1, "City is required"),
@@ -53,7 +58,7 @@ const addressSchema = z.object({
   zipCode: z.string().min(1, "ZIP code is required"),
   country: z.string().min(1, "Country is required"),
   googleMap: z.string().optional(),
-});
+})
 
 const schema = z.object({
   businessName: z.string().min(1, "Business name is required"),
@@ -63,7 +68,7 @@ const schema = z.object({
   website: z.string().optional(),
   city: z.string().min(1, "City is required"),
   street: z.string().min(1, "Street is required"),
-  state: z.string().min(1, "State is required"),
+  state: z.string().min(1, "State is required").optional(),
   zipCode: z.string().min(1, "ZIP code is required"),
   country: z.string().min(1, "Country is required"),
   googleMap: z.string().optional(),
@@ -73,70 +78,20 @@ const schema = z.object({
   taxId: z.any().optional(),
   logo: z.any().refine((file) => file !== null, "Business logo is required"),
   visibility: z.string().min(1, "Visibility selection is required"),
-  addresses: z.array(addressSchema), // This allows an array of address objects
-});
+  // This allows an array of address objects
+})
 
-const BusinessDetailForm = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [addressLength, setaddressLength] = useState(0);
+interface BusinessDetailFormProps {
+  setActiveTab: (tabName: string) => void
+  setBusinessData: (businessData: any) => void
+}
 
-  // Inside your useEffect where you fetch data
-  useEffect(() => {
-    const fetchBusinessDetails = () => {
-      try {
-        const data = business;
-        const dataToEdit = data[0];
-        console.log(dataToEdit, "dataToEdit");
-
-        // Prepare addresses data - ensure it's an array with at least one item
-        const addresses =
-          dataToEdit.addresses && dataToEdit.addresses.length > 0
-            ? dataToEdit.addresses
-            : [
-                {
-                  city: "",
-                  street: "",
-                  state: "",
-                  zipCode: "",
-                  country: "",
-                  googleMap: "",
-                },
-              ];
-
-        // Reset the form with all data, including addresses
-        form.reset({
-          businessName: dataToEdit.name || "",
-          industry: dataToEdit.industry || "",
-          phone: dataToEdit.phone || "",
-          email: dataToEdit.email || "",
-          website: dataToEdit.website || "",
-          registrationNumber: dataToEdit.businessRegistrationNumber || "",
-          taxId: dataToEdit.taxId || null,
-          logo: dataToEdit.logo || null,
-          visibility: dataToEdit.status || "",
-          addresses: addresses.map((address: any) => ({
-            country: address.country || "",
-            city: address.city || "",
-            street: address.street || "",
-            state: address.state || "",
-            zipCode: address.zipCode || "",
-            googleMap: address.googleMap || "",
-          })),
-        });
-
-        // Optional: Update some state to track number of addresses
-        setaddressLength(addresses.length);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        // toast.error("Failed to load business data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBusinessDetails();
-  }, []);
+const BusinessDetailForm = ({
+  setActiveTab,
+  setBusinessData,
+}: BusinessDetailFormProps) => {
+  const [isLoading, setIsLoading] = useState(true)
+  const [addressLength, setaddressLength] = useState(0)
   const form = useForm({
     defaultValues: {
       businessName: "",
@@ -154,37 +109,85 @@ const BusinessDetailForm = () => {
       taxId: null,
       logo: null,
       visibility: "",
-      addresses: [
-        {
-          city: "",
-          street: "",
-          state: "",
-          zipCode: "",
-          country: "",
-          googleMap: "",
-        },
-      ],
     },
     resolver: zodResolver(schema),
-  });
-  const { control, reset } = form;
+  })
+  const { control, reset } = form
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "addresses",
-  });
+  // Inside your useEffect where you fetch data
+  useEffect(() => {
+    const fetchBusinessDetails = async () => {
+      try {
+        const business = await getBusinessById(businessId)
+        const dataToEdit = business
+
+        // Prepare addresses data - ensure it's an array with at least one item
+        const addresses =
+          dataToEdit?.addresses && dataToEdit?.addresses.length > 0
+            ? dataToEdit.addresses
+            : [
+                {
+                  city: "",
+                  street: "",
+                  state: "",
+                  zipCode: "",
+                  country: "",
+                  googleMap: "",
+                },
+              ]
+
+        // Reset the form with all data, including addresses
+        form.reset({
+          businessName: dataToEdit?.name || "",
+          industry: dataToEdit?.industry || "",
+          phone: dataToEdit?.phone || "",
+          email: dataToEdit?.email || "",
+          website: dataToEdit?.website || "",
+          registrationNumber: dataToEdit?.businessRegistrationNumber || "",
+          taxId: dataToEdit?.taxId || null,
+          logo: dataToEdit?.logo || null,
+          visibility: dataToEdit?.status || "",
+          country: dataToEdit?.address?.[0]?.country || "",
+          city: dataToEdit?.address?.[0]?.city || "",
+          street: dataToEdit?.address?.[0]?.street || "",
+          state: dataToEdit?.address?.[0]?.state || "",
+          zipCode: dataToEdit?.address?.[0]?.zipCode || "",
+          googleMap: dataToEdit?.address?.[0]?.googleMap || "",
+        })
+
+        // Optional: Update some state to track number of addresses
+        setaddressLength(addresses.length)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        // toast.error("Failed to load business data");
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBusinessDetails()
+  }, [])
 
   const onSubmit = (data: any) => {
-    console.log("Business Detail Form submitted:", data);
-  };
+    const updatedData = transformBusinessData(data)
+    const businessUpadtedData = { ...business, ...updatedData }
+    console.log("Business Detail Form submitted:", businessUpadtedData)
+    setBusinessData(businessUpadtedData)
+    setActiveTab("Business Availability")
+  }
 
   const onSaveAndExit = () => {
-    console.log("Save and exit clicked");
-  };
+    console.log("Save and exit clicked")
+  }
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) =>
+          console.log("Form errors", errors)
+        )}
+        className="space-y-8"
+      >
         {/* Business Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Business Information</h3>
@@ -228,8 +231,8 @@ const BusinessDetailForm = () => {
         </div>
 
         {/* Business Address */}
-        {/* <div className="space-y-4"> */}
-        {/* <h3 className="text-lg font-semibold">Business Address</h3>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Business Address</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
               name="city"
@@ -267,57 +270,8 @@ const BusinessDetailForm = () => {
               type="url"
               placeholder="Enter google map url"
               icon={Map}
-            /> */}
-        {/* </div> */}
-
-        {/* Business Address */}
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Business Address</h3>
+            />
           </div>
-
-          {fields.map((field, index) => (
-            <div key={field.id} className="border p-4 rounded-md relative">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputField
-                  name={`addresses[${index}].city`}
-                  label="City"
-                  placeholder="Enter city"
-                  icon={MapPinHouse}
-                />
-                <InputField
-                  name={`addresses[${index}].street`}
-                  label="Street"
-                  placeholder="Enter street"
-                  icon={LocateFixed}
-                />
-                <InputField
-                  name={`addresses[${index}].state`}
-                  label="State"
-                  placeholder="Enter state"
-                  icon={MapPinned}
-                />
-                <InputField
-                  name={`addresses[${index}].zipCode`}
-                  label="ZIP Code"
-                  placeholder="Enter ZIP code"
-                  icon={Pin}
-                />
-                <InputField
-                  name={`addresses[${index}].country`}
-                  label="Country"
-                  placeholder="Enter country"
-                  icon={MapPin}
-                />
-                <InputField
-                  name={`addresses[${index}].googleMap`}
-                  label="Google Map"
-                  placeholder="Google Map URL"
-                  icon={Map}
-                />
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Legal & Compliance */}
@@ -378,7 +332,7 @@ const BusinessDetailForm = () => {
         </div>
       </form>
     </FormProvider>
-  );
-};
+  )
+}
 
-export default BusinessDetailForm;
+export default BusinessDetailForm

@@ -1,22 +1,29 @@
-"use client";
+"use client"
 
-import { useForm, FormProvider, useFormContext } from "react-hook-form";
+import { useForm, FormProvider, useFormContext } from "react-hook-form"
 
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { CalendarDays, History, Hourglass } from "lucide-react";
-import BusinessHourSelector from "./business-hour-selector";
-import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs";
-import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field";
-import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field";
-import { business, transformFormData } from "../action/action";
+} from "@/components/ui/select"
+import { CalendarDays, History, Hourglass } from "lucide-react"
+import BusinessHourSelector from "./business-hour-selector"
+import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs"
+import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field"
+import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field"
+import {
+  business,
+  formatBusinessDetails,
+  transformFormData,
+} from "../action/action"
+import { updateBusiness } from "../api/api"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 // Default form values
 const defaultValues = {
@@ -43,7 +50,7 @@ const defaultValues = {
     Sat: { work: [], break: [] },
     Sun: { work: [], break: [] },
   },
-};
+}
 
 const timeOptions = [
   "08:00 AM",
@@ -59,26 +66,55 @@ const timeOptions = [
   "06:00 PM",
   "07:00 PM",
   "08:00 PM",
-];
+]
 
-export default function BusinessSettingsForm() {
-  const form = useForm({ defaultValues });
-  const { watch } = form;
+interface BusinessSettingFormProps {
+  business: any
+}
 
-  const data = business[0];
+export default function BusinessSettingsForm({
+  business,
+}: BusinessSettingFormProps) {
+  const router = useRouter()
+  const data = business
+  const dataToEdit = formatBusinessDetails(data)
+  const defaultValues = {
+    timeZone: dataToEdit?.timeZone,
+    businessDays: dataToEdit?.businessDays,
+    holidays: dataToEdit.holidays,
+    availabilityMode: dataToEdit.availabilityMode,
+    businessHours: dataToEdit.businessHours,
+  }
 
-  const onSubmit = (formData: any) => {
+  const form = useForm({ defaultValues })
+  const { watch } = form
+
+  const onSubmit = async (formData: any) => {
+    console.log(formData, "From form ")
     const updatedData = transformFormData(
       formData,
       data.businessAvailability,
       data.id
-    );
+    )
+
     const updatedBusiness = {
       ...data,
       ...updatedData,
-    };
-    console.log(updatedBusiness, "updated business");
-  };
+    }
+    console.log(updatedBusiness, "finally updated before submission")
+    try {
+      // Now you pass the actual updated data
+      const response = await updateBusiness(data.id, updatedBusiness)
+
+      // Handle success here, for example:
+      toast.success("Business updated successfully!")
+      router.push("/")
+    } catch (error) {
+      // Handle error here
+      toast.error("Failed to update business.")
+      console.error("Error updating business:", error)
+    }
+  }
 
   return (
     <FormProvider {...form}>
@@ -109,13 +145,13 @@ export default function BusinessSettingsForm() {
         </div>
       </form>
     </FormProvider>
-  );
+  )
 }
 
 // Time Zone Selector
 const TimeZoneField = ({ name }: { name: string }) => {
-  const { watch, setValue } = useFormContext();
-  const value = watch(name);
+  const { watch, setValue } = useFormContext()
+  const value = watch(name)
   return (
     <div className="space-y-1 ">
       <div className="flex gap-2 items-center">
@@ -141,8 +177,8 @@ const TimeZoneField = ({ name }: { name: string }) => {
         </SelectContent>
       </Select>
     </div>
-  );
-};
+  )
+}
 
 // // Business Days Selector
 // const BusinessDaysField = ({ name, holidayFieldName }: any) => {

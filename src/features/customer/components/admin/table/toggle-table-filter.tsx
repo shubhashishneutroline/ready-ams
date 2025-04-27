@@ -14,7 +14,7 @@ export default function ToggleTableTabs({ name }: { name: string }) {
         type="single"
         value={value}
         onValueChange={(v: any) => v && setValue(name, v)}
-        className="gap-6"
+        className="gap-3 md:gap-6  flex flex-wrap "
       >
         <ToggleGroupItem
           value="all"
@@ -47,5 +47,5 @@ export default function ToggleTableTabs({ name }: { name: string }) {
         </ToggleGroupItem>
       </ToggleGroup>
     </div>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 
 interface TablePageHeaderProps {
-  title: string;
-  description: string;
-  newButton?: string;
-  handleClick?: () => void;
+  title: string
+  description: string
+  newButton?: string
+  handleClick?: () => void
 }
 
 export default function TablePageHeader({
@@ -17,9 +17,9 @@ export default function TablePageHeader({
   handleClick,
 }: TablePageHeaderProps) {
   return (
-    <div className="flex w-full justify-between">
+    <div className="flex flex-col md:flex-row flex-1 w-full justify-between gap-2 md:gap-0">
       <div className="flex flex-col">
-        <div className="text-lg md:text-xl lg:text-2xl  font-semibold text-gray-700">
+        <div className="text-md md:text-xl lg:text-2xl  font-semibold text-gray-700">
           {title}
         </div>
         <p className="text-sm md:text-base text-gray-600">{description}</p>
@@ -29,7 +29,7 @@ export default function TablePageHeader({
           <Button
             type="button"
             onClick={handleClick}
-            className="bg-blue-600 hover:bg-blue-700 rounded-lg h-9.5 flex gap-1 md:gap-2"
+            className="bg-blue-600 hover:bg-blue-700 rounded-lg h-8 md:h-9.5 flex gap-1 md:gap-2"
           >
             <Plus className="h-5 w-5" />
             {newButton}
@@ -37,5 +37,5 @@ export default function TablePageHeader({
         </div>
       )}
     </div>
-  );
+  )
 }

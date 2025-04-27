@@ -80,6 +80,8 @@ export function transformReminderPayloadWithOffset(
       }
     }),
 
+
+    // This logic needs to be updated...
     reminderOffset: data.when.map((label) => {
       if (label.toLowerCase().includes("schedule")) {
         const date = new Date(data.scheduleDate)

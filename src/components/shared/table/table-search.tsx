@@ -1,10 +1,10 @@
-import { Input } from "@/components/ui/input";
-import { capitalizeFirstChar } from "@/utils/utils";
-import { Table } from "@tanstack/react-table";
+import { Input } from "@/components/ui/input"
+import { capitalizeFirstChar } from "@/utils/utils"
+import { Table } from "@tanstack/react-table"
 
 export interface DataTableSearchProps<TData> {
-  table: Table<TData>;
-  name: string;
+  table: Table<TData>
+  name: string
 }
 export default function TableSearch<TData>({
   table,
@@ -17,7 +17,7 @@ export default function TableSearch<TData>({
       onChange={(event) =>
         table.getColumn(name)?.setFilterValue(event.target.value)
       }
-      className="max-w-xs sm:max-w-sm rounded-xl"
+      className="max-w-xs sm:max-w-sm rounded-md h-8 md:h-9 text-sm md:text-md"
     />
-  );
+  )
 }

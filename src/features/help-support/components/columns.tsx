@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
+import { capitalizeFirstChar, capitalizeOnlyFirstLetter } from "@/utils/utils"
 
 // Service cell component to handle async data fetching
 // const ServiceCell = ({ serviceId }: { serviceId: string }) => {
@@ -80,18 +81,30 @@ export const ticketColumns = (
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Category" />
     ),
+    cell: ({ row }) => {
+      const category = row.original.category
+      return <div className=" ">{capitalizeOnlyFirstLetter(category)}</div>
+    },
   },
   {
     accessorKey: "priority",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Priority" />
     ),
+    cell: ({ row }) => {
+      const priority = row.original.priority
+      return <div className="">{capitalizeOnlyFirstLetter(priority)}</div>
+    },
   },
   {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
+    cell: ({ row }) => {
+      const status = row.original.status
+      return <div className="">{capitalizeOnlyFirstLetter(status)}</div>
+    },
   },
   {
     accessorKey: "createdAt",

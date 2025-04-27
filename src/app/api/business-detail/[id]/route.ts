@@ -48,60 +48,43 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
     // Log parsed data for debugging
     console.log("Parsed Data:", JSON.stringify(parsedData, null, 2))
 
-    const updatedBusiness = await prisma.businessDetail.update({
+    const business = await getBusinessDetailById(id)
+
+    if (!business) {
+      return NextResponse.json(
+        { error: "Business Detail with id not found" },
+        { status: 404 }
+      )
+    }
+
+    const deletedBusiness = await prisma.businessDetail.delete({
       where: { id },
-      data: {
-        name: parsedData.name,
-        industry: parsedData.industry,
-        email: parsedData.email,
-        phone: parsedData.phone,
-        website: parsedData.website,
-        businessRegistrationNumber: parsedData.businessRegistrationNumber,
-        status: parsedData.status,
+    })
+    if (deletedBusiness) {
+      const updatedBusiness = await prisma.businessDetail.create({
+        data: {
+          id: id,
+          name: parsedData.name,
+          industry: parsedData.industry,
+          email: parsedData.email,
+          phone: parsedData.phone,
+          website: parsedData.website,
+          businessRegistrationNumber: parsedData.businessRegistrationNumber,
+          status: parsedData.status,
 
-        // Handle addresses
-        address: {
-          upsert: parsedData.address.map((addr) => ({
-            where: { id: addr.id || "" }, // Use empty string as fallback if no ID
-            update: {
-              street: addr.street,
-              city: addr.city,
-              country: addr.country,
-              zipCode: addr.zipCode,
-              googleMap: addr.googleMap || "",
-            },
-            create: {
-              street: addr.street,
-              city: addr.city,
-              country: addr.country,
-              zipCode: addr.zipCode,
-              googleMap: addr.googleMap || "",
-            },
-          })),
-        },
-
-        // Handle business availability
-        businessAvailability: {
-          upsert: parsedData.businessAvailability.map((availability) => ({
-            where: { id: availability.id || "" },
-            update: {
-              weekDay: availability.weekDay,
-              type: availability.type,
-              timeSlots: {
-                upsert: availability.timeSlots.map((slot) => ({
-                  where: { id: slot.id || "" },
-                  update: {
-                    startTime: slot.startTime,
-                    endTime: slot.endTime,
-                  },
-                  create: {
-                    startTime: slot.startTime,
-                    endTime: slot.endTime,
-                  },
-                })),
-              },
-            },
-            create: {
+          // Handle addresses
+          address: {
+            create: parsedData.address.map((address) => ({
+              street: address.street,
+              city: address.city,
+              country: address.country,
+              zipCode: address.zipCode,
+              googleMap: address.googleMap || "",
+            })),
+          },
+          // Handle business availability
+          businessAvailability: {
+            create: parsedData.businessAvailability.map((availability) => ({
               weekDay: availability.weekDay,
               type: availability.type,
               timeSlots: {
@@ -110,42 +93,36 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
                   endTime: slot.endTime,
                 })),
               },
-            },
-          })),
-        },
+            })),
+          },
 
-        // Handle holidays
-        holiday: {
-          upsert: parsedData.holiday.map((holiday) => ({
-            where: { id: holiday.id || "" },
-            update: {
+          // Handle holidays
+          holiday: {
+            create: parsedData.holiday.map((holiday) => ({
               holiday: holiday.holiday,
               type: holiday.type,
               date: holiday.date,
-            },
-            create: {
-              holiday: holiday.holiday,
-              type: holiday.type,
-              date: holiday.date,
-            },
-          })),
-        },
-      },
-      include: {
-        address: true,
-        businessAvailability: {
-          include: {
-            timeSlots: true,
+            })),
           },
         },
-        holiday: true,
-      },
-    })
+        include: {
+          address: true,
+          businessAvailability: {
+            include: {
+              timeSlots: true,
+            },
+          },
+          holiday: true,
+        },
+      })
 
-    return NextResponse.json(
-      { message: "Business updated successfully", data: updatedBusiness },
-      { status: 200 }
-    )
+      if (updatedBusiness) {
+        return NextResponse.json(
+          { message: "Business updated successfully", data: updatedBusiness },
+          { status: 200 }
+        )
+      }
+    }
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(

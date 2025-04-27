@@ -1,13 +1,13 @@
-import { getAppointments } from "@/features/appointment/api/api";
-import { columns } from "./column";
-import { DataTable } from "./data-table";
+import { getAppointments } from "@/features/appointment/api/api"
+import { columns } from "./column"
+import { DataTable } from "./data-table"
 
-const data = await getAppointments();
+const data = await getAppointments()
 
 export default function Table() {
   return (
-    <div className="container mx-auto">
+    <div className="">
       <DataTable columns={columns} data={data} />
     </div>
-  );
+  )
 }

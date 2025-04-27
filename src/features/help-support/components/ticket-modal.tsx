@@ -22,6 +22,8 @@ import {
 import { Ticket } from "@/features/ticket/types/types"
 import { DialogTrigger } from "@radix-ui/react-dialog"
 import { updateTicket } from "../api/api"
+import { Toaster, toast } from "sonner"
+import FormHeader from "@/components/admin/form-header"
 
 interface TicketEditModalProps {
   ticket: Ticket | null
@@ -50,115 +52,127 @@ const TicketEditModal: React.FC<TicketEditModalProps> = ({
   }, [ticket])
 
   const handleSave = async () => {
-    const updatedData = {
-      subject: subject,
-      ticketDescription: ticketDescription,
-      category: category,
-      status: status,
-      priority: priority,
-      assignedTo: ticket?.assignedTo ?? "",
-      initiatedById: ticket?.initiatedById ?? "",
-      proofFile: ticket?.proofFiles ?? null,
-    }
+    try {
+      const updatedData = {
+        subject: subject,
+        ticketDescription: ticketDescription,
+        category: category,
+        status: status,
+        priority: priority,
+        assignedTo: ticket?.assignedTo ?? "",
+        initiatedById: ticket?.initiatedById ?? "",
+        proofFile: ticket?.proofFiles ?? null,
+      }
 
-    const updatedTicket = { ...ticket, ...updatedData }
-    console.log(updatedTicket, "updatedTicket")
-    const { submit } = await updateTicket(updatedTicket)
-    onClose() // Close the modal after saving
+      const updatedTicket = { ...ticket, ...updatedData }
+      console.log(updatedTicket, "updatedTicket")
+      const { submit } = await updateTicket(updatedTicket)
+      toast.success("Customer Ticket edited successfully")
+
+      onClose() // Close the modal after saving
+    } catch (error) {
+      console.error("Error creating appointment:", error)
+      toast.error("Failed to create appointment")
+    }
   }
 
   return (
-    <Dialog
-      open={!!ticket}
-      //   onOpenChange={onClose}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Customer Issuse</DialogTitle>
-          <DialogDescription>Edit the customer issue here.</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Subject</Label>
-            <Input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Enter FAQ question"
+    <>
+      <Toaster position="top-center" />
+      <Dialog
+        open={!!ticket}
+        //   onOpenChange={onClose}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <FormHeader
+              title="Enter Appointment Details"
+              description="View and manage your upcoming appointments"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              value={ticketDescription}
-              onChange={(e) => setTicketDescription(e.target.value)}
-              placeholder="Enter FAQ answer"
-            />
-          </div>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Subject</Label>
+              <Input
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Enter FAQ question"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea
+                value={ticketDescription}
+                onChange={(e) => setTicketDescription(e.target.value)}
+                placeholder="Enter FAQ answer"
+              />
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={status}
-                onValueChange={(value) => setStatus(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="OPEN">Open</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="RESOLVED">Resolved</SelectItem>
-                  <SelectItem value="CLOSED">Closed</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select
+                  value={status}
+                  onValueChange={(value) => setStatus(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="OPEN">Open</SelectItem>
+                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                    <SelectItem value="RESOLVED">Resolved</SelectItem>
+                    <SelectItem value="CLOSED">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Priority</Label>
+                <Select
+                  value={priority}
+                  onValueChange={(value) => setPriority(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LOW">Low</SelectItem>
+                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                    <SelectItem value="HIGH">High</SelectItem>
+                    <SelectItem value="URGENT">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select
+                  value={category}
+                  onValueChange={(value) => setCategory(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TECHNICAL">Techincal</SelectItem>
+                    <SelectItem value="BILLING">Billing</SelectItem>
+                    <SelectItem value="ACCOUNT">Account</SelectItem>
+                    <SelectItem value="GENERAL">General</SelectItem>
+                    <SelectItem value="SUPPORT">Support</SelectItem>
+                    <SelectItem value="SECURITY">Security</SelectItem>
+                    <SelectItem value="MAINTENANCE">Maintainance</SelectItem>
+                    <SelectItem value="FEEDBACK">Feedback</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Priority</Label>
-              <Select
-                value={priority}
-                onValueChange={(value) => setPriority(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="LOW">Low</SelectItem>
-                  <SelectItem value="MEDIUM">Medium</SelectItem>
-                  <SelectItem value="HIGH">High</SelectItem>
-                  <SelectItem value="URGENT">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select
-                value={category}
-                onValueChange={(value) => setCategory(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TECHNICAL">Techincal</SelectItem>
-                  <SelectItem value="BILLING">Billing</SelectItem>
-                  <SelectItem value="ACCOUNT">Account</SelectItem>
-                  <SelectItem value="GENERAL">General</SelectItem>
-                  <SelectItem value="SUPPORT">Support</SelectItem>
-                  <SelectItem value="SECURITY">Security</SelectItem>
-                  <SelectItem value="MAINTENANCE">Maintainance</SelectItem>
-                  <SelectItem value="FEEDBACK">Feedback</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
-          <Button className="w-full" onClick={handleSave}>
-            Save
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+            <Button className="w-full" onClick={handleSave}>
+              Save
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 

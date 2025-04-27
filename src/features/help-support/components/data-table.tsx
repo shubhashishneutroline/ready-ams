@@ -21,13 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
+import { Button } from "@/components/ui/button"
 import { useState } from "react"
 
 import { DataTableColumnToggle } from "@/components/shared/table/data-table-toggle-column"
-
+import TableSearch from "@/components/shared/table/table-search"
 import { DataTablePagination } from "@/components/shared/table/data-table-pagination"
-import TableSearch from "./table-search"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -62,13 +61,13 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div className="flex flex-col gap-4 ">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center">
-        <TableSearch table={table} name="name" />
+        <TableSearch table={table} name="subject" />
 
         <DataTableColumnToggle table={table} />
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border ">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

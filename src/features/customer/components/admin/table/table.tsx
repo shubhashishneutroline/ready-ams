@@ -1,13 +1,14 @@
-import { Customer, getCustomers } from "@/features/customer/api/api";
-import { columns } from "./column";
-import { DataTable } from "./data-table";
+import { Customer, getCustomers } from "@/features/customer/api/api"
+import { columns } from "./column"
+import { DataTable } from "./data-table"
+import { customerData } from "@/features/customer/action/action"
 
-export default async function Table() {
-  const data = await getCustomers();
+export default function Table() {
+  const data = customerData
 
   return (
-    <div className="container mx-auto">
+    <div className="">
       <DataTable columns={columns} data={data} />
     </div>
-  );
+  )
 }

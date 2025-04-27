@@ -1,15 +1,16 @@
-"use client";
-import { useState } from "react";
-import Heading from "@/components/admin/heading";
-import { CalendarDays } from "lucide-react";
-import Breadcrumbs from "@/components/shared/bread-crumb";
-import PageTabs from "@/features/business-detail/components/page-tabs";
-import { Card } from "@/components/ui/card";
-import BusinessSettingsForm from "@/features/business-detail/components/business-avaialability-form";
-import BusinessDetailForm from "@/features/business-detail/components/business-detail-form";
+"use client"
+import { useState } from "react"
+import Heading from "@/components/admin/heading"
+import { CalendarDays, Settings } from "lucide-react"
+import Breadcrumbs from "@/components/shared/bread-crumb"
+import PageTabs from "@/features/business-detail/components/page-tabs"
+import { Card } from "@/components/ui/card"
+import BusinessSettingsForm from "@/features/business-detail/components/business-avaialability-form"
+import BusinessDetailForm from "@/features/business-detail/components/business-detail-form"
 
 const BusinessPage = () => {
-  const [activeTab, setActiveTab] = useState("Business Detail");
+  const [activeTab, setActiveTab] = useState("Business Detail")
+  const [businessData, setBusinessData] = useState()
 
   return (
     <main className="h-full flex flex-col">
@@ -18,7 +19,7 @@ const BusinessPage = () => {
         <Heading
           title="Business Settings"
           description="Manage and Customize your business"
-          icon={<CalendarDays />}
+          icon={<Settings />}
         />
       </div>
       <Card className="h-full overflow-x-hidden overflow-y-auto p-4 md:p-6">
@@ -28,14 +29,17 @@ const BusinessPage = () => {
         />
         {activeTab === "Business Detail" ? (
           <>
-            <BusinessDetailForm />
+            <BusinessDetailForm
+              setActiveTab={setActiveTab}
+              setBusinessData={setBusinessData}
+            />
           </>
         ) : (
-          <BusinessSettingsForm />
+          <BusinessSettingsForm business={businessData} />
         )}
       </Card>
     </main>
-  );
-};
+  )
+}
 
-export default BusinessPage;
+export default BusinessPage

@@ -14,7 +14,7 @@ import { announcementColumns } from "../announcment/columns"
 import { DataTable } from "./data-table"
 
 const ReminderTabsPage = ({ reminderData, announcementData }: any) => {
-  const [activeTab, setActiveTab] = useState("Announcement || Offer")
+  const [activeTab, setActiveTab] = useState("Reminder")
   const router = useRouter()
 
   return (

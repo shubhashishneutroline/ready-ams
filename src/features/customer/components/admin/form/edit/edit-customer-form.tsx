@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import InputField from "@/components/custom-form-fields/input-field";
-import SelectField from "@/components/custom-form-fields/select-field";
+import { useEffect, useState } from "react"
+import { useForm, FormProvider } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Button } from "@/components/ui/button"
+import InputField from "@/components/custom-form-fields/input-field"
+import SelectField from "@/components/custom-form-fields/select-field"
 import {
   User,
   Mail,
@@ -16,29 +16,30 @@ import {
   EyeOff,
   ShieldCheck,
   ShieldAlert,
-} from "lucide-react";
-import PhoneField from "@/components/custom-form-fields/phone-field";
+} from "lucide-react"
+import PhoneField from "@/components/custom-form-fields/phone-field"
 import {
   Customer,
   getCoustomersById,
   getCustomers,
   updateCustomer,
-} from "@/features/customer/api/api";
-import { toast, Toaster } from "sonner";
-import { useParams, useRouter } from "next/navigation";
-import ToggleSwitch from "@/components/custom-form-fields/toggle-switch";
+} from "@/features/customer/api/api"
+import { toast, Toaster } from "sonner"
+import { useParams, useRouter } from "next/navigation"
+import ToggleSwitch from "@/components/custom-form-fields/toggle-switch"
+import FormHeader from "@/components/admin/form-header"
 
 type FormData = {
-  fullName: string;
-  email: string;
-  phone: string;
-  role: string;
-  password: string;
-  isActive: boolean;
-};
+  fullName: string
+  email: string
+  phone: string
+  role: string
+  password: string
+  isActive: boolean
+}
 
 interface CustomerFormProps {
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: FormData) => void
 }
 
 // Validation schema for create mode
@@ -49,20 +50,20 @@ const createSchema = z.object({
   role: z.string().min(1, "Role is required"),
   password: z.string().min(1, "Password is required"),
   isActive: z.boolean(),
-});
+})
 
 const roleOptions = [
   { value: "USER", label: "Customer" },
   { value: "ADMIN", label: "Admin" },
   { value: "SUPERADMIN", label: "Super Admin" },
-];
+]
 
 const EditCustomerForm = () => {
-  const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter()
+  const params = useParams()
+  const id = params.id as string
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Initialize form with create schema
   const form = useForm<FormData>({
@@ -75,12 +76,12 @@ const EditCustomerForm = () => {
       password: "",
       isActive: false,
     },
-  });
+  })
   // fetch the cusotmer data
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
-        const customer = await getCoustomersById(id);
+        const customer = await getCoustomersById(id)
 
         const formData = {
           fullName: customer.name,
@@ -89,23 +90,23 @@ const EditCustomerForm = () => {
           role: customer.role,
           password: customer.password,
           isActive: Boolean(customer.isActive),
-        };
-        console.log("Setting form data:", formData);
-        form.reset(formData);
+        }
+        console.log("Setting form data:", formData)
+        form.reset(formData)
       } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load appointment data");
+        console.error("Error fetching data:", error)
+        toast.error("Failed to load appointment data")
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
-    fetchCustomer();
-  }, []);
+    }
+    fetchCustomer()
+  }, [])
 
   // Handle form submission
   const onSubmit = async (formData: FormData) => {
     try {
-      console.log("Form Data:", formData);
+      console.log("Form Data:", formData)
       const customerData: Omit<Customer, "id"> = {
         name: formData.fullName,
         email: formData.email,
@@ -113,31 +114,34 @@ const EditCustomerForm = () => {
         role: formData.role,
         password: formData.password,
         isActive: Boolean(formData.isActive),
-      };
-      console.log("Customer Data to Update:", customerData);
+      }
+      console.log("Customer Data to Update:", customerData)
       if (!id) {
-        throw new Error("Appointment ID is required for updating");
+        throw new Error("Appointment ID is required for updating")
       }
 
-      const response = await updateCustomer(id, customerData);
+      const response = await updateCustomer(id, customerData)
 
       if (response) {
-        toast.success("Customer updated successfully!");
-        router.push("/customer");
+        toast.success("Customer updated successfully!")
+        router.push("/customer")
       }
     } catch (error) {
-      console.error("Error updating customer:", error);
-      toast.error("Failed to update customer");
+      console.error("Error updating customer:", error)
+      toast.error("Failed to update customer")
     }
-  };
+  }
 
   const handleBack = () => {
-    router.push("/customer");
-  };
+    router.push("/customer")
+  }
 
   return (
     <>
-      <Toaster position="top-center" />
+      <FormHeader
+        title="Enter Customer Details"
+        description="View and manage your current customers"
+      />
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -216,7 +220,7 @@ const EditCustomerForm = () => {
         </form>
       </FormProvider>
     </>
-  );
-};
+  )
+}
 
-export default EditCustomerForm;
+export default EditCustomerForm

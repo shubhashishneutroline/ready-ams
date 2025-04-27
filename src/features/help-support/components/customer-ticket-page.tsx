@@ -2,7 +2,6 @@
 import TableFilterTabs from "@/components/shared/table/table-filter-tabs"
 import TablePageHeader from "@/components/shared/table/table-page-header"
 import { announcementColumns } from "@/features/reminder/components/announcment/columns"
-import { DataTable } from "@/features/reminder/components/reminder/data-table"
 
 import React, { useEffect, useState } from "react"
 import { ticketColumns } from "./columns"
@@ -11,6 +10,7 @@ import { fetchTicket } from "../action/action"
 
 import { Ticket } from "@/features/ticket/types/types"
 import TicketEditModal from "./ticket-modal"
+import { DataTable } from "./data-table"
 
 const CustomerTicketPage = () => {
   const [ticketData, setTicketData] = useState<any[]>([]) // initialize with empty array
@@ -35,7 +35,7 @@ const CustomerTicketPage = () => {
   return (
     <div>
       <TablePageHeader
-        title="Customer Tickey"
+        title="Customer Ticket"
         description="Manage and Customize your customer ticket"
       />
       <DataTable columns={ticketColumns(setEditTicket)} data={ticketData} />
