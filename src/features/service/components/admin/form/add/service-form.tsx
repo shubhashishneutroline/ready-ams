@@ -22,7 +22,6 @@ import { toDate } from "@/lib/lib"
 import { createService } from "@/features/service/api/api"
 import { useRouter } from "next/navigation"
 
-
 // Business availability data
 export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
 export type BusinessAvailability = {
@@ -81,6 +80,8 @@ export default function ServiceForm({
   const defaultServiceDays = days.filter(
     (day) => !businessAvailability.holidays.includes(day)
   )
+
+
 
   const router = useRouter()
 

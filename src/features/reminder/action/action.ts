@@ -19,8 +19,9 @@ type RawReminderData = {
   service: string
   sendVia: string[]
   when: string[]
-  scheduleDate: string
-  scheduleTime: string
+  scheduleDay: string
+  scheduleHour: string
+  scheduleMinute: string
 }
 
 type TransformedReminderData = {
@@ -33,7 +34,6 @@ type TransformedReminderData = {
   reminderOffset: {
     sendOffset: string | number | null
     sendBefore: boolean
-    scheduledAt?: string | null
   }[]
 }
 
@@ -80,24 +80,23 @@ export function transformReminderPayloadWithOffset(
       }
     }),
 
-
     // This logic needs to be updated...
     reminderOffset: data.when.map((label) => {
       if (label.toLowerCase().includes("schedule")) {
-        const date = new Date(data.scheduleDate)
-        const [hours, minutes] = data.scheduleTime.split(":").map(Number)
-        date.setHours(hours)
-        date.setMinutes(minutes)
+        const days = Number(data.scheduleDay) || 0
+        const hours = Number(data.scheduleHour) || 0
+        const minutes = Number(data.scheduleMinute) || 0
+
+        const totalMinutes = days * 24 * 60 + hours * 60 + minutes
+
         return {
-          sendOffset: 10,
-          sendBefore: false,
-          scheduledAt: date.toISOString(),
+          sendOffset: totalMinutes,
+          sendBefore: label.toLowerCase().includes("before"),
         }
       } else {
         return {
           sendOffset: labelToOffset[label] ?? (Number(label) || null),
           sendBefore: label.toLowerCase().includes("before"),
-          scheduledAt: null,
         }
       }
     }),

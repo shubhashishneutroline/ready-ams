@@ -18,6 +18,7 @@ import BusinessDaysField from "@/components/custom-form-fields/business-settings
 import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field"
 import {
   business,
+  businessId,
   formatBusinessDetails,
   transformFormData,
 } from "../action/action"
@@ -85,6 +86,7 @@ export default function BusinessSettingsForm({
     availabilityMode: dataToEdit.availabilityMode,
     businessHours: dataToEdit.businessHours,
   }
+  console.log(dataToEdit?.businessHours, "Business Hour")
 
   const form = useForm({ defaultValues })
   const { watch } = form
@@ -104,7 +106,7 @@ export default function BusinessSettingsForm({
     console.log(updatedBusiness, "finally updated before submission")
     try {
       // Now you pass the actual updated data
-      const response = await updateBusiness(data.id, updatedBusiness)
+      const response = await updateBusiness(businessId, updatedBusiness)
 
       // Handle success here, for example:
       toast.success("Business updated successfully!")

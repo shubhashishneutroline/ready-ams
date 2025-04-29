@@ -6,19 +6,35 @@ import { FormControl, FormItem, FormLabel } from "@/components/ui/form"
 import { ClockIcon, CalendarIcon } from "lucide-react"
 import InputField from "@/components/custom-form-fields/input-field"
 import DatePickerField from "../date-field"
+import SelectField from "./select-field"
 
 interface ScheduleFieldProps {
   name: string
   label: string
-  dateFieldName: string
-  timeFieldName: string
+  dayFieldName: string
+  hourFieldName: string
+  minuteFieldName: string
 }
+
+export const dayOptions = Array.from({ length: 30 }, (_, i) => ({
+  label: `${i + 1} day`,
+  value: (i + 1).toString(),
+}))
+export const hourOptions = Array.from({ length: 24 }, (_, i) => ({
+  label: `${i + 1} hrs`,
+  value: (i + 1).toString(),
+}))
+export const minuteOptions = Array.from({ length: 60 }, (_, i) => ({
+  label: `${i + 1} min`,
+  value: (i + 1).toString(),
+}))
 
 const ScheduleField = ({
   name,
   label,
-  dateFieldName,
-  timeFieldName,
+  dayFieldName,
+  hourFieldName,
+  minuteFieldName,
 }: ScheduleFieldProps) => {
   const { watch, setValue } = useFormContext()
 
@@ -49,20 +65,28 @@ const ScheduleField = ({
         </div>
         {watch(name).includes(label) && (
           <div className="flex flex-wrap  gap-4     items-center">
-            <DatePickerField
-              name={dateFieldName}
-              label="Date"
-              placeholder="Select date"
+            <SelectField
+              name={dayFieldName}
+              label="Day"
+              placeholder="Select Day"
               icon={CalendarIcon}
+              options={dayOptions}
             />
-            <InputField
-              name={timeFieldName}
-              label="Time"
-              type="time"
-              className="w-[100px] h-[32px]"
+            <SelectField
+              name={hourFieldName}
+              label="Hour"
+              className="w-[125px] h-[32px]"
+              placeholder="Select Hour"
               icon={ClockIcon}
-              value={watch(timeFieldName)}
-              onChange={(e) => setValue(timeFieldName, e.target.value)}
+              options={hourOptions}
+            />
+            <SelectField
+              name={minuteFieldName}
+              label="Minutes"
+              className="w-[139px] h-[32px]"
+              placeholder="Select Minute"
+              icon={ClockIcon}
+              options={minuteOptions}
             />
           </div>
         )}

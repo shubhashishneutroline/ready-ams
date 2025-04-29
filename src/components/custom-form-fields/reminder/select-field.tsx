@@ -22,7 +22,7 @@ interface SelectFieldProps {
   name: string
   label: string
   placeholder?: string
-  options: { value: string; label: string }[]
+  options: { value: string ; label: string }[]
   className?: string
   icon?: LucideIcon
 }

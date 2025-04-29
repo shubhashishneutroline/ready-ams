@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import { useForm, FormProvider } from "react-hook-form";
-import { useEffect } from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import InputField from "@/components/custom-form-fields/input-field";
-import TextAreaField from "@/components/custom-form-fields/textarea-field";
-import ReminderSelectField from "./select-field";
-import CheckboxGroupField from "./checbox-group-field";
-import ScheduleField from "./schedule-field";
-import RadioGroupField from "./radio-group-field";
+import { useForm, FormProvider } from "react-hook-form"
+import { useEffect } from "react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import InputField from "@/components/custom-form-fields/input-field"
+import TextAreaField from "@/components/custom-form-fields/textarea-field"
+import ReminderSelectField from "./select-field"
+import CheckboxGroupField from "./checbox-group-field"
+
+import RadioGroupField from "./radio-group-field"
 import {
   AudioWaveform,
   BetweenHorizonalStart,
@@ -19,12 +19,15 @@ import {
   Send,
   SlidersHorizontal,
   Trash2,
-} from "lucide-react";
+} from "lucide-react"
 import {
   serviceOption,
   transformReminderPayloadWithOffset,
-} from "@/features/reminder/action/action";
-import { createReminder } from "@/features/reminder/api/api";
+} from "@/features/reminder/action/action"
+import { createReminder } from "@/features/reminder/api/api"
+import ScheduleField from "./schedule-field"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 const reminderTypes = [
   "Upcoming",
@@ -32,7 +35,7 @@ const reminderTypes = [
   "Cancellation",
   "Missed",
   "Custom",
-];
+]
 
 const whenOptions: any = {
   Upcoming: [
@@ -62,10 +65,10 @@ const whenOptions: any = {
     "Schedule follow-up",
   ],
   Custom: ["Schedule reminder"],
-};
+}
 
-const sendViaOptions = ["Email", "SMS", "Push Notification"];
-const autoDeleteOptions = ["7 days", "30 days", "Never"];
+const sendViaOptions = ["Email", "SMS", "Push Notification"]
+const autoDeleteOptions = ["7 days", "30 days", "Never"]
 const defaultMessages: any = {
   "Follow-up":
     "Thank you for visiting us on {selected_appointment_date} for {selected_service_name}. We value your feedback! Please take a moment to share your experience.",
@@ -77,9 +80,10 @@ const defaultMessages: any = {
     "Your appointment on {selected_appointment_date} was cancelled. Let us know if you'd like to rebook.",
   Custom: "Custom reminder for your appointment. Please check your schedule.",
   Default: "Reminder for your appointment. Please check your schedule.",
-};
+}
 
 export default function ReminderForm() {
+  const router = useRouter()
   const form = useForm({
     defaultValues: {
       reminderCategory: "Custom",
@@ -88,57 +92,69 @@ export default function ReminderForm() {
       subject: "",
       description: "",
       when: ["2 days after appointment"],
-      scheduleDate: "",
-      scheduleTime: "",
+      scheduleDay: "",
+      scheduleHour: "",
+      scheduleMinute: "",
       sendVia: [...sendViaOptions],
       autoDelete: "7 days",
       message: defaultMessages["Follow-up"],
     },
-  });
+  })
 
-  const serviceUpdatedOptions = serviceOption;
-  console.log(serviceUpdatedOptions, "serviceUpdatedOptions");
+  const serviceUpdatedOptions = serviceOption
+  console.log(serviceUpdatedOptions, "serviceUpdatedOptions")
   function mapServicesToSelectOptions(services: any) {
     return services.map((service: any) => ({
       value: service.id,
       label: service.title,
-    }));
+    }))
   }
 
-  const serviceOptions = mapServicesToSelectOptions(serviceUpdatedOptions);
+  const serviceOptions = mapServicesToSelectOptions(serviceUpdatedOptions)
 
-  const { watch, setValue, handleSubmit } = form;
-  const selectedType = watch("type");
+  const { watch, setValue, handleSubmit } = form
+  const selectedType = watch("type")
 
   useEffect(() => {
     setValue(
       "message",
       defaultMessages[selectedType] || defaultMessages["Default"]
-    );
+    )
 
     // Reset 'when' options based on selected type
     const defaultWhenOptions = whenOptions[selectedType]?.filter(
       (label: string) => !label.toLowerCase().includes("schedule")
-    );
+    )
 
     if (defaultWhenOptions?.length) {
-      setValue("when", [defaultWhenOptions[0]]);
+      setValue("when", [defaultWhenOptions[0]])
     } else {
-      setValue("when", []);
+      setValue("when", [])
     }
 
     // Also reset schedule fields
-    setValue("scheduleDate", "");
-    setValue("scheduleTime", "");
-  }, [selectedType, setValue]);
+    setValue("scheduleMinute", "")
+    setValue("scheduleHour", "")
+    setValue("scheduleDay", "")
+  }, [selectedType, setValue])
 
   const onSubmit = async (data: any) => {
-    console.log("Reminder submitted:", data);
-    const transformedData = transformReminderPayloadWithOffset(data);
-    console.log("Transformed data:", transformedData);
+    // await createReminder(transformedData);
+    try {
+      const transformedData = transformReminderPayloadWithOffset(data)
+      console.log("Transformed data:", transformedData)
+      await createReminder(transformedData)
+      toast.success("Appointment created successfully")
+      handleBack()
+    } catch (error) {
+      console.error("Error creating appointment:", error)
+      toast.error("Failed to create appointment")
+    }
+  }
 
-    await createReminder(transformedData);
-  };
+  const handleBack = () => {
+    router.push("/reminders")
+  }
 
   return (
     <FormProvider {...form}>
@@ -234,8 +250,9 @@ export default function ReminderForm() {
                     label.toLowerCase().includes("schedule")
                   ) || "Schedule reminder"
                 }
-                dateFieldName="scheduleDate"
-                timeFieldName="scheduleTime"
+                dayFieldName="scheduleDay"
+                hourFieldName="scheduleHour"
+                minuteFieldName="scheduleMinute"
               />
             </div>
 
@@ -266,12 +283,28 @@ export default function ReminderForm() {
               placeholder="Enter message"
             />
 
-            <Button type="submit" className="w-full">
+            {/* <Button type="submit" className="w-full">
               Save
-            </Button>
+            </Button> */}
           </CardContent>
         </Card>
+        <div className="flex flex-col gap-3 md:flex-row justify-between mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+            onClick={handleBack}
+          >
+            ← Back
+          </Button>
+          <Button
+            type="submit"
+            className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+          >
+            Save Reminder
+          </Button>
+        </div>
       </form>
     </FormProvider>
-  );
+  )
 }

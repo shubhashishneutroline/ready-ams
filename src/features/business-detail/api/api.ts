@@ -52,6 +52,7 @@ async function createBusiness(businessData: Omit<Business, "id">) {
 
 async function updateBusiness(id: string, businessData: Omit<Business, "id">) {
   try {
+    console.log(businessData, "inside Business detailss")
     const { data } = await api.put(`/api/business-detail/${id}`, {
       ...businessData,
       id,

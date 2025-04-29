@@ -1,55 +1,55 @@
-"use client";
+"use client"
 
-import { useFormContext } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Calendar, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useFormContext } from "react-hook-form"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Calendar, Info } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
+export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
 type BusinessAvailability = {
-  breaks: Record<WeekDay, [string, string][]>;
-  holidays: WeekDay[];
-};
-
-interface Props {
-  name: string;
-  businessAvailability: BusinessAvailability;
+  breaks: Record<WeekDay, [string, string][]>
+  holidays: WeekDay[]
 }
 
-const days: WeekDay[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+interface Props {
+  name: string
+  businessAvailability: BusinessAvailability
+}
+
+const days: WeekDay[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 /* Format holidays for display */
 const formatHolidays = (holidays: WeekDay[]) => {
   if (!holidays || holidays.length === 0) {
-    return "No holidays scheduled.";
+    return "No holidays scheduled."
   }
   if (holidays.length === 1) {
-    return `Holiday on ${holidays[0]}.`;
+    return `Holiday on ${holidays[0]}.`
   }
-  const holidayStrings = [...holidays];
-  const lastHoliday = holidayStrings.pop();
-  return `Holidays are on ${holidayStrings.join(", ")}, and ${lastHoliday}.`;
-};
+  const holidayStrings = [...holidays]
+  const lastHoliday = holidayStrings.pop()
+  return `Holidays are on ${holidayStrings.join(", ")}, and ${lastHoliday}.`
+}
 
 export default function ServiceDaySelector({
   name,
   businessAvailability,
 }: Props) {
-  const { watch, setValue } = useFormContext();
-  const selectedDays: WeekDay[] = watch(name) || [];
+  const { watch, setValue } = useFormContext()
+  const selectedDays: WeekDay[] = watch(name) || []
 
   const toggleDay = (day: WeekDay) => {
     const updatedDays = selectedDays.includes(day)
       ? selectedDays.filter((d) => d !== day)
-      : [...selectedDays, day];
-    setValue(name, updatedDays, { shouldDirty: true });
-  };
+      : [...selectedDays, day]
+    setValue(name, updatedDays, { shouldDirty: true })
+  }
 
   // Exclude holidays from selectable days
   const availableDays = days.filter(
-    (day) => !businessAvailability.holidays.includes(day)
-  );
+    (day) => !businessAvailability.holidays?.includes(day)
+  )
 
   return (
     <div className="space-y-4">
@@ -79,5 +79,5 @@ export default function ServiceDaySelector({
         <p>{formatHolidays(businessAvailability.holidays)}</p>
       </div>
     </div>
-  );
+  )
 }

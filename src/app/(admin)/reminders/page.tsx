@@ -4,14 +4,12 @@ import ReminderTabsPage from "@/features/reminder/components/reminder/reminder-p
 
 import { getReminder } from "@/features/reminder/api/api"
 
-export const ReminderData = await getReminder()
-export const AnnouncementData = await getAnnouncement()
+
 
 const ReminderPage = async () => {
   return (
     <ReminderTabsPage
-      reminderData={ReminderData}
-      announcementData={AnnouncementData}
+
     />
   )
 }

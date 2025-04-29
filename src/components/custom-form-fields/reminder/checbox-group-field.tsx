@@ -40,6 +40,8 @@ const CheckboxGroupField = ({
     }
   }
 
+  console.log(options, "options")
+
   return (
     <FormField
       control={control}

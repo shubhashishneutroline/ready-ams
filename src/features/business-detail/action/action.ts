@@ -197,12 +197,12 @@ export function formatBusinessDetails(data: any) {
   }
 
   const businessDays =
-    data.businessAvailability?.map((availability: any) => {
+    data?.businessAvailability?.map((availability: any) => {
       return dayMap[availability.weekDay]
     }) || []
 
   const holidays =
-    data.holiday?.map((holiday: any) => {
+    data?.holiday?.map((holiday: any) => {
       return dayMap[holiday.holiday]
     }) || []
 
@@ -210,12 +210,12 @@ export function formatBusinessDetails(data: any) {
     {}
 
   // Initialize all days with empty work/break arrays
-  daysOfWeek.forEach((day) => {
+  daysOfWeek?.forEach((day) => {
     businessHours[day] = { work: [], break: [] }
   })
 
   // Fill businessHours from timeSlots
-  data.businessAvailability?.forEach((availability: any) => {
+  data?.businessAvailability?.forEach((availability: any) => {
     const day = dayMap[availability.weekDay]
     if (availability.timeSlots && Array.isArray(availability.timeSlots)) {
       availability.timeSlots.forEach((slot: any) => {
@@ -240,17 +240,20 @@ export function formatBusinessDetails(data: any) {
   }
 }
 
-// Helper function to format time to "hh:mm AM/PM"
+// Helper function to format time to "hh:mm AM/PM"function convertTo12HourFormat(isoTime: string): string {
+
 function convertTo12HourFormat(isoTime: string): string {
-  const date = new Date(isoTime)
-  let hours = date.getUTCHours()
-  const minutes = date.getUTCMinutes()
+  const date = new Date(isoTime) // Automatically local time
+
+  let hours = date.getHours()
+  const minutes = date.getMinutes()
   const ampm = hours >= 12 ? "PM" : "AM"
 
   hours = hours % 12
-  hours = hours ? hours : 12 // the hour '0' should be '12'
+  hours = hours ? hours : 12
 
-  const strMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`
-  return `${hours}:${strMinutes} ${ampm}`
+  const paddedHours = hours < 10 ? `0${hours}` : `${hours}`
+  const paddedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`
+
+  return `${paddedHours}:${paddedMinutes} ${ampm}`
 }
-1

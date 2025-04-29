@@ -9,9 +9,10 @@ import { useState } from "react"
 
 import ReminderForm from "@/components/custom-form-fields/reminder/reminder-form"
 import { useParams } from "next/navigation"
-import { ReminderData } from "../../page"
+
 import EditReminderForm from "@/components/custom-form-fields/reminder/edit-reminder-form"
 import EditAnnouncementForm from "@/components/custom-form-fields/reminder/edit-announcement-form"
+import { ReminderData } from "@/features/reminder/components/reminder/reminder-page"
 
 const ReminderPage = () => {
   const params = useParams()

@@ -12,14 +12,19 @@ import TablePageHeader from "@/components/shared/table/table-page-header"
 import { useRouter } from "next/navigation"
 import { announcementColumns } from "../announcment/columns"
 import { DataTable } from "./data-table"
+import { getReminder } from "../../api/api"
+import { getAnnouncement } from "@/features/announcement-offer/api/api"
 
-const ReminderTabsPage = ({ reminderData, announcementData }: any) => {
+export const ReminderData = await getReminder()
+export const AnnouncementData = await getAnnouncement()
+
+const ReminderTabsPage = () => {
   const [activeTab, setActiveTab] = useState("Reminder")
   const router = useRouter()
 
   return (
-    <div>
-      <Card className="h-full overflow-y-auto p-4 md:p-6">
+    <div className="max-w-screen">
+      <Card className="h-full p-2 w-full">
         <PageTabs
           isReminder
           activeTab={activeTab}
@@ -27,7 +32,7 @@ const ReminderTabsPage = ({ reminderData, announcementData }: any) => {
         />
         {/* {activeTab === "Reminder" ? <ReminderForm /> : <AnnouncementForm />} */}
         {activeTab === "Reminder" ? (
-          <>
+          <div className="flex pr-8 sm:pr-10 xl:pr-0 flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
             <TableFilterTabs />
             <TablePageHeader
               title="Reminder"
@@ -37,10 +42,10 @@ const ReminderTabsPage = ({ reminderData, announcementData }: any) => {
                 router.push("/reminders/create/")
               }}
             />
-            <DataTable columns={reminderColumns} data={reminderData} />
-          </>
+            <DataTable columns={reminderColumns} data={ReminderData} />
+          </div>
         ) : (
-          <>
+          <div className="flex pr-8 sm:pr-10  xl:pr-0 flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
             <TableFilterTabs />
             <TablePageHeader
               title="Announcement"
@@ -50,8 +55,8 @@ const ReminderTabsPage = ({ reminderData, announcementData }: any) => {
                 router.push("/reminders/create/")
               }}
             />
-            <DataTable columns={announcementColumns} data={announcementData} />
-          </>
+            <DataTable columns={announcementColumns} data={AnnouncementData} />
+          </div>
           // <AnnouncementForm />
         )}
       </Card>

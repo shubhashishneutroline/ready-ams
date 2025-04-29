@@ -34,7 +34,7 @@ type FormData = {
   email: string
   phone: string
   role: string
-  password: string
+  password?: string
   isActive: boolean
 }
 
@@ -42,13 +42,13 @@ interface CustomerFormProps {
   onSubmit: (data: FormData) => void
 }
 
-// Validation schema for create mode
-const createSchema = z.object({
+// Validation schema for edit mode
+const updateSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address").min(1, "Email is required"),
   phone: z.string().min(1, "Phone number is required"),
   role: z.string().min(1, "Role is required"),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().optional(),
   isActive: z.boolean(),
 })
 
@@ -67,7 +67,7 @@ const EditCustomerForm = () => {
 
   // Initialize form with create schema
   const form = useForm<FormData>({
-    resolver: zodResolver(createSchema),
+    resolver: zodResolver(updateSchema),
     defaultValues: {
       fullName: "",
       email: "",
@@ -88,7 +88,7 @@ const EditCustomerForm = () => {
           email: customer.email,
           phone: customer.phone,
           role: customer.role,
-          password: customer.password,
+          password: customer.password || "",
           isActive: Boolean(customer.isActive),
         }
         console.log("Setting form data:", formData)
@@ -112,7 +112,7 @@ const EditCustomerForm = () => {
         email: formData.email,
         phone: formData.phone,
         role: formData.role,
-        password: formData.password,
+        password: formData.password || "",
         isActive: Boolean(formData.isActive),
       }
       console.log("Customer Data to Update:", customerData)

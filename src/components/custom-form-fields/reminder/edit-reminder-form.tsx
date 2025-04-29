@@ -83,18 +83,14 @@ const defaultMessages: any = {
 
 export default function EditReminderForm({ id }: { id: string }) {
   const [reminderData, setReminderData] = useState()
-  const fetchReminderData = async (id: string) => {
-    const data = await getReminderById(id)
-    setReminderData(data)
-  }
 
   const form = useForm({
     defaultValues: {
       reminderCategory: "Custom",
       type: "",
       appointment: "",
-          subject: "",
-      service:"",
+      subject: "",
+      service: "",
       description: "",
       when: ["2 days after appointment"],
       scheduleDate: "",
@@ -119,7 +115,7 @@ export default function EditReminderForm({ id }: { id: string }) {
         type,
         when,
       } = transformReminderToFormValues(reminderData)
-      console.log(type, when, "reminderCategory")
+      console.log(type, "type", when, "when")
       form.reset({
         reminderCategory: reminderCategory || "Custom",
         subject: subject || "",
@@ -150,6 +146,10 @@ export default function EditReminderForm({ id }: { id: string }) {
   const selectedType = watch("type")
 
   useEffect(() => {
+    const fetchReminderData = async (id: string) => {
+      const data = await getReminderById(id)
+      setReminderData(data)
+    }
     fetchReminderData(id)
   }, [selectedType, setValue])
 
@@ -236,7 +236,7 @@ export default function EditReminderForm({ id }: { id: string }) {
             />
 
             {/* When to Send */}
-            <div className="space-y-2 ">
+            {/* <div className="space-y-2 ">
               <div className="flex gap-1">
                 <Send strokeWidth={1.5} className="size-4 text-gray-500" />
                 <Label>When to send?</Label>
@@ -257,10 +257,11 @@ export default function EditReminderForm({ id }: { id: string }) {
                     label.toLowerCase().includes("schedule")
                   ) || "Schedule reminder"
                 }
-                dateFieldName="scheduleDate"
-                timeFieldName="scheduleTime"
+                dayFieldName="scheduleDay"
+                hourFieldName="scheduleHour"
+                minuteFieldName="scheduleMinute"
               />
-            </div>
+            </div> */}
 
             {/* non input fields */}
             <div className="flex flex-col gap-8">

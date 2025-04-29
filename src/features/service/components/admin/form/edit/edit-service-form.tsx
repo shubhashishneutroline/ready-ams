@@ -74,7 +74,7 @@ const formatAvailabilityNote = () => {
 
 export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
   // Derive holidays dynamically
-  const holidays: WeekDay[] = serviceDetail.BusinessDetail.holiday.map(
+  const holidays: WeekDay[] = serviceDetail?.BusinessDetail?.holiday.map(
     (h: any) => {
       const dayMap: Record<string, WeekDay> = {
         MONDAY: "Mon",
@@ -102,7 +102,7 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
     Sun: [],
   }
 
-  serviceDetail.BusinessDetail.businessAvailability.forEach((avail: any) => {
+  serviceDetail?.BusinessDetail?.businessAvailability.forEach((avail: any) => {
     const dayMap: Record<string, WeekDay> = {
       MONDAY: "Mon",
       TUESDAY: "Tue",
@@ -131,7 +131,7 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
   const days: WeekDay[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
   const defaultServiceHours = days.reduce(
     (acc, day) => {
-      if (holidays.includes(day)) {
+      if (holidays?.includes(day)) {
         return { ...acc, [day]: [] }
       }
       const serviceDay = {
@@ -170,7 +170,7 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
       // Ensure default times are in timeOptions
       const defaultStart = timeOptions.includes("09:00 AM")
         ? "09:00 AM"
-        : timeOptions[0] || "09:00 AM"
+        : timeOptions[0] || "10:00 AM"
       const defaultEnd = timeOptions.includes("05:00 PM")
         ? "05:00 PM"
         : timeOptions[1] || "05:00 PM"
@@ -184,7 +184,7 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
   console.log("ServiceForm Debug - timeOptions:", timeOptions)
 
   // Derive service days
-  const defaultServiceDays = days.filter((day) => !holidays.includes(day))
+  const defaultServiceDays = days.filter((day) => !holidays?.includes(day))
 
   console.log("ServiceForm - serviceDetail:", serviceDetail)
   const form = useForm({
