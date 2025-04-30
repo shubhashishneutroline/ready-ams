@@ -115,6 +115,7 @@ export default function EditReminderForm({ id }: { id: string }) {
         type,
         when,
       } = transformReminderToFormValues(reminderData)
+
       console.log(type, "type", when, "when")
       form.reset({
         reminderCategory: reminderCategory || "Custom",
@@ -236,7 +237,7 @@ export default function EditReminderForm({ id }: { id: string }) {
             />
 
             {/* When to Send */}
-            {/* <div className="space-y-2 ">
+            <div className="space-y-2 ">
               <div className="flex gap-1">
                 <Send strokeWidth={1.5} className="size-4 text-gray-500" />
                 <Label>When to send?</Label>
@@ -246,7 +247,7 @@ export default function EditReminderForm({ id }: { id: string }) {
                 name="when"
                 label=""
                 options={whenOptions[selectedType]?.filter(
-                  (label: any) => !label.toLowerCase().includes("schedule")
+                  (label: any) => !label?.toLowerCase().includes("schedule")
                 )}
               />
 
@@ -261,7 +262,7 @@ export default function EditReminderForm({ id }: { id: string }) {
                 hourFieldName="scheduleHour"
                 minuteFieldName="scheduleMinute"
               />
-            </div> */}
+            </div>
 
             {/* non input fields */}
             <div className="flex flex-col gap-8">

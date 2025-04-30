@@ -143,7 +143,7 @@ export default function ReminderForm() {
     try {
       const transformedData = transformReminderPayloadWithOffset(data)
       console.log("Transformed data:", transformedData)
-      await createReminder(transformedData)
+      // await createReminder(transformedData)
       toast.success("Appointment created successfully")
       handleBack()
     } catch (error) {

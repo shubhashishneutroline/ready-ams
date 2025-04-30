@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,8 +8,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import {
   Eye,
   FilePenLine,
@@ -18,13 +18,24 @@ import {
   Trash2,
   ArrowUpDown,
   MoreVertical,
-} from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
+} from "lucide-react"
+import { ColumnDef } from "@tanstack/react-table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
 
-import { capitalizeFirstChar } from "../../../../../utils/utils";
-import { deleteService, Service } from "@/features/service/api/api";
+import { capitalizeFirstChar } from "../../../../../utils/utils"
+import { deleteService, Service } from "@/features/service/api/api"
+import { shortenText } from "@/features/reminder/lib/lib"
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  formatDuration,
+  getActiveStatusStyles,
+} from "@/features/service/lib/lib"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -59,21 +70,50 @@ export const columns: ColumnDef<Service>[] = [
   {
     accessorKey: "description",
     header: "Description",
+    cell: ({ row }) => {
+      const fullMessage = row.getValue("description") as string
+      const shortMessage = shortenText(fullMessage)
+
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="cursor-pointer">{shortMessage}</span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">{fullMessage}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )
+    },
   },
   {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
+    cell: ({ row }) => {
+      const isActive = row.original.status
+      const { bg, dot, text } = getActiveStatusStyles(isActive)
+      return (
+        <div
+          className={`w-[80px] flex gap-2 items-center text-[12px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
+        >
+          <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
+          {isActive ? "Active" : "Inactive"}
+        </div>
+      )
+    },
   },
   {
     accessorKey: "estimatedDuration",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Estimated Duration" />
+      <DataTableColumnHeader column={column} title="Duration" />
     ),
     cell: ({ row }) => {
-      const estimatedDuration = row.original.estimatedDuration;
-      return <div className="">{estimatedDuration}</div>;
+      const estimatedDuration = row.original.estimatedDuration
+      return <div className="">{formatDuration(estimatedDuration)}</div>
     },
   },
 
@@ -81,8 +121,8 @@ export const columns: ColumnDef<Service>[] = [
     id: "actions",
 
     cell: ({ row }) => {
-      const payment = row.original;
-      const router = useRouter();
+      const payment = row.original
+      const router = useRouter()
 
       return (
         <DropdownMenu>
@@ -115,7 +155,7 @@ export const columns: ColumnDef<Service>[] = [
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      );
+      )
     },
   },
-];
+]

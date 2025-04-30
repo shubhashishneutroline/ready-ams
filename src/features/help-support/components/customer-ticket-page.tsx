@@ -33,12 +33,14 @@ const CustomerTicketPage = () => {
 
   if (loading) return <div>Loading tickets...</div> // optional loading UI
   return (
-    <div>
+    <div className="flex pr-10 md:pr-0 flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
       <TablePageHeader
         title="Customer Ticket"
         description="Manage and Customize your customer ticket"
       />
+
       <DataTable columns={ticketColumns(setEditTicket)} data={ticketData} />
+
       {editTicket && (
         <>
           <TicketEditModal ticket={editTicket} onClose={handleModalClose} />

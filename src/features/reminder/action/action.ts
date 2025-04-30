@@ -5,6 +5,7 @@ import { getAnnouncementOrOfferById } from "@/db/announcement-offer"
 import { getAnnouncementById } from "@/features/announcement-offer/api/api"
 
 export const serviceOption = await getServices()
+export const reminderData = await getReminder()
 
 export const fetchReminderData = async (id: string) => {
   const data = await getReminderById(id)

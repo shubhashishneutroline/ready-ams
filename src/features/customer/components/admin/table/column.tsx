@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,8 +8,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import {
   Eye,
   FilePenLine,
@@ -18,12 +18,19 @@ import {
   Trash2,
   ArrowUpDown,
   MoreVertical,
-} from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
-import { Customer, deleteCustomer } from "@/features/customer/api/api";
-import { capitalizeFirstChar } from "../../../../../utils/utils";
+} from "lucide-react"
+import { ColumnDef } from "@tanstack/react-table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
+import { Customer, deleteCustomer } from "@/features/customer/api/api"
+import {
+  capitalizeFirstChar,
+  capitalizeOnlyFirstLetter,
+} from "../../../../../utils/utils"
+import {
+  getActiveStatusStyles,
+  getRoleStyles,
+} from "@/features/customer/lib/lib"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -71,8 +78,16 @@ export const columns: ColumnDef<Customer>[] = [
       <DataTableColumnHeader column={column} title="Role" />
     ),
     cell: ({ row }) => {
-      const role = row.original.role;
-      return <div className="">{role}</div>;
+      const role = row.original.role
+      const { bg: bgRole, dot: dotRole, text: textRole } = getRoleStyles(role)
+      return (
+        <div
+          className={`w-[80px] flex gap-2 items-center text-[12px] py-[3px] px-3 rounded-lg ${bgRole} ${textRole}`}
+        >
+          <div className={`w-1.5 h-1.5 rounded-full ${dotRole}`}></div>
+          {capitalizeOnlyFirstLetter(role)}
+        </div>
+      )
     },
   },
   {
@@ -81,20 +96,24 @@ export const columns: ColumnDef<Customer>[] = [
       <DataTableColumnHeader column={column} title="Active" />
     ),
     cell: ({ row }) => {
-      const isActive = row.original.isActive;
+      const isActive = row.original.isActive
+      const { bg, dot, text } = getActiveStatusStyles(isActive)
       return (
-        <div className="">
-          {capitalizeFirstChar(isActive ? "Active" : "Inactive")}
+        <div
+          className={`w-[80px] flex gap-2 items-center text-[12px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
+        >
+          <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
+          {isActive ? "Active" : "Inactive"}
         </div>
-      );
+      )
     },
   },
   {
     id: "actions",
 
     cell: ({ row }) => {
-      const payment = row.original;
-      const router = useRouter();
+      const payment = row.original
+      const router = useRouter()
 
       return (
         <DropdownMenu>
@@ -124,7 +143,7 @@ export const columns: ColumnDef<Customer>[] = [
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                deleteCustomer(row.original);
+                deleteCustomer(row.original)
               }}
               className="flex gap-2 items-center justify-start"
             >
@@ -132,7 +151,7 @@ export const columns: ColumnDef<Customer>[] = [
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      );
+      )
     },
   },
-];
+]

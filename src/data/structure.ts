@@ -1,9 +1,9 @@
 // User
 interface Address {
-  street: string;
-  city: string;
-  country: string;
-  zipCode: string;
+  street: string
+  city: string
+  country: string
+  zipCode: string
 }
 
 enum Role {
@@ -13,13 +13,13 @@ enum Role {
 }
 
 interface User {
-  email: string; // Required
-  password: string; // Required
-  name: string; // Required
-  phone?: string; // Optional
-  role: Role; // Required
-  isActive?: boolean; // Optional, defaults to true
-  address?: Address; // Optional
+  email: string // Required
+  password: string // Required
+  name: string // Required
+  phone?: string // Optional
+  role: Role // Required
+  isActive?: boolean // Optional, defaults to true
+  address?: Address // Optional
 }
 const userDummy = {
   email: "john.doe@example.com",
@@ -33,27 +33,27 @@ const userDummy = {
     country: "USA",
     zipCode: "10001",
   },
-};
+}
 
 // -- Service
 
 interface Service {
-  title: string; // Required
-  description: string; // Required
-  estimatedDuration: number; // Required (in minutes)
-  status?: Status; // Optional, defaults to ACTIVE
-  serviceAvailability?: ServiceAvailability[]; // Optional
-  resourceId?: string; // Optional (if linked to a resource)
+  title: string // Required
+  description: string // Required
+  estimatedDuration: number // Required (in minutes)
+  status?: Status // Optional, defaults to ACTIVE
+  serviceAvailability?: ServiceAvailability[] // Optional
+  resourceId?: string // Optional (if linked to a resource)
 }
 
 interface ServiceAvailability {
-  weekDay: WeekDays; // Required
-  timeSlots?: ServiceTime[]; // Optional
+  weekDay: WeekDays // Required
+  timeSlots?: ServiceTime[] // Optional
 }
 
 interface ServiceTime {
-  startTime: string; // Required (ISO 8601 Date string)
-  endTime: string; // Required (ISO 8601 Date string)
+  startTime: string // Required (ISO 8601 Date string)
+  endTime: string // Required (ISO 8601 Date string)
 }
 
 enum Status {
@@ -102,7 +102,7 @@ const serviceDummy = {
       ],
     },
   ],
-};
+}
 
 // ----- Reminder
 // Enum for Reminder Types
@@ -123,25 +123,25 @@ export enum NotificationMethod {
 
 // Interface for Reminder Offset
 export interface ReminderOffset {
-  sendOffset: number; // Time offset in minutes
-  scheduledAt: string; // ISO 8601 DateTime string (e.g., "2025-04-02T10:00:00Z")
-  sendBefore: boolean; // True if sending before appointment, false if after
+  sendOffset: number // Time offset in minutes
+  scheduledAt: string // ISO 8601 DateTime string (e.g., "2025-04-02T10:00:00Z")
+  sendBefore: boolean // True if sending before appointment, false if after
 }
 
 // Interface for Notification
 export interface Notification {
-  method: NotificationMethod; // SMS, EMAIL, or PUSH
+  method: NotificationMethod // SMS, EMAIL, or PUSH
 }
 
 // Interface for Reminder
 export interface Reminder {
-  type: ReminderType; // Type of the reminder (e.g., REMINDER, FOLLOW_UP)
-  title: string; // Title of the reminder
-  description?: string; // Optional description of the reminder
-  message?: string; // Optional custom message for the reminder
-  services: string[]; // List of service IDs associated with the reminder
-  notifications: Notification[]; // List of notifications for the reminder
-  reminderOffset: ReminderOffset[]; // List of offsets to define when reminders are sent
+  type: ReminderType // Type of the reminder (e.g., REMINDER, FOLLOW_UP)
+  title: string // Title of the reminder
+  description?: string // Optional description of the reminder
+  message?: string // Optional custom message for the reminder
+  services: string[] // List of service IDs associated with the reminder
+  notifications: Notification[] // List of notifications for the reminder
+  reminderOffset: ReminderOffset[] // List of offsets to define when reminders are sent
 }
 
 const reminderDummy = {
@@ -170,7 +170,7 @@ const reminderDummy = {
       sendBefore: true,
     },
   ],
-};
+}
 
 // -- Appointment
 // Enum for Appointment Status
@@ -184,19 +184,20 @@ export enum AppointmentStatus {
 
 // Interface for Appointment
 export interface Appointment {
-  customerName: string; // Required field for the person being booked
-  email: string; // Required email of the person being booked
-  phone: string; // Required phone number of the person being booked
-  status: AppointmentStatus; // Required Appointment Status
-  userId?: string; // Optional: If the logged-in user is booking for themselves
-  bookedById?: string; // Optional: Tracks the user who booked for someone else
-  serviceId: string; // Required: Service ID
-  selectedDate: string; // Required: ISO string for the appointment date
-  selectedTime: string; // Required: ISO string for the appointment time
-  message?: string; // Optional: Message from the user
-  isForSelf: boolean; // Required: Indicates if the appointment is for the logged-in user or someone else
-  createdById: string; // Required: ID of the user who created the appointment
-  resourceId?: string; // Optional: Resource ID for the appointment
+  id?: string
+  customerName: string // Required field for the person being booked
+  email: string // Required email of the person being booked
+  phone: string // Required phone number of the person being booked
+  status: AppointmentStatus // Required Appointment Status
+  userId?: string // Optional: If the logged-in user is booking for themselves
+  bookedById?: string // Optional: Tracks the user who booked for someone else
+  serviceId: string // Required: Service ID
+  selectedDate: string // Required: ISO string for the appointment date
+  selectedTime: string // Required: ISO string for the appointment time
+  message?: string // Optional: Message from the user
+  isForSelf: boolean // Required: Indicates if the appointment is for the logged-in user or someone else
+  createdById: string // Required: ID of the user who created the appointment
+  resourceId?: string // Optional: Resource ID for the appointment
 }
 
 // Interface for Resource (simplified version for reference)
@@ -215,7 +216,7 @@ const dummyAppointment = {
   isForSelf: true, // Required
   createdById: "user123", // Required (ID of the user who created the appointment)
   resourceId: "res987", // Optional (if relevant)
-};
+}
 
 // -- Anouncement
 // Enum for Showon
@@ -244,14 +245,14 @@ export enum ExpirationDuration {
 
 // Interface for AnnouncementOrOffer
 export interface AnnouncementOrOffer {
-  title: string; // Required field for the title of the announcement or offer
-  description?: string; // Optional: Description of the announcement or offer
-  message?: string; // Optional: Custom message for the announcement or offer
-  audience: TargetAudience; // Required: Target audience for the announcement
-  isImmediate: boolean; // Required: Indicates if the announcement or offer is immediate
-  scheduledAt: string; // Required: ISO string for the scheduled date and time
-  showOn: Showon; // Required: Where the announcement should show (e.g., banner, push notification, email)
-  expiredAt: ExpirationDuration; // Required: Expiration duration or "never"
+  title: string // Required field for the title of the announcement or offer
+  description?: string // Optional: Description of the announcement or offer
+  message?: string // Optional: Custom message for the announcement or offer
+  audience: TargetAudience // Required: Target audience for the announcement
+  isImmediate: boolean // Required: Indicates if the announcement or offer is immediate
+  scheduledAt: string // Required: ISO string for the scheduled date and time
+  showOn: Showon // Required: Where the announcement should show (e.g., banner, push notification, email)
+  expiredAt: ExpirationDuration // Required: Expiration duration or "never"
 }
 
 const dumyAnnouncment = {
@@ -263,7 +264,7 @@ const dumyAnnouncment = {
   scheduledAt: "2025-04-10T10:00:00Z", // Required (Scheduled date/time in ISO format)
   showOn: "BANNER", // Required (Where the offer will show, e.g., on a banner)
   expiredAt: "THIRTY_DAYS", // Required (Expiration duration or "never")
-};
+}
 
 // -- Business Detaila and Support
 // Enum for Business Status
@@ -301,57 +302,57 @@ export enum HolidayType {
 
 // Interface for BusinessTime (Working hours)
 export interface BusinessTime {
-  startTime: string; // ISO string for start time
-  endTime: string; // ISO string for end time
+  startTime: string // ISO string for start time
+  endTime: string // ISO string for end time
 }
 
 // Interface for BusinessAvailability (Business availability)
 export interface BusinessAvailability {
-  weekDay: WeekDays; // Day of the week
-  type: AvailabilityType; // Either GENERAL or SUPPORT
-  timeSlots: BusinessTime[]; // List of working hours for that day
+  weekDay: WeekDays // Day of the week
+  type: AvailabilityType // Either GENERAL or SUPPORT
+  timeSlots: BusinessTime[] // List of working hours for that day
 }
 
 // Interface for Holiday (Holidays for business)
 export interface Holiday {
-  holiday: WeekDays; // Day of the week
-  type: HolidayType; // Either GENERAL or SUPPORT
-  date?: string; // Optional specific date for holiday (if needed)
+  holiday: WeekDays // Day of the week
+  type: HolidayType // Either GENERAL or SUPPORT
+  date?: string // Optional specific date for holiday (if needed)
 }
 
 // Interface for BusinessAddress (Address for branches of the business)
 export interface BusinessAddress {
-  street: string;
-  city: string;
-  country: string;
-  zipCode: string;
-  googleMap: string; // Google Map URL for the address
+  street: string
+  city: string
+  country: string
+  zipCode: string
+  googleMap: string // Google Map URL for the address
 }
 
 // Interface for SupportBusinessDetail (Support team details)
 export interface SupportBusinessDetail {
-  supportBusinessName: string;
-  supportEmail: string;
-  supportPhone: string;
-  supportAddress: string;
-  supportGoogleMap?: string;
-  supportAvailability: BusinessAvailability[]; // Separate availability for support
-  supportHoliday: Holiday[]; // Separate holidays for support
+  supportBusinessName: string
+  supportEmail: string
+  supportPhone: string
+  supportAddress: string
+  supportGoogleMap?: string
+  supportAvailability: BusinessAvailability[] // Separate availability for support
+  supportHoliday: Holiday[] // Separate holidays for support
 }
 
 // Interface for BusinessDetail (Main business details)
 export interface BusinessDetail {
-  name: string; // Business name
-  industry: string; // Industry the business operates in
-  email: string; // Business email
-  phone: string; // Business phone number
-  website?: string; // Optional website link
-  businessRegistrationNumber: string; // Unique registration number
-  status: BusinessStatus; // Status of the business (Active, Pending, etc.)
-  address: BusinessAddress[]; // Addresses for the business branches
-  businessAvailability: BusinessAvailability[]; // General availability for the business
-  holiday: Holiday[]; // General holidays for the business
-  supportBusinessDetail?: SupportBusinessDetail; // Optional support business details
+  name: string // Business name
+  industry: string // Industry the business operates in
+  email: string // Business email
+  phone: string // Business phone number
+  website?: string // Optional website link
+  businessRegistrationNumber: string // Unique registration number
+  status: BusinessStatus // Status of the business (Active, Pending, etc.)
+  address: BusinessAddress[] // Addresses for the business branches
+  businessAvailability: BusinessAvailability[] // General availability for the business
+  holiday: Holiday[] // General holidays for the business
+  supportBusinessDetail?: SupportBusinessDetail // Optional support business details
 }
 
 const dumyBusinessDetail = {
@@ -408,7 +409,7 @@ const dumyBusinessDetail = {
       date: "2025-04-15T00:00:00Z",
     },
   ],
-};
+}
 
 const supportBusinessDetail = {
   id: "support-id-123",
@@ -440,18 +441,18 @@ const supportBusinessDetail = {
     },
   ],
   businessId: "business-id-123", // Link to the primary business
-};
+}
 
 // ---- FAQ
 interface FAQ {
-  id: string;
-  question: string;
-  answer: string;
-  category?: string;
-  isActive: boolean;
-  order?: number;
-  lastUpdatedById: string;
-  createdById: string;
+  id: string
+  question: string
+  answer: string
+  category?: string
+  isActive: boolean
+  order?: number
+  lastUpdatedById: string
+  createdById: string
 }
 
 const dummyFAQs = [
@@ -498,22 +499,22 @@ const dummyFAQs = [
     lastUpdatedById: "user126",
     createdById: "admin4",
   },
-];
+]
 
 //-- Tickets
 interface Ticket {
-  id: string; // Unique ID for the ticket
-  userType: Role; // Can be "Customer" or "Admin"
-  subject: string; // Subject or title of the ticket
-  ticketDescription: string; // Detailed description of the issue or request
-  category: TicketCategory; // Type of issue (e.g., Technical Support, Billing)
-  priority: Priority; // Priority level (Low, Medium, High)
-  status: TicketStatus; // Status (Open, In Progress, Resolved, Closed)
-  assignedTo?: string; // The support agent/admin assigned to resolve the ticket (optional)
-  resolutionDescription?: string; // Description of how the issue was resolved (if applicable, optional)
-  proofFiles?: string; // Path/URL to proof files (screenshots, documents, etc., optional)
-  initiatedById?: string; // Foreign key for the user who initiated the ticket either admin or user, self (optional)
-  userId: string; // User who the ticket is created for
+  id: string // Unique ID for the ticket
+  userType: Role // Can be "Customer" or "Admin"
+  subject: string // Subject or title of the ticket
+  ticketDescription: string // Detailed description of the issue or request
+  category: TicketCategory // Type of issue (e.g., Technical Support, Billing)
+  priority: Priority // Priority level (Low, Medium, High)
+  status: TicketStatus // Status (Open, In Progress, Resolved, Closed)
+  assignedTo?: string // The support agent/admin assigned to resolve the ticket (optional)
+  resolutionDescription?: string // Description of how the issue was resolved (if applicable, optional)
+  proofFiles?: string // Path/URL to proof files (screenshots, documents, etc., optional)
+  initiatedById?: string // Foreign key for the user who initiated the ticket either admin or user, self (optional)
+  userId: string // User who the ticket is created for
 }
 
 enum Priority {
@@ -601,19 +602,19 @@ const dummyTickets = [
     initiatedById: "admin234",
     userId: "user123",
   },
-];
+]
 
 // -- Resources
 
 interface Resource {
-  id: string; // Unique ID for the resource
-  name: string; // Name of the staff (e.g., Doctor, Barber, Stylist)
-  role: string; // Role of the staff (e.g., Doctor, Barber, Stylist)
-  businessId: string; // Reference to the business this staff belongs to
-  business: BusinessDetail; // Related BusinessDetail object
+  id: string // Unique ID for the resource
+  name: string // Name of the staff (e.g., Doctor, Barber, Stylist)
+  role: string // Role of the staff (e.g., Doctor, Barber, Stylist)
+  businessId: string // Reference to the business this staff belongs to
+  business: BusinessDetail // Related BusinessDetail object
 
-  services: Service[]; // Relationship to services provided by the staff
-  appointments: Appointment[]; // Appointments this staff assigns/handles
+  services: Service[] // Relationship to services provided by the staff
+  appointments: Appointment[] // Appointments this staff assigns/handles
 }
 
 const dummyResources = {
@@ -624,4 +625,4 @@ const dummyResources = {
   phone: "+1234567890",
   address: "123 Main Street, Anytown, USA",
   isActive: true,
-};
+}

@@ -1,24 +1,22 @@
 "use client"
-import Breadcrumbs from "@/components/shared/bread-crumb"
-import Heading from "@/components/admin/heading"
-import { CalendarDays } from "lucide-react"
+
 import { Card } from "@/components/ui/card"
 import PageTabs from "@/features/business-detail/components/page-tabs"
-import AnnouncementForm from "@/features/reminder/components/announcment/announcement-form"
 import { useState } from "react"
-
-import ReminderForm from "@/components/custom-form-fields/reminder/reminder-form"
 import { useParams } from "next/navigation"
-
 import EditReminderForm from "@/components/custom-form-fields/reminder/edit-reminder-form"
 import EditAnnouncementForm from "@/components/custom-form-fields/reminder/edit-announcement-form"
-import { ReminderData } from "@/features/reminder/components/reminder/reminder-page"
+import {
+  fetchReminderData,
+  reminderData,
+} from "@/features/reminder/action/action"
+import { getReminder } from "@/features/reminder/api/api"
 
 const ReminderPage = () => {
   const params = useParams()
   const id = params.id as string
 
-  const isReminder = ReminderData.some((s: any) => s.id === id)
+  const isReminder = reminderData.some((s: any) => s.id === id)
   const finalType = isReminder ? "Reminder" : "Announcement || Offer"
 
   const [activeTab, setActiveTab] = useState(finalType)

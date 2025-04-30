@@ -9,11 +9,17 @@ import AdminSupportForm from "@/features/help-support/components/admin-support"
 import Breadcrumbs from "@/components/shared/bread-crumb"
 import Heading from "@/components/admin/heading"
 import { UserCog } from "lucide-react"
-import CustomerTickerPage from "@/features/help-support/components/customer-ticket-page"
 import CustomerTicketPage from "@/features/help-support/components/customer-ticket-page"
+
 const SupportPage = () => {
   const [activeTab, setActiveTab] = useState("Contact Information")
-  const [mActiveTab, setMActiveTab] = useState("Contact")
+
+  const tabMap: Record<string, string> = {
+    Contact: "Contact Information",
+    FAQs: "Frequently Asked Questions (FAQs)",
+    Issues: "Customer Support",
+    Support: "Admin Support",
+  }
 
   const tabs = [
     "Contact Information",
@@ -21,7 +27,13 @@ const SupportPage = () => {
     "Customer Support",
     "Admin Support",
   ]
+
   const mTabs = ["Contact", "FAQs", "Issues", "Support"]
+
+  const handleMobileTabChange = (mobileTab: string) => {
+    const mapped = tabMap[mobileTab]
+    if (mapped) setActiveTab(mapped)
+  }
 
   return (
     <div>
@@ -33,30 +45,31 @@ const SupportPage = () => {
           icon={<UserCog />}
         />
       </div>
+
       <Card className="h-full overflow-y-auto p-4 md:p-6">
+        {/* Desktop Tabs */}
         <PageTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
           customTabs={tabs}
           clasName="hidden md:block"
         />
+
+        {/* Mobile Tabs */}
         <PageTabs
-          activeTab={mActiveTab}
-          onTabChange={setMActiveTab}
+          activeTab={
+            Object.keys(tabMap).find((key) => tabMap[key] === activeTab) ||
+            "Contact"
+          }
+          onTabChange={handleMobileTabChange}
           customTabs={mTabs}
           clasName="block md:hidden"
         />
-        {(activeTab === "Contact Information" || activeTab === "Contact ") && (
-          <ContactInformationForm />
-        )}
-        {(activeTab === "Frequently Asked Questions (FAQs)" ||
-          activeTab === "FAQs") && <FAQSection />}
-        {(activeTab === "Customer Support" || activeTab === "Issues") && (
-          <CustomerTicketPage />
-        )}
-        {(activeTab === "Admin Support" || activeTab === "Support") && (
-          <AdminSupportForm />
-        )}
+
+        {activeTab === "Contact Information" && <ContactInformationForm />}
+        {activeTab === "Frequently Asked Questions (FAQs)" && <FAQSection />}
+        {activeTab === "Customer Support" && <CustomerTicketPage />}
+        {activeTab === "Admin Support" && <AdminSupportForm />}
       </Card>
     </div>
   )

@@ -53,7 +53,7 @@ const CheckboxGroupField = ({
             <FormLabel>{label}</FormLabel>
           </div>
           <div className="flex flex-col md:flex-row flex-wrap gap-4">
-            {options.map((option) => (
+            {options?.map((option) => (
               <div key={option} className="flex items-center gap-2">
                 <FormControl>
                   <Checkbox

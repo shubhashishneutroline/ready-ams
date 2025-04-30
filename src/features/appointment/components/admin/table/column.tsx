@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   DropdownMenu,
@@ -7,23 +7,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import {
   Eye,
   FilePenLine,
   Trash2,
   Settings,
   MoreHorizontal,
-} from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header";
-import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { getServices } from "@/features/service/api/api";
+} from "lucide-react"
+import { ColumnDef } from "@tanstack/react-table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
+import { useRouter } from "next/navigation"
+import { format } from "date-fns"
+import { getServices } from "@/features/service/api/api"
 
-import { deleteAppointment } from "@/features/appointment/api/api";
+import { deleteAppointment } from "@/features/appointment/api/api"
+import { capitalizeOnlyFirstLetter } from "@/utils/utils"
+import { getStatusStyles } from "@/features/appointment/lib/lib"
 
 // Service cell component to handle async data fetching
 // const ServiceCell = ({ serviceId }: { serviceId: string }) => {
@@ -41,7 +43,7 @@ import { deleteAppointment } from "@/features/appointment/api/api";
 //   return <div>{serviceName}</div>;
 // };
 
-const serviceData = await getServices();
+const serviceData = await getServices()
 
 // Define columns for the payment table
 export const columns: ColumnDef<any>[] = [
@@ -81,15 +83,15 @@ export const columns: ColumnDef<any>[] = [
       <DataTableColumnHeader column={column} title="Phone Number" />
     ),
     cell: ({ row }) => {
-      const phone = row.getValue("phone") as string;
-      if (!phone) return null;
+      const phone = row.getValue("phone") as string
+      if (!phone) return null
 
       // Format as +977 986-137-8912
       const formatted = phone.replace(
         /^(\+\d{3})(\d{3})(\d{3})(\d{4})$/,
         "$1 $2-$3-$4"
-      );
-      return <div>{formatted}</div>;
+      )
+      return <div>{formatted}</div>
     },
   },
   {
@@ -100,19 +102,36 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const selectedService = serviceData?.find(
         (s: any) => s.id === row.original.serviceId
-      );
-      return <div>{selectedService?.title || "N/A"}</div>;
+      )
+      return <div>{selectedService?.title || "N/A"}</div>
     },
   },
-
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+      const status = row.original.status
+      const { bg, dot, text } = getStatusStyles(status)
+      return (
+        <div
+          className={`flex gap-2 items-center w-[120px] text-[12px] py-[4px] px-3 rounded-lg ${bg} ${text}`}
+        >
+          <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
+          {capitalizeOnlyFirstLetter(status)}
+        </div>
+      )
+    },
+  },
   {
     accessorKey: "selectedDate",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }) => {
-      const date = new Date(row.getValue("selectedDate"));
-      return <div>{format(date, "dd MMMM yyyy")}</div>;
+      const date = new Date(row.getValue("selectedDate"))
+      return <div>{format(date, "dd MMMM yyyy")}</div>
     },
   },
   {
@@ -121,8 +140,8 @@ export const columns: ColumnDef<any>[] = [
       <DataTableColumnHeader column={column} title="Time" />
     ),
     cell: ({ row }) => {
-      const time = new Date(row.getValue("selectedTime"));
-      return <div>{format(time, "hh:mm a")}</div>;
+      const time = new Date(row.getValue("selectedTime"))
+      return <div>{format(time, "hh:mm a")}</div>
     },
   },
 
@@ -130,7 +149,7 @@ export const columns: ColumnDef<any>[] = [
     id: "actions",
     // Actions dropdown for each row
     cell: ({ row }) => {
-      const router = useRouter();
+      const router = useRouter()
       // Return the actions dropdown menu for each payment row
       return (
         <DropdownMenu>
@@ -173,7 +192,7 @@ export const columns: ColumnDef<any>[] = [
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      );
+      )
     },
   },
-];
+]

@@ -89,7 +89,7 @@ const EditCustomerForm = () => {
           phone: customer.phone,
           role: customer.role,
           password: customer.password || "",
-          isActive: Boolean(customer.isActive),
+          isActive: customer.isActive,
         }
         console.log("Setting form data:", formData)
         form.reset(formData)
@@ -113,13 +113,12 @@ const EditCustomerForm = () => {
         phone: formData.phone,
         role: formData.role,
         password: formData.password || "",
-        isActive: Boolean(formData.isActive),
+        isActive: formData.isActive,
       }
-      console.log("Customer Data to Update:", customerData)
       if (!id) {
         throw new Error("Appointment ID is required for updating")
       }
-
+      console.log("Customer Data to Update:", customerData)
       const response = await updateCustomer(id, customerData)
 
       if (response) {

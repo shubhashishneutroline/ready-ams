@@ -1,39 +1,80 @@
 "use client"
-import Breadcrumbs from "@/components/shared/bread-crumb"
-import Heading from "@/components/admin/heading"
-import { BadgePercent, CalendarDays } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import PageTabs from "@/features/business-detail/components/page-tabs"
-import { useState } from "react"
 
-import { reminderColumns } from "@/features/reminder/components/reminder/columns"
+import React, { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { Card } from "@/components/ui/card"
+
+import PageTabs from "@/features/business-detail/components/page-tabs"
 import TableFilterTabs from "@/components/shared/table/table-filter-tabs"
 import TablePageHeader from "@/components/shared/table/table-page-header"
-import { useRouter } from "next/navigation"
-import { announcementColumns } from "../announcment/columns"
 import { DataTable } from "./data-table"
+
 import { getReminder } from "../../api/api"
 import { getAnnouncement } from "@/features/announcement-offer/api/api"
-
-export const ReminderData = await getReminder()
-export const AnnouncementData = await getAnnouncement()
+import { reminderColumns } from "@/features/reminder/components/reminder/columns"
+import { announcementColumns } from "../announcment/columns"
+import dayjs from "dayjs"
+import { AnnouncementOrOffer, Reminder } from "@/data/structure"
 
 const ReminderTabsPage = () => {
-  const [activeTab, setActiveTab] = useState("Reminder")
   const router = useRouter()
+  const [activeTab, setActiveTab] = useState("Reminder")
+
+  const [reminders, setReminders] = useState<Reminder[]>([])
+  const [announcements, setAnnouncements] = useState<AnnouncementOrOffer[]>([])
+  const [filterType, setFilterType] = useState("today")
+
+  const [filteredReminders, setFilteredReminders] = useState<Reminder[]>([])
+  const [filteredAnnouncements, setFilteredAnnouncements] = useState<
+    AnnouncementOrOffer[]
+  >([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const reminderData = await getReminder()
+      const announcementData = await getAnnouncement()
+      setReminders(reminderData)
+      setAnnouncements(announcementData)
+    }
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    const today = dayjs().startOf("day")
+
+    const filterData = (items: any[]) =>
+      items.filter((item) => {
+        const itemDate = dayjs(item.selectedDate).startOf("day")
+
+        switch (filterType) {
+          case "today":
+            return itemDate.isSame(today)
+          case "upcoming":
+            return itemDate.isAfter(today)
+          case "completed":
+            return item.status === "COMPLETED"
+          default:
+            return true
+        }
+      })
+
+    setFilteredReminders(filterData(reminders))
+    setFilteredAnnouncements(filterData(announcements))
+  }, [reminders, announcements, filterType])
 
   return (
-    <div className="max-w-screen">
-      <Card className="h-full p-2 w-full">
+    <div className="flex pr-10 md:pr-0 flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
+      <Card className="h-full w-full p-4">
         <PageTabs
           isReminder
           activeTab={activeTab}
           onTabChange={(tab) => setActiveTab(tab)}
         />
-        {/* {activeTab === "Reminder" ? <ReminderForm /> : <AnnouncementForm />} */}
+
+        <TableFilterTabs onChange={setFilterType} />
+
         {activeTab === "Reminder" ? (
-          <div className="flex pr-8 sm:pr-10 xl:pr-0 flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
-            <TableFilterTabs />
+          <>
             <TablePageHeader
               title="Reminder"
               description="Manage and Customize your business"
@@ -42,22 +83,23 @@ const ReminderTabsPage = () => {
                 router.push("/reminders/create/")
               }}
             />
-            <DataTable columns={reminderColumns} data={ReminderData} />
-          </div>
+            <DataTable columns={reminderColumns} data={filteredReminders} />
+          </>
         ) : (
-          <div className="flex pr-8 sm:pr-10  xl:pr-0 flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
-            <TableFilterTabs />
+          <>
             <TablePageHeader
               title="Announcement"
               description="Manage and Customize your business"
               newButton="New Announcement"
               handleClick={() => {
-                router.push("/reminders/create/")
+                router.push("/announcements/create/")
               }}
             />
-            <DataTable columns={announcementColumns} data={AnnouncementData} />
-          </div>
-          // <AnnouncementForm />
+            <DataTable
+              columns={announcementColumns}
+              data={filteredAnnouncements}
+            />
+          </>
         )}
       </Card>
     </div>

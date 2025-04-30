@@ -21,6 +21,8 @@ import { toast, Toaster } from "sonner"
 import { timeOptions, toMin } from "@/lib/lib"
 import { updateService } from "@/features/service/api/api"
 import { useRouter } from "next/navigation"
+import { businessId } from "@/features/business-detail/action/action"
+import { BusinessDetail } from "../../../../../business-detail/types/types"
 
 // Define types
 export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
@@ -73,6 +75,7 @@ const formatAvailabilityNote = () => {
 }
 
 export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
+  console.log(serviceDetail?.BusinessDetail, "Business details")
   // Derive holidays dynamically
   const holidays: WeekDay[] = serviceDetail?.BusinessDetail?.holiday.map(
     (h: any) => {
@@ -88,7 +91,7 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
       return dayMap[h.holiday]
     }
   )
-
+  console.log(holidays, "holidays at first")
   const router = useRouter()
 
   // Derive breaks dynamically
@@ -180,13 +183,12 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
   )
 
   // Debug logs
-  console.log("ServiceForm Debug - defaultServiceHours:", defaultServiceHours)
-  console.log("ServiceForm Debug - timeOptions:", timeOptions)
 
   // Derive service days
   const defaultServiceDays = days.filter((day) => !holidays?.includes(day))
 
-  console.log("ServiceForm - serviceDetail:", serviceDetail)
+  console.log(days, "hilodays")
+
   const form = useForm({
     defaultValues: {
       serviceName: serviceDetail.title,
@@ -227,7 +229,7 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
               })
             ),
           })),
-        businessDetailId: serviceDetail.businessDetailId,
+        businessDetailId: businessId,
       }
 
       // // Handle image upload if necessary

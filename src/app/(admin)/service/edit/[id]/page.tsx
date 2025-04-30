@@ -1,5 +1,5 @@
+import { getServiceById } from "@/features/service/api/api"
 import EditServiceForm from "@/features/service/components/admin/form/edit/edit-service-form"
-import { getServiceById } from "@/db/service"
 
 const ServicePage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = await params
@@ -12,7 +12,7 @@ const ServicePage = async ({ params }: { params: Promise<{ id: string }> }) => {
     if (id) {
       // 3. Fetch service data
       serviceData = await getServiceById(id)
-      console.log(serviceData, "serviceData")
+      console.log(serviceData, "Out side of the endit file")
     }
   } catch (err) {
     console.error("Error loading data:", err)
