@@ -82,7 +82,7 @@ export const columns: ColumnDef<Customer>[] = [
       const { bg: bgRole, dot: dotRole, text: textRole } = getRoleStyles(role)
       return (
         <div
-          className={`w-[80px] flex gap-2 items-center text-[12px] py-[3px] px-3 rounded-lg ${bgRole} ${textRole}`}
+          className={`w-[110px] flex gap-2 items-center text-[13px] py-[3px] px-3 rounded-lg ${bgRole} ${textRole}`}
         >
           <div className={`w-1.5 h-1.5 rounded-full ${dotRole}`}></div>
           {capitalizeOnlyFirstLetter(role)}
@@ -100,7 +100,7 @@ export const columns: ColumnDef<Customer>[] = [
       const { bg, dot, text } = getActiveStatusStyles(isActive)
       return (
         <div
-          className={`w-[80px] flex gap-2 items-center text-[12px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
+          className={`w-[100px] flex gap-2 items-center text-[13px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
         >
           <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
           {isActive ? "Active" : "Inactive"}

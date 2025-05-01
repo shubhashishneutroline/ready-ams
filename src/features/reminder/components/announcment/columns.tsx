@@ -24,7 +24,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 // import { capitalizeFirstChar } from "@/utils/utils";
 import { getServices } from "@/features/service/api/api"
 import { Reminder } from "../../api/api"
-import { shortenText } from "../../lib/lib"
+import {
+  getAnnouncementShowOnStyles,
+  getAudienceLabel,
+  getBadgeColor,
+  shortenText,
+} from "../../lib/lib"
 import {
   TooltipProvider,
   Tooltip,
@@ -35,6 +40,7 @@ import { AnnouncementOrOffer } from "@/features/announcement-offer/types/types"
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
 import { Badge } from "@/components/ui/badge"
 import { deleteAnnouncement } from "@/features/announcement-offer/api/api"
+import { capitalizeOnlyFirstLetter } from "@/utils/utils"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -147,38 +153,33 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
       <DataTableColumnHeader column={column} title="Audience" />
     ),
     cell: ({ row }) => {
-      const audience = row.getValue("audience") as string
-
-      const getAudienceLabel = (value: string) => {
-        switch (value) {
-          case "APPOINTED_USERS":
-            return "Appointed"
-          case "CANCELLED_USERS":
-            return "Cancelled"
-          case "ALL":
-            return "All"
-          default:
-            return "Unknown"
-        }
-      }
-
-      const getAudienceVariant = (value: string) => {
-        switch (value) {
-          case "APPOINTED_USERS":
-            return "default" // primary badge
-          case "CANCELLED_USERS":
-            return "destructive" // red badge
-          case "ALL":
-            return "secondary" // grey badge
-          default:
-            return "outline" // outlined badge
-        }
-      }
-
+      const type = row.original.audience
+      const { bg, dot, text } = getBadgeColor(type)
       return (
-        <Badge variant={getAudienceVariant(audience)}>
-          {getAudienceLabel(audience)}
-        </Badge>
+        <div
+          className={`w-[100px] flex gap-2 items-center text-[13px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
+        >
+          <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
+          {getAudienceLabel(type)}
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: "showOn",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Show On" />
+    ),
+    cell: ({ row }) => {
+      const type = row.original.showOn
+      const { bg, dot, text } = getAnnouncementShowOnStyles(type)
+      return (
+        <div
+          className={`w-[100px] flex gap-2 items-center text-[13px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
+        >
+          <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
+          {capitalizeOnlyFirstLetter(type)}
+        </div>
       )
     },
   },

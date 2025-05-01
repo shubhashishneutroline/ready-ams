@@ -245,6 +245,7 @@ export enum ExpirationDuration {
 
 // Interface for AnnouncementOrOffer
 export interface AnnouncementOrOffer {
+  id?: string | undefined
   title: string // Required field for the title of the announcement or offer
   description?: string // Optional: Description of the announcement or offer
   message?: string // Optional: Custom message for the announcement or offer

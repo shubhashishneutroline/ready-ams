@@ -16,14 +16,11 @@ import {
   MoreHorizontal,
   Settings,
   Trash2,
-  ArrowUpDown,
-  MoreVertical,
 } from "lucide-react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
 
-import { capitalizeFirstChar } from "../../../../../utils/utils"
 import { deleteService, Service } from "@/features/service/api/api"
 import { shortenText } from "@/features/reminder/lib/lib"
 import {
@@ -98,7 +95,7 @@ export const columns: ColumnDef<Service>[] = [
       const { bg, dot, text } = getActiveStatusStyles(isActive)
       return (
         <div
-          className={`w-[80px] flex gap-2 items-center text-[12px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
+          className={`w-[100px] flex gap-2 items-center text-[13px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
         >
           <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
           {isActive ? "Active" : "Inactive"}

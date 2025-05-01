@@ -116,7 +116,7 @@ export const columns: ColumnDef<any>[] = [
       const { bg, dot, text } = getStatusStyles(status)
       return (
         <div
-          className={`flex gap-2 items-center w-[120px] text-[12px] py-[4px] px-3 rounded-lg ${bg} ${text}`}
+          className={`flex gap-2 items-center w-[100px] text-[13px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
         >
           <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
           {capitalizeOnlyFirstLetter(status)}

@@ -24,7 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 // import { capitalizeFirstChar } from "@/utils/utils";
 import { getServices } from "@/features/service/api/api"
 import { deleteReminder, Reminder } from "../../api/api"
-import { shortenText } from "../../lib/lib"
+import { getReminderTypeStyles, shortenText } from "../../lib/lib"
 import {
   TooltipProvider,
   Tooltip,
@@ -32,6 +32,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { toast } from "sonner"
+import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
+import { getActiveStatusStyles } from "@/features/service/lib/lib"
+import { capitalizeOnlyFirstLetter } from "@/utils/utils"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -105,6 +108,24 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+      )
+    },
+  },
+  {
+    accessorKey: "type",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Type" />
+    ),
+    cell: ({ row }) => {
+      const type = row.original.type
+      const { bg, dot, text } = getReminderTypeStyles(type)
+      return (
+        <div
+          className={`w-[100px] flex gap-2 items-center text-[13px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
+        >
+          <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
+          {type === "FOLLOW_UP" ? "Follow up" : capitalizeOnlyFirstLetter(type)}
+        </div>
       )
     },
   },

@@ -67,7 +67,7 @@ export function DataTable<TData, TValue>({
 
         <DataTableColumnToggle table={table} />
       </div>
-      <div className="rounded-md border ">
+      <div className="rounded-md border max-h-[600px] overflow-y-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
