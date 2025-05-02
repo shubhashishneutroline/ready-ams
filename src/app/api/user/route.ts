@@ -62,6 +62,9 @@ export async function GET() {
   try {
     // get all users
     const users = await prisma.user.findMany({
+      where: {
+        role: Role.USER,
+      },
       select: {
         id: true,
         email: true,

@@ -4,14 +4,16 @@
 import { useEffect, useState, useCallback } from "react"
 import { useAppointmentStore } from "@/state/store"
 import { columns } from "./_components/column"
-import { getAppointments } from "./_action/appoinement"
 import { DataTable } from "@/components/table/data-table"
 import PageTabs from "@/components/shared/page-tabs"
 import TablePageHeader from "@/components/table/table-header"
 import { Appointment } from "@prisma/client"
 import { isSameDay } from "date-fns"
 import { toast } from "sonner"
-import { deleteAppointment } from "@/features/appointment/api/api" // Correct import
+import {
+  deleteAppointment,
+  getAppointments,
+} from "@/features/appointment/api/api" // Correct import
 
 const pageOptions = [
   "Today",
@@ -38,8 +40,8 @@ const AppointmentPage = () => {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await getAppointments()
-      const filteredData = response.filter((item: Appointment) => {
+      const { data } = await getAppointments()
+      const filteredData = data?.filter((item: Appointment) => {
         if (activeTab === "Today") {
           return isSameDay(new Date(item.selectedDate), new Date())
         } else if (activeTab === "Upcoming") {
@@ -53,7 +55,7 @@ const AppointmentPage = () => {
         }
         return true // "All" tab
       })
-      setData(filteredData)
+      setData(filteredData || [])
     } catch (error) {
       console.error("Error fetching data:", error)
       toast.error("Failed to load appointments")
@@ -107,7 +109,11 @@ const AppointmentPage = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <DataTable columns={columns(handleDelete)} data={data} />
+            <DataTable
+              columns={columns(handleDelete)}
+              data={data}
+              searchFieldName="customerName"
+            />
           </div>
         )}
       </div>

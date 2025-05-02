@@ -1,5 +1,5 @@
 import { getBaseUrl } from "@/lib/baseUrl"
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 const api = axios.create({
   baseURL: getBaseUrl(),
@@ -43,13 +43,25 @@ async function getCoustomersById(id: string) {
   }
 }
 
-async function createCustomer(customerData: Customer) {
+async function createCustomer(customerData: Customer): Promise<{
+  data?: Customer
+  success: boolean
+  error?: string
+  message?: string
+}> {
   try {
     const { data } = await api.post("/api/user", customerData)
-    return data
+    console.log(data, "inside create func")
+    return { data, success: true }
   } catch (error) {
-    console.error("Error creating Customer:", error)
-    throw error
+    if (error instanceof AxiosError) {
+      return {
+        message: error?.response?.data.error,
+        success: false,
+        error: error.message,
+      } // Issue here
+    }
+    return { error: "Failed to create Customer", success: false }
   }
 }
 
@@ -81,11 +93,9 @@ async function updateCustomer(id: string, customerData: Omit<Customer, "id">) {
   }
 }
 
-async function deleteCustomer(customer: Omit<Customer, "id">) {
+async function deleteCustomer(id: string) {
   try {
-    const { data } = await api.delete(`/api/user`, {
-      data: customer,
-    })
+    const { data } = await api.delete(`/api/user${id}`)
     return data
   } catch (error) {
     console.error("Error deleting Customer:", error)

@@ -264,7 +264,7 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
 
   return (
     <FormProvider {...form}>
-      <Toaster position="top-right" />
+      {/* <Toaster position="top-right" /> */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="">
           <div className="space-y-6">

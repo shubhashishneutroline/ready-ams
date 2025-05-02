@@ -12,12 +12,12 @@ export default function TableSearch<TData>({
 }: DataTableSearchProps<TData>) {
   return (
     <Input
-      placeholder={`Search by ${capitalizeFirstChar(name)} . . .`}
+      placeholder={`Search by ${name} . . .`}
       value={(table.getColumn(name)?.getFilterValue() as string) ?? ""}
       onChange={(event) =>
         table.getColumn(name)?.setFilterValue(event.target.value)
       }
-      className="max-w-xs sm:max-w-sm rounded-md h-8 md:h-9 text-sm md:text-md"
+      className="max-w-xs sm:max-w-sm rounded-md h-8 md:h-9 text-sm md:text-md capitalize"
     />
   )
 }

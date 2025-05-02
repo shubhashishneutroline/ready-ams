@@ -1,5 +1,6 @@
 import { getBaseUrl } from "@/lib/baseUrl"
-import axios from "axios"
+import { Appointment } from "@prisma/client"
+import axios, { AxiosError } from "axios"
 
 const api = axios.create({
   baseURL: getBaseUrl(),
@@ -24,39 +25,68 @@ export interface AppointmentData {
   status?: string
 }
 
-async function getAppointments() {
+async function getAppointments(): Promise<{
+  data?: Appointment[]
+  success: boolean
+  error?: string
+  message?: string
+}> {
   try {
     const { data } = await api.get("/api/appointment")
-    return data
+    return { data, success: true }
   } catch (error) {
     console.error("Error fetching appointments:", error)
-    return []
+    if (error instanceof AxiosError) {
+      return {
+        message: error?.response?.data.error,
+        success: false,
+        error: error.message,
+      } // Issue here
+    }
+    return { error: "Failed to fetch appointment by Id", success: false }
   }
 }
 
-async function getAppointmentById(id: string) {
+async function getAppointmentById(id: string): Promise<{
+  data?: Appointment
+  success: boolean
+  error?: string
+  message?: string
+}> {
   try {
-    const { data } = await api.get("/api/appointment", {
-      params: { id },
-    })
-    const appointment = data.find(
-      (appointment: AppointmentData) => appointment.id === id
-    )
+    const { data } = await api.get(`/api/appointment/${id}`)
 
-    return appointment
+    return { data, success: true }
   } catch (error) {
-    console.error("Error fetching appointment:", error)
-    throw error
+    if (error instanceof AxiosError) {
+      return {
+        message: error?.response?.data.error,
+        success: false,
+        error: error.message,
+      } // Issue here
+    }
+    return { error: "Failed to fetch appointment by Id", success: false }
   }
 }
 
-async function createAppointment(appointmentData: AppointmentData) {
+async function createAppointment(appointmentData: AppointmentData): Promise<{
+  data?: AppointmentData
+  success: boolean
+  error?: string
+  message?: string
+}> {
   try {
     const { data } = await api.post("/api/appointment", appointmentData)
-    return data
+    return { data, success: true }
   } catch (error) {
-    console.error("Error creating appointment:", error)
-    throw error
+    if (error instanceof AxiosError) {
+      return {
+        message: error?.response?.data.error,
+        success: false,
+        error: error.message,
+      } // Issue here
+    }
+    return { error: "Failed to creating appointment", success: false }
   }
 }
 
@@ -70,20 +100,34 @@ async function updateAppointment(
       id,
       status: appointmentData.status || "SCHEDULED",
     })
-    return data
+    return { data, success: true }
   } catch (error) {
-    console.error("Error updating appointment:", error)
-    throw error
+    if (error instanceof AxiosError) {
+      return {
+        message: error?.response?.data.error,
+        success: false,
+        error: error.message,
+      } // Issue here
+    }
+    return { error: "Failed to updating appointment", success: false }
   }
 }
 
-async function deleteAppointment(id: string) {
+async function deleteAppointment(
+  id: string
+): Promise<{ success: boolean; error?: string; message?: string }> {
   try {
     const { data } = await api.delete(`/api/appointment/${id}`, {})
-    return data
+    return { message: "Appointment deleted successfully", success: true }
   } catch (error) {
-    console.error("Error deleting appointment:", error)
-    throw error
+    if (error instanceof AxiosError) {
+      return {
+        message: error?.response?.data.error,
+        success: false,
+        error: error.message,
+      } // Issue here
+    }
+    return { error: "Failed to delete appointment", success: false }
   }
 }
 

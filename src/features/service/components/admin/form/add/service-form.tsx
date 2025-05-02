@@ -81,8 +81,6 @@ export default function ServiceForm({
     (day) => !businessAvailability.holidays.includes(day)
   )
 
-
-
   const router = useRouter()
 
   // Dynamically set default serviceHours, empty for holidays
@@ -152,7 +150,7 @@ export default function ServiceForm({
 
   return (
     <FormProvider {...form}>
-      <Toaster position="top-right" />
+      {/* <Toaster position="top-right" /> */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="">
           <div className="space-y-6">

@@ -26,3 +26,14 @@ export const useAppointmentStore = create<AppointmentState>((set) => ({
   activeTab: "Today",
   onActiveTab: (tab: string) => set({ activeTab: tab }),
 }))
+
+// Customer State
+type CustomerState = {
+  activeTab: string
+  onActiveTab: (tab: string) => void
+}
+
+export const useCustomerStore = create<CustomerState>((set) => ({
+  activeTab: "Active",
+  onActiveTab: (tab: string) => set({ activeTab: tab }),
+}))

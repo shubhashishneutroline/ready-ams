@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   ColumnDef,
@@ -11,7 +11,7 @@ import {
   VisibilityState,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 
 import {
   Table,
@@ -20,27 +20,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
+} from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
 
-import { DataTableColumnToggle } from "@/components/shared/table/data-table-toggle-column";
-import TableSearch from "../../../../../components/shared/table/table-search";
-import { DataTablePagination } from "@/components/shared/table/data-table-pagination";
+import { DataTableColumnToggle } from "@/components/shared/table/data-table-toggle-column"
+import TableSearch from "../../../../../components/table/table-search"
+import { DataTablePagination } from "@/components/shared/table/data-table-pagination"
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
   const table = useReactTable({
     data,
     columns,
@@ -58,7 +58,7 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
     },
-  });
+  })
 
   return (
     <div className="flex flex-col gap-4">
@@ -82,7 +82,7 @@ export function DataTable<TData, TValue>({
                             header.getContext()
                           )}
                     </TableHead>
-                  );
+                  )
                 })}
               </TableRow>
             ))}
@@ -119,5 +119,5 @@ export function DataTable<TData, TValue>({
       </div>
       <DataTablePagination table={table} />
     </div>
-  );
+  )
 }

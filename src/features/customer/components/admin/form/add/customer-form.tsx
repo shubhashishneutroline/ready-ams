@@ -1,3 +1,4 @@
+// app/(admin)/customer/create/CustomerForm.tsx
 "use client"
 
 import { useState } from "react"
@@ -13,6 +14,7 @@ import { useRouter } from "next/navigation"
 import { createCustomer } from "@/features/customer/api/api"
 import { toast, Toaster } from "sonner"
 import FormHeader from "@/components/admin/form-header"
+import { Role } from "@/features/customer/types/types"
 
 type FormData = {
   fullName: string
@@ -22,60 +24,58 @@ type FormData = {
   password: string
 }
 
-interface CustomerFormProps {
-  onSubmit: (data: FormData) => void
-}
-
-// Validation schema for create mode
 const createSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address").min(1, "Email is required"),
   phone: z.string().min(1, "Phone number is required"),
   role: z.string().min(1, "Role is required"),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
 const roleOptions = [
-  { value: "USER", label: "Customer" },
-  { value: "ADMIN", label: "Admin" },
-  { value: "SUPERADMIN", label: "Super Admin" },
+  { value: Role.USER, label: "Customer" },
+  { value: Role.ADMIN, label: "Admin" },
+  { value: Role.SUPERADMIN, label: "Super Admin" },
 ]
 
 const CustomerForm = () => {
   const [showPassword, setShowPassword] = useState(false)
-
+  const [isSubmitting, setIsSubmitting] = useState(false) // Add loading state
   const router = useRouter()
 
-  // Initialize form with create schema
   const form = useForm<FormData>({
     resolver: zodResolver(createSchema),
     defaultValues: {
       fullName: "",
       email: "",
-      phone: "95129871987391",
-      role: "",
+      phone: "",
+      role: Role.USER, // Default to USER
       password: "",
     },
   })
 
-  // Handle form submission
   const handleSubmit = async (formData: FormData) => {
+    setIsSubmitting(true)
     try {
       const customerdata = {
         name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
-        role: formData.role,
+        role: formData.role as Role, // Use form role
         password: formData.password,
         isActive: true,
       }
-
-      await createCustomer(customerdata)
-      toast.success("Customer created successfully")
-      router.push("/customer")
-    } catch (error) {
-      console.error("Error creating customer:", error)
-      toast.error("Failed to create customer")
+      const res = await createCustomer(customerdata)
+      if (res.success) {
+        toast.success("Customer created successfully")
+        router.push("/customer")
+      } else {
+        toast.error(res.message || "Failed to create customer")
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create customer")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -85,11 +85,11 @@ const CustomerForm = () => {
 
   return (
     <>
+      {/* <Toaster position="top-right" /> */}
       <FormHeader
         title="Enter Customer Details"
-        description="View and manage your current customers"
+        description="Create a new customer account"
       />
-
       <FormProvider {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
@@ -99,30 +99,24 @@ const CustomerForm = () => {
             <InputField
               name="fullName"
               label="Full Name"
-              placeholder="Enter Service Name"
+              placeholder="Enter full name"
               icon={User}
             />
             <InputField
               name="email"
               label="Email"
               type="email"
-              placeholder="Enter Email Address"
+              placeholder="Enter email address"
               icon={Mail}
             />
             <PhoneField name="phone" label="Phone" />
-            <SelectField
-              name="role"
-              label="Role"
-              placeholder="Select a Role"
-              options={roleOptions}
-              icon={UserCheck}
-            />
+
             <div className="relative">
               <InputField
                 name="password"
                 label="Password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter Password"
+                placeholder="Enter password"
                 icon={Lock}
               />
               <Button
@@ -141,21 +135,22 @@ const CustomerForm = () => {
               </Button>
             </div>
           </div>
-
           <div className="flex flex-col gap-3 md:flex-row justify-between mt-6">
             <Button
               type="button"
               variant="outline"
               className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
               onClick={handleBack}
+              disabled={isSubmitting}
             >
               ← Back
             </Button>
             <Button
               type="submit"
               className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+              disabled={isSubmitting}
             >
-              Create User
+              {isSubmitting ? "Creating..." : "Create User"}
             </Button>
           </div>
         </form>
