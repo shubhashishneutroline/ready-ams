@@ -23,13 +23,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 flex flex-col space-y-4">
+        <div className="flex-1 flex flex-col space-y-4 w-full h-full">
           {/* Header */}
           <Header />
 
           {/* Main Content */}
           <Toaster position="bottom-right" />
-          <div className="flex-1 overflow-y-auto shadow">{children}</div>
+          <div className="flex-1 overflow-auto shadow">{children}</div>
         </div>
       </div>
     </div>

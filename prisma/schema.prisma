@@ -33,8 +33,10 @@ model User {
 
   address Address? // Optional one-to-one relation to Address
 
-  FAQ    FAQ[] // FAQs created/updated by this user
-  Ticket Ticket[] // Support tickets raised by this user
+  FAQ        FAQ[] // FAQs created/updated by this user
+  Ticket     Ticket[] // Support tickets raised by this user
+  individual Individual?
+  events     Event[]
 }
 
 model Address {
@@ -112,7 +114,6 @@ enum ReminderType {
   CUSTOM // Flexible, admin-defined timing
 }
 
-
 enum NotificationMethod {
   SMS
   EMAIL
@@ -146,7 +147,14 @@ model AppointmentReminderOffset {
   reminderOffset   ReminderOffset @relation(fields: [reminderOffsetId], references: [id], onDelete: Cascade)
   reminderOffsetId String // Foreign key to ReminderOffset
   scheduledAt      DateTime // When this reminder should fire
-  sent             Boolean        @default(false) // Whether it’s been sent
+  status           ReminderStatus @default(PENDING)
+}
+
+enum ReminderStatus {
+  PENDING // Not yet processed
+  TRIGGERED // Scheduled to be sent (e.g. via inngest ts)
+  SENT // Actually sent successfully
+  FAILED // Attempted but failed
 }
 
 model Notification {
@@ -210,7 +218,7 @@ model AnnouncementOrOffer {
   expiredAt ExpirationDuration @default(THIRTY_DAYS) // When it expires
 
   createdAt DateTime @default(now()) // Creation timestamp
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 }
 
 enum Showon {
@@ -294,7 +302,7 @@ enum BusinessTimeType {
 model BusinessTime {
   id                     String               @id @default(cuid()) // Unique ID
   businessAvailability   BusinessAvailability @relation(fields: [businessAvailabilityId], references: [id], onDelete: Cascade)
-  type                   BusinessTimeType      @default(WORK)
+  type                   BusinessTimeType     @default(WORK)
   businessAvailabilityId String // Foreign key
   startTime              DateTime // Start time
   endTime                DateTime // End time
@@ -411,4 +419,61 @@ model Resource {
   updatedAt DateTime @updatedAt // Last update
 }
 
+// -------- Individual
 
+model Individual {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  bio             String?
+  position        String // e.g. "Product Designer", "Marketing Coach"
+  profileImage    String?
+  country         String
+  zoomAccessToken String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
+  events          Event[]
+}
+
+enum VideoProvider {
+  ZOOM
+  GOOGLE_MEET
+}
+
+model Meeting {
+  id            String         @id @default(cuid())
+  eventId       String
+  timeSlot      DateTime
+  bookedByName  String
+  bookedByEmail String
+  customAnswers Json?
+  videoUrl      String?
+  videoProvider VideoProvider?
+  slug          String?        @unique
+  event         Event          @relation(fields: [eventId], references: [id])
+}
+
+model Availability {
+  id        String @id @default(cuid())
+  eventId   String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  duration  Int
+  event     Event  @relation(fields: [eventId], references: [id])
+}
+
+model Event {
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  location     String // e.g. Zoom, Google Meet
+  slug         String         @unique
+  userId       String
+  user         User           @relation(fields: [userId], references: [id])
+  createdAt    DateTime       @default(now())
+  individualId String
+  individual   Individual     @relation(fields: [individualId], references: [id])
+  availability Availability[]
+  meetings     Meeting[]
+}

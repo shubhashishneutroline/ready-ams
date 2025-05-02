@@ -1,73 +1,115 @@
+// app/(admin)/appointments/page.tsx
 "use client"
 
-import React, { useEffect, useState } from "react"
-import TableFilterTabs from "@/components/shared/table/table-filter-tabs"
-import TablePageHeader from "@/components/shared/table/table-page-header"
-import { useRouter } from "next/navigation"
-import { DataTable } from "@/features/help-support/components/data-table"
-import { columns } from "@/features/appointment/components/admin/table/column"
-import { getAppointments } from "@/features/appointment/api/api"
-import dayjs from "dayjs"
-import CustomerCard from "@/features/customer/components/admin/table/customer-cards"
-import AppointmentCard from "@/features/appointment/components/admin/table/appointment-card"
+import { useEffect, useState, useCallback } from "react"
+import { useAppointmentStore } from "@/state/store"
+import { columns } from "./_components/column"
+import { getAppointments } from "./_action/appoinement"
+import { DataTable } from "@/components/table/data-table"
+import PageTabs from "@/components/shared/page-tabs"
+import TablePageHeader from "@/components/table/table-header"
+import { Appointment } from "@prisma/client"
+import { isSameDay } from "date-fns"
+import { toast } from "sonner"
+import { deleteAppointment } from "@/features/appointment/api/api" // Correct import
+
+const pageOptions = [
+  "Today",
+  "Upcoming",
+  "Completed",
+  "Cancelled",
+  "Missed",
+  "All",
+]
+
+export enum AppointmentStatus {
+  SCHEDULED = "SCHEDULED",
+  COMPLETED = "COMPLETED",
+  MISSED = "MISSED",
+  CANCELLED = "CANCELLED",
+  FOLLOW_UP = "FOLLOW_UP",
+}
 
 const AppointmentPage = () => {
-  const router = useRouter()
-  const [appointments, setAppointments] = useState([])
-  const [filteredAppointments, setFilteredAppointments] = useState([])
-  const [filterType, setFilterType] = useState("today")
+  const { activeTab, onActiveTab } = useAppointmentStore()
+  const [data, setData] = useState<Appointment[]>([])
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      const data = await getAppointments()
-      setAppointments(data)
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const response = await getAppointments()
+      const filteredData = response.filter((item: Appointment) => {
+        if (activeTab === "Today") {
+          return isSameDay(new Date(item.selectedDate), new Date())
+        } else if (activeTab === "Upcoming") {
+          return item.status === AppointmentStatus.SCHEDULED
+        } else if (activeTab === "Completed") {
+          return item.status === AppointmentStatus.COMPLETED
+        } else if (activeTab === "Missed") {
+          return item.status === AppointmentStatus.MISSED
+        } else if (activeTab === "Cancelled") {
+          return item.status === AppointmentStatus.CANCELLED
+        }
+        return true // "All" tab
+      })
+      setData(filteredData)
+    } catch (error) {
+      console.error("Error fetching data:", error)
+      toast.error("Failed to load appointments")
+    } finally {
+      setLoading(false)
     }
+  }, [activeTab])
 
-    fetchAppointments()
-  }, [])
+  const handleDelete = useCallback(
+    async (id: string) => {
+      console.log("Deleting appointment with ID:", id)
+
+      try {
+        const res = await deleteAppointment(id) // Use correct API
+        if (res) {
+          setData((prevData) => prevData.filter((item) => item.id !== id))
+          toast.success("Appointment deleted successfully")
+        } else {
+          throw new Error("Deletion failed")
+        }
+      } catch (error) {
+        console.error("Error deleting appointment:", error)
+        toast.error("Failed to delete appointment")
+      }
+    },
+    [data] // Include data as a dependency
+  )
 
   useEffect(() => {
-    const today = dayjs().format("YYYY-MM-DD")
-
-    const filtered = appointments.filter((appointment: any) => {
-      const appointmentDate = dayjs(appointment.selectedDate).format(
-        "YYYY-MM-DD"
-      )
-
-      switch (filterType) {
-        case "today":
-          return appointmentDate === today
-        case "upcoming":
-          return appointmentDate > today
-        case "completed":
-          return appointment.status === "COMPLETED"
-        case "all":
-        default:
-          return true
-      }
-    })
-
-    setFilteredAppointments(filtered)
-  }, [appointments, filterType])
+    fetchData()
+  }, [fetchData])
 
   return (
-    <div className="flex  flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
-      <TableFilterTabs onChange={setFilterType} />
-      <TablePageHeader
-        title="Appointment"
-        description="Manage and Customize Appointment Here."
-        newButton="New Appointment"
-        handleClick={() => {
-          router.push("/appointment/create/")
-        }}
-      />
-      <div className=" hidden md:block">
-        <DataTable columns={columns} data={filteredAppointments} />
-      </div>
-      <div className="block md:hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredAppointments?.map((appointment: any, index: number) => (
-          <AppointmentCard key={index} appointment={appointment} />
-        ))}
+    <div className="h-full w-full flex flex-col">
+      <div className="space-y-4">
+        <PageTabs
+          isReminder
+          activeTab={activeTab}
+          onTabChange={onActiveTab}
+          customTabs={pageOptions}
+        />
+        <TablePageHeader
+          title="Appointment"
+          description="Manage and Customize Appointment Here."
+          newButton="New Appointment"
+          route="/appointment/create/"
+        />
+        {loading ? (
+          <div className="flex justify-center items-center py-20 text-muted-foreground">
+            Loading appointments...
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <DataTable columns={columns(handleDelete)} data={data} />
+          </div>
+        )}
       </div>
     </div>
   )

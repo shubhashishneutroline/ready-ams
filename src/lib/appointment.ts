@@ -31,7 +31,7 @@ export async function createAppointment(appointmentData: Appointment) {
           appointmentId: appointment.id, // Link to this appointment
           reminderOffsetId: offset.id, // Link to the generic offset
           scheduledAt, // Specific time for this reminder
-          sent: false, // Initially not sent
+          status: "PENDING", // Initially not sent
         },
       })
     }
@@ -41,3 +41,73 @@ export async function createAppointment(appointmentData: Appointment) {
   return appointment
 }
 
+// function to create schedule at a specific time in reminder/followup/missed/cancellation
+export async function syncNewReminderOffset(reminderOffsetId: string) {
+  // Fetch the reminder offset along with its reminder and services
+  const reminderOffset = await prisma.reminderOffset.findUnique({
+    where: { id: reminderOffsetId },
+    include: { reminder: { include: { services: true } } },
+  })
+
+  if (!reminderOffset || !reminderOffset.reminder) {
+    throw new Error("Reminder offset not found or invalid reminder")
+  }
+
+  const serviceIds = reminderOffset.reminder.services.map(
+    (service) => service.id
+  )
+  if (!serviceIds.length) return
+
+  const now = new Date()
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) // 7 days ago
+
+  // Default where clause (for "scheduled" type)
+  let appointmentWhere: any = {
+    serviceId: { in: serviceIds },
+  }
+
+  // Adjust the query based on reminder type
+  const reminderType = reminderOffset.reminder.type // scheduled, followup, missed, cancellation
+
+  if (reminderType === "REMINDER") {
+    appointmentWhere.selectedDate = { gt: now }
+    appointmentWhere.status = "SCHEDULED"
+  } else if (reminderType === "FOLLOW_UP") {
+    appointmentWhere.selectedDate = { lte: now, gte: oneWeekAgo }
+    appointmentWhere.status = "COMPLETED"
+  } else if (reminderType === "MISSED") {
+    appointmentWhere.selectedDate = { lte: now, gte: oneWeekAgo }
+    appointmentWhere.status = "MISSED"
+  } else if (reminderType === "CANCELLATION") {
+    appointmentWhere.cancelledDate = { gte: oneWeekAgo, lte: now }
+    appointmentWhere.status = "CANCELLED"
+  }
+
+  // Fetch appointments based on the dynamic where condition
+  const appointments = await prisma.appointment.findMany({
+    where: appointmentWhere,
+  })
+  console.log("appointment", appointments)
+  for (const appointment of appointments) {
+    const scheduledAt = new Date(
+      appointment.selectedDate.getTime() +
+        (reminderOffset.sendBefore
+          ? -reminderOffset.sendOffset
+          : reminderOffset.sendOffset) *
+          60 *
+          1000
+    )
+
+    // Only create appointmentReminderOffset if scheduledAt is still in future
+    if (scheduledAt > now) {
+      await prisma.appointmentReminderOffset.create({
+        data: {
+          appointmentId: appointment.id,
+          reminderOffsetId: reminderOffset.id,
+          scheduledAt,
+          status: "PENDING",
+        },
+      })
+    }
+  }
+}

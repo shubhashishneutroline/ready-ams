@@ -1,15 +1,28 @@
-import { create } from "zustand";
+import { create } from "zustand"
 
 // props of zustand
 type NavState = {
-  isOpen: boolean;
-  onOpen: () => void;
-  onClose: () => void;
-};
+  isOpen: boolean
+  onOpen: () => void
+  onClose: () => void
+}
 
 // state to track nav toggle
 export const useNavStore = create<NavState>((set) => ({
   isOpen: false,
   onOpen: () => set({ isOpen: true }),
   onClose: () => set({ isOpen: false }),
-}));
+}))
+
+// ------ Appointment State
+// export type string = "Today" | "Upcoming" | "Completed" | "All"
+
+type AppointmentState = {
+  activeTab: string
+  onActiveTab: (tab: string) => void
+}
+
+export const useAppointmentStore = create<AppointmentState>((set) => ({
+  activeTab: "Today",
+  onActiveTab: (tab: string) => set({ activeTab: tab }),
+}))

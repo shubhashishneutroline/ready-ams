@@ -39,45 +39,31 @@ const availableTimeSlots = [
 ]
 
 function convertToISODateTime(date: Date, time: string) {
-  // Create a new date object from the selected date
   const selectedDate = new Date(date)
-
-  // Parse the time string (e.g., "02:00 PM")
   const [timeStr, meridiem] = time.split(" ")
   const [hours, minutes] = timeStr.split(":")
-
-  // Convert to 24-hour format
   let hour = parseInt(hours)
   if (meridiem === "PM" && hour !== 12) {
     hour += 12
   } else if (meridiem === "AM" && hour === 12) {
     hour = 0
   }
-
-  // Set the time components on the selected date
   selectedDate.setHours(hour)
   selectedDate.setMinutes(parseInt(minutes))
   selectedDate.setSeconds(0)
   selectedDate.setMilliseconds(0)
-
-  // Return ISO string
   return selectedDate.toISOString()
-}
-
-// Example usage
-const formData = {
-  date: "2025-04-26", // Date in YYYY-MM-DD format
-  time: "12:00 PM", // Time in 12-hour format (12-hour clock with AM/PM)
 }
 
 export default function AppointmentForm() {
   const router = useRouter()
-
   const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([])
+  const [isLoadingServices, setIsLoadingServices] = useState(true)
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
+        setIsLoadingServices(true)
         const services = await getServices()
         const options = services.map((service: Service) => ({
           label: service.title,
@@ -86,9 +72,11 @@ export default function AppointmentForm() {
         setServiceOptions(options as ServiceOption[])
       } catch (error) {
         console.error("Error fetching services:", error)
+        toast.error("Failed to load services")
+      } finally {
+        setIsLoadingServices(false)
       }
     }
-
     fetchServices()
   }, [])
 
@@ -98,7 +86,7 @@ export default function AppointmentForm() {
       lastName: "",
       email: "",
       phone: "",
-      service: "",
+      service: "", // Ensure this is an empty string or a valid service ID
       date: undefined,
       time: "",
       message: "",
@@ -111,7 +99,7 @@ export default function AppointmentForm() {
         customerName: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
         phone: formData.phone,
-        serviceId: formData.service,
+        serviceId: formData.service, // This should be the service ID (value)
         selectedDate: formData.date?.toISOString(),
         selectedTime: convertToISODateTime(formData.date, formData.time),
         message: formData.message,
@@ -121,7 +109,7 @@ export default function AppointmentForm() {
         createdById: "cm9gu8ms60000vdg0zdnsxb6z",
         status: "SCHEDULED",
       }
-      console.log(appointmentData, "appointmentData")
+      console.log("Submitting appointment:", appointmentData)
       await createAppointment(appointmentData)
       toast.success("Appointment created successfully")
       handleBack()
@@ -137,12 +125,13 @@ export default function AppointmentForm() {
 
   return (
     <>
+      <Toaster />
       <FormHeader
         title="Enter Appointment Details"
         description="View and manage your upcoming appointments"
       />
       <FormProvider {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 ">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <InputField
               name="firstName"
@@ -178,6 +167,7 @@ export default function AppointmentForm() {
             options={serviceOptions}
             icon={SlidersHorizontal}
             placeholder="Select a service"
+            disabled={isLoadingServices || serviceOptions.length === 0}
           />
 
           <div className="grid grid-cols-2 items-center gap-4">
@@ -211,6 +201,7 @@ export default function AppointmentForm() {
             <Button
               type="submit"
               className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+              disabled={isLoadingServices}
             >
               Book Appointment
             </Button>

@@ -8,31 +8,33 @@ import { ZodError } from "zod"
 import { prisma } from "@/lib/prisma"
 import { getAppointmentById } from "@/db/appointment"
 import { createAppointment } from "@/lib/appointment"
+import { Prisma } from "@prisma/client"
 
 //create new appointment
 export async function POST(req: NextRequest) {
   try {
     // Parse the request body
     const body = await req.json()
+    console.log(body, "body")
 
     // Validate the request body
     const parsedData = appointmentSchema.parse(body)
 
     // Create a new appointment in prisma
     const newAppointment = await createAppointment({
-        customerName: parsedData.customerName,
-        email: parsedData.email,
-        phone: parsedData.phone,
-        status: parsedData.status,
-        userId: parsedData.userId,
-        bookedById: parsedData.bookedById,
-        serviceId: parsedData.serviceId,
-        selectedDate: parsedData.selectedDate,
-        selectedTime: parsedData.selectedTime,
-        message: parsedData.message,
-        isForSelf: parsedData.isForSelf,
-        createdById: parsedData.createdById,
-        resourceId: parsedData.resourceId,
+      customerName: parsedData.customerName,
+      email: parsedData.email,
+      phone: parsedData.phone,
+      status: parsedData.status,
+      userId: parsedData.userId,
+      bookedById: parsedData.bookedById,
+      serviceId: parsedData.serviceId,
+      selectedDate: parsedData.selectedDate,
+      selectedTime: parsedData.selectedTime,
+      message: parsedData.message,
+      isForSelf: parsedData.isForSelf,
+      createdById: parsedData.createdById,
+      resourceId: parsedData.resourceId,
     })
 
     if (!newAppointment) {
@@ -51,13 +53,22 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      console.error("Validation error:", error.message)
+      // Handle the validation error specifically
+      return {
+        error: "Validation failed",
+        details: error.message, // or use error.stack for full stack trace
+      }
+    }
     // Handle validation errors
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Validation failed", details: error.errors[0].message },
+        { error: "Validation failed", details: error },
         { status: 400 }
       )
     }
+
     // Handle other errors
     return NextResponse.json(
       { error: "Internal server error", details: error },

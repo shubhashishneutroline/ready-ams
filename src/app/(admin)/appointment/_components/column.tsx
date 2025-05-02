@@ -18,35 +18,14 @@ import {
 } from "lucide-react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
 import { useRouter } from "next/navigation"
-import { format } from "date-fns"
-import { getServices } from "@/features/service/api/api"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+import { formatAppointmentDate, formatAppointmentTime } from "@/utils/utils"
 
-import { deleteAppointment } from "@/features/appointment/api/api"
-import { capitalizeOnlyFirstLetter } from "@/utils/utils"
-import { getStatusStyles } from "@/features/appointment/lib/lib"
-
-// Service cell component to handle async data fetching
-// const ServiceCell = ({ serviceId }: { serviceId: string }) => {
-//   const [serviceName, setServiceName] = useState<string>("Loading...");
-
-//   useEffect(() => {
-//     const fetchService = async () => {
-//       const services = await getServices();
-// const service = services?.find((s: any) => s.id === serviceId);
-// setServiceName(service?.title || "N/A");
-//     };
-//     fetchService();
-//   }, [serviceId]);
-
-//   return <div>{serviceName}</div>;
-// };
-
-const serviceData = await getServices()
-
-// Define columns for the payment table
-export const columns: ColumnDef<any>[] = [
+export const columns = (
+  handleDelete: (id: string) => void
+): ColumnDef<any>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -72,86 +51,75 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "customerName",
     header: "Customer Name",
+    cell: ({ row }) => (
+      <div className="truncate max-w-[200px]">
+        {row.getValue("customerName")}
+      </div>
+    ),
   },
   {
     accessorKey: "email",
     header: "Email",
+    cell: ({ row }) => (
+      <div className="truncate max-w-[200px]">{row.getValue("email")}</div>
+    ),
   },
   {
     accessorKey: "phone",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Phone Number" />
-    ),
-    cell: ({ row }) => {
-      const phone = row.getValue("phone") as string
-      if (!phone) return null
-
-      // Format as +977 986-137-8912
-      const formatted = phone.replace(
-        /^(\+\d{3})(\d{3})(\d{3})(\d{4})$/,
-        "$1 $2-$3-$4"
-      )
-      return <div>{formatted}</div>
-    },
+    header: "Phone",
   },
   {
-    accessorKey: "serviceId",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Service" />
-    ),
+    accessorKey: "service",
+    header: "Service",
     cell: ({ row }) => {
-      const selectedService = serviceData?.find(
-        (s: any) => s.id === row.original.serviceId
-      )
-      return <div>{selectedService?.title || "N/A"}</div>
+      const service = row.original.service?.title || "N/A"
+      return <div>{service}</div>
     },
   },
   {
     accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
+    header: "Status",
     cell: ({ row }) => {
       const status = row.original.status
-      const { bg, dot, text } = getStatusStyles(status)
       return (
-        <div
-          className={`flex gap-2 items-center w-[100px] text-[13px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
+        <Badge
+          className={cn("capitalize")}
+          variant={
+            status === "SCHEDULED" || status === "FOLLOW_UP"
+              ? "secondary"
+              : status === "COMPLETED"
+                ? "default"
+                : status === "CANCELLED" || status === "MISSED"
+                  ? "destructive"
+                  : "outline"
+          }
         >
-          <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
-          {capitalizeOnlyFirstLetter(status)}
-        </div>
+          {status.toLowerCase()}
+        </Badge>
       )
     },
   },
-
   {
-    accessorKey: "selectedDate",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Date" />
-    ),
+    accessorKey: "date",
+    header: "Date",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("selectedDate"))
-      return <div>{format(date, "dd MMMM yyyy")}</div>
+      const date = formatAppointmentDate(row.original.selectedDate)
+      return <div>{date}</div>
     },
   },
   {
-    accessorKey: "selectedTime",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Time" />
-    ),
+    accessorKey: "time",
+    header: "Time",
     cell: ({ row }) => {
-      const time = new Date(row.getValue("selectedTime"))
-      return <div>{format(time, "hh:mm a")}</div>
+      const time = formatAppointmentTime(row.original.selectedTime)
+      return <div>{time}</div>
     },
   },
-
   {
     id: "actions",
-    // Actions dropdown for each row
+    header: "Actions",
     cell: ({ row }) => {
       const router = useRouter()
-      // Return the actions dropdown menu for each payment row
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -166,7 +134,6 @@ export const columns: ColumnDef<any>[] = [
               <Settings className="h-4 w-4" />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {/* View payment action */}
             <DropdownMenuItem
               onClick={() =>
                 router.push(`/appointment/view/${row.original.id}`)
@@ -175,7 +142,6 @@ export const columns: ColumnDef<any>[] = [
             >
               <Eye className="h-4 w-4 text-blue-400" /> View
             </DropdownMenuItem>
-            {/* Edit payment action */}
             <DropdownMenuItem
               onClick={() =>
                 router.push(`/appointment/edit/${row.original.id}`)
@@ -184,9 +150,8 @@ export const columns: ColumnDef<any>[] = [
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
             </DropdownMenuItem>
-            {/* Delete payment action */}
             <DropdownMenuItem
-              onClick={() => deleteAppointment(row.original)}
+              onClick={() => handleDelete(row.original.id)}
               className="flex gap-2 items-center justify-start"
             >
               <Trash2 className="h-4 w-4 text-red-600" /> Delete
