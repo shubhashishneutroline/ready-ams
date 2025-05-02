@@ -65,9 +65,14 @@ const availableTimeSlots = [
 ]
 
 export default function AppointmentForm() {
+  // Get router and params
   const router = useRouter()
   const params = useParams()
+
+  // Get ID from params
   const id = params?.id as string | undefined
+
+  // Check if we're in edit mode
   const isEditMode = !!id
 
   // Debug: Log params and mode
@@ -77,11 +82,16 @@ export default function AppointmentForm() {
     console.log("isEditMode:", isEditMode)
   }, [params, id, isEditMode])
 
+  // Serive options
   const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([])
+  // Service Loading states
   const [isLoadingServices, setIsLoadingServices] = useState(true)
+  // Appointment Loading states
   const [isLoadingAppointment, setIsLoadingAppointment] = useState(isEditMode)
+  // Form Loading states
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Form
   const form = useForm<FormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: {
@@ -119,7 +129,9 @@ export default function AppointmentForm() {
 
   // Fetch appointment data for edit mode
   useEffect(() => {
+    // Check if we're in edit mode
     if (isEditMode && id) {
+      // Fetch appointment
       const fetchAppointment = async () => {
         try {
           setIsLoadingAppointment(true)

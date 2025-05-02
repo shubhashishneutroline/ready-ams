@@ -17,7 +17,7 @@ export default function TableSearch<TData>({
       onChange={(event) =>
         table.getColumn(name)?.setFilterValue(event.target.value)
       }
-      className="max-w-xs sm:max-w-sm rounded-md h-8 md:h-9 text-sm md:text-md capitalize"
+      className="max-w-xs sm:max-w-sm rounded-md h-8 md:h-9 text-sm md:text-md capitalize "
     />
   )
 }

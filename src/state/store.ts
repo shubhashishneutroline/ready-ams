@@ -37,3 +37,16 @@ export const useCustomerStore = create<CustomerState>((set) => ({
   activeTab: "Active",
   onActiveTab: (tab: string) => set({ activeTab: tab }),
 }))
+
+// Delete Alert State
+type DeleteAlertState = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onDelete: () => void
+}
+
+export const useDeleteAlertStore = create<DeleteAlertState>((set) => ({
+  open: false,
+  onOpenChange: (open: boolean) => set({ open }),
+  onDelete: () => set({ open: false }),
+}))

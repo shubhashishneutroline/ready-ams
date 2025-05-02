@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { formatAppointmentDate, formatAppointmentTime } from "@/utils/utils"
+import DeleteAlert from "@/components/shared/delete-alert"
 
 export const columns = (
   handleDelete: (id: string) => void
@@ -120,44 +122,56 @@ export const columns = (
     header: "Actions",
     cell: ({ row }) => {
       const router = useRouter()
+      const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuLabel className="flex gap-2 items-center justify-start">
-              Action
-              <Settings className="h-4 w-4" />
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() =>
-                router.push(`/appointment/view/${row.original.id}`)
-              }
-              className="flex gap-2 items-center justify-start"
-            >
-              <Eye className="h-4 w-4 text-blue-400" /> View
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                router.push(`/appointment/edit/${row.original.id}`)
-              }
-              className="flex gap-2 items-center justify-start"
-            >
-              <FilePenLine className="h-4 w-4 text-green-600" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleDelete(row.original.id)}
-              className="flex gap-2 items-center justify-start"
-            >
-              <Trash2 className="h-4 w-4 text-red-600" /> Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel className="flex gap-2 items-center justify-start">
+                Action
+                <Settings className="h-4 w-4" />
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  router.push(`/appointment/view/${row.original.id}`)
+                }
+                className="flex gap-2 items-center justify-start"
+              >
+                <Eye className="h-4 w-4 text-blue-400" /> View
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  router.push(`/appointment/edit/${row.original.id}`)
+                }
+                className="flex gap-2 items-center justify-start"
+              >
+                <FilePenLine className="h-4 w-4 text-green-600" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="flex gap-2 items-center justify-start"
+              >
+                <Trash2 className="h-4 w-4 text-red-600" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DeleteAlert
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            onDelete={() => {
+              handleDelete(row.original.id)
+              setIsDeleteDialogOpen(false)
+            }}
+          />
+        </>
       )
     },
   },
