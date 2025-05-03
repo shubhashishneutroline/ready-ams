@@ -21,6 +21,7 @@ import { toast, Toaster } from "sonner"
 import { toDate } from "@/lib/lib"
 import { createService } from "@/features/service/api/api"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 // Business availability data
 export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
@@ -74,6 +75,7 @@ export default function ServiceForm({
   businessAvailability = defaultBusinessAvailability,
   businessId,
 }: Props) {
+  const [loading, setLoading] = useState(false)
   const days: WeekDay[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
   // Dynamically set default serviceDays to exclude holidays
@@ -118,6 +120,7 @@ export default function ServiceForm({
     duration: string
   }) => {
     try {
+      setLoading(true)
       const serviceData = {
         title: data.serviceName,
         description: data.description,
@@ -141,6 +144,8 @@ export default function ServiceForm({
     } catch (error) {
       toast.error("Failed to create service")
       console.error("Error creating service:", error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -191,6 +196,7 @@ export default function ServiceForm({
         </div>
         <div className="flex flex-col gap-3 md:flex-row justify-between mt-6">
           <Button
+            disabled={loading}
             type="button"
             variant="outline"
             className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
@@ -199,6 +205,7 @@ export default function ServiceForm({
             ← Back
           </Button>
           <Button
+            disabled={loading}
             type="submit"
             className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
           >

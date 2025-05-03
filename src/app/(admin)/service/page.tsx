@@ -1,69 +1,139 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import TableFilterTabs from "@/features/service/components/admin/table/table-filter-tabs"
-import TablePageHeader from "@/components/shared/table/table-page-header"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { getServices } from "@/features/service/api/api"
-import { columns } from "@/features/service/components/admin/table/column"
-import { DataTable } from "@/features/service/components/admin/table/data-table"
-import ServiceCard from "@/features/service/components/admin/table/service-card"
+import { getServices, deleteService, Service } from "@/features/service/api/api"
+import PageTabs from "@/components/shared/page-tabs"
+import TablePageHeader from "@/components/table/table-header"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
+import { useServiceStore } from "@/state/store"
+import { columns } from "./_components/column"
+import DataTableSkeleton from "@/components/table/skeleton-table"
+import { DataTable } from "@/components/table/data-table"
+
+const pageOptions = ["Active", "Inactive", "All"]
 
 const ServicePage = () => {
-  // fetch data in the server
-  const router = useRouter()
-  const [service, setService] = useState<any>([])
-  const [filteredService, setFilteredService] = useState([])
-  const [filterType, setFilterType] = useState("inactive")
+  const { activeTab, onActiveTab } = useServiceStore()
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      const data = await getServices()
-      if (Array.isArray(data)) {
-        setService(data)
-      } else {
-        console.error("getServices() did not return an array:", data)
+  // Fetch services
+  const fetchServices = useCallback(
+    async (isManualRefresh = false) => {
+      try {
+        if (isManualRefresh) setIsRefreshing(true)
+        else setLoading(true)
+        const data = await getServices()
+        if (Array.isArray(data)) {
+          setServices(data)
+        } else {
+          throw new Error("Invalid service data: expected an array")
+        }
+      } catch (error) {
+        console.error("Error fetching services:", error)
+        toast.error("Failed to load services")
+      } finally {
+        if (isManualRefresh) setIsRefreshing(false)
+        else setLoading(false)
       }
-    }
+    },
+    [setServices]
+  )
 
-    fetchServices()
-  }, [])
+  // Handle delete
+  const handleDelete = useCallback(
+    async (id: string) => {
+      try {
+        const res = await deleteService(id)
+        if (res) {
+          setServices((prev) => prev.filter((item) => item.id !== id))
+          toast.success("Service deleted successfully")
+        } else {
+          throw new Error("Deletion failed")
+        }
+      } catch (error) {
+        console.error("Error deleting service:", error)
+        toast.error("Failed to delete service")
+      }
+    },
+    [setServices]
+  )
 
+  // Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    fetchServices(true) // Show refresh indicator
+  }, [fetchServices])
+
+  // Initial fetch
   useEffect(() => {
-    console.log(service, "service inside useeffect")
-    const filtered = service.filter((cust: any) => {
-      switch (filterType) {
+    if (services.length === 0) {
+      fetchServices()
+    } else {
+      setLoading(false) // Use cached services
+    }
+  }, [fetchServices, services])
+
+  // Filter services based on activeTab
+  const filteredServices = useMemo(() => {
+    return services.filter((service) => {
+      switch (activeTab.toLowerCase()) {
         case "active":
-          return cust.status?.toUpperCase() === "ACTIVE"
+          return service.status?.toUpperCase() === "ACTIVE"
         case "inactive":
-          return cust.status?.toUpperCase() === "INACTIVE"
+          return service.status?.toUpperCase() === "INACTIVE"
         case "all":
         default:
           return true
       }
     })
+  }, [services, activeTab])
 
-    setFilteredService(filtered)
-  }, [service, filterType])
+  // Memoized columns
+  const memoizedColumns = useMemo(() => columns(handleDelete), [handleDelete])
 
   return (
-    <div className="flex flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
-      <TableFilterTabs onChange={setFilterType} />
-      <TablePageHeader
-        title="Services & Products"
-        description="Manage and Customize Services Here."
-        newButton="New Service"
-        handleClick={() => {
-          router.push("/service/create/")
-        }}
-      />
-      <div className=" hidden md:block">
-        <DataTable columns={columns} data={filteredService} />
-      </div>
-      <div className="block md:hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredService?.map((service: any, index: number) => (
-          <ServiceCard key={index} service={service} />
-        ))}
+    <div className="h-full w-full flex flex-col">
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <PageTabs
+            activeTab={activeTab}
+            onTabChange={onActiveTab}
+            customTabs={pageOptions}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </Button>
+        </div>
+        <TablePageHeader
+          title="Services"
+          description="Manage and Customize Services Here."
+          newButton="New Service"
+          route="/service/create/"
+        />
+        {loading ? (
+          <DataTableSkeleton />
+        ) : (
+          <div className="overflow-x-auto">
+            <DataTable
+              columns={memoizedColumns}
+              data={filteredServices}
+              searchFieldName="title"
+            />
+          </div>
+        )}
       </div>
     </div>
   )

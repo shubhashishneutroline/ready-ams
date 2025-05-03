@@ -1,3 +1,4 @@
+import { Service } from "@/features/service/api/api"
 import { create } from "zustand"
 
 // props of zustand
@@ -36,6 +37,21 @@ type CustomerState = {
 export const useCustomerStore = create<CustomerState>((set) => ({
   activeTab: "Active",
   onActiveTab: (tab: string) => set({ activeTab: tab }),
+}))
+
+// Service  State
+interface ServiceStore {
+  activeTab: string
+  onActiveTab: (tab: string) => void
+  services: Service[]
+  setServices: (services: Service[]) => void
+}
+
+export const useServiceStore = create<ServiceStore>((set) => ({
+  activeTab: "Active", // Default to match ServicePage
+  onActiveTab: (tab) => set({ activeTab: tab }),
+  services: [],
+  setServices: (services) => set({ services }),
 }))
 
 // Delete Alert State

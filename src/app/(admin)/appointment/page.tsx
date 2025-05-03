@@ -14,6 +14,7 @@ import {
   deleteAppointment,
   getAppointments,
 } from "@/features/appointment/api/api" // Correct import
+import DataTableSkeleton from "@/components/table/skeleton-table"
 
 const pageOptions = [
   "Today",
@@ -104,9 +105,7 @@ const AppointmentPage = () => {
           route="/appointment/create/"
         />
         {loading ? (
-          <div className="flex justify-center items-center py-20 text-muted-foreground">
-            Loading appointments...
-          </div>
+          <DataTableSkeleton />
         ) : (
           <div className="overflow-x-auto">
             <DataTable

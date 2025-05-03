@@ -1,5 +1,5 @@
 import { getBaseUrl } from "@/lib/baseUrl"
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 const api = axios.create({
   baseURL: getBaseUrl(),
@@ -54,7 +54,7 @@ async function createService(
   }
 }
 
-async function  updateService(
+async function updateService(
   id: string,
   serviceData: Omit<Service, "id">
 ): Promise<Service> {
@@ -70,15 +70,25 @@ async function  updateService(
   }
 }
 
-async function deleteService(service: any) {
+async function deleteService(id: string): Promise<{
+  data?: Service
+  success: boolean
+  error?: string
+  message?: string
+}> {
   try {
-    const { data } = await api.delete(`/api/service/`, {
-      data: service,
-    })
-    return data
+    const { data } = await api.delete(`/api/service/${id}`)
+
+    return { data, success: true }
   } catch (error) {
-    console.error("Error deleting service:", error)
-    throw error
+    if (error instanceof AxiosError) {
+      return {
+        message: error?.response?.data.error,
+        success: false,
+        error: error.message,
+      } // Issue here
+    }
+    return { error: "Failed to delete service", success: false }
   }
 }
 

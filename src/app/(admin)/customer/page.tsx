@@ -1,6 +1,111 @@
+// "use client"
+
+// import React, { useCallback, useEffect, useState, useMemo } from "react"
+// import { deleteCustomer, getCustomers } from "@/features/customer/api/api"
+// import { useCustomerStore } from "@/state/store"
+// import { toast } from "sonner"
+// import PageTabs from "@/components/shared/page-tabs"
+// import TablePageHeader from "@/components/table/table-header"
+// import { columns } from "./_components/column"
+// import { User } from "@/features/customer/types/types"
+// import { DataTable } from "@/components/table/data-table"
+
+// const pageOptions = ["Active", "Inactive", "All"]
+
+// const CustomerPage = () => {
+//   const { activeTab, onActiveTab } = useCustomerStore()
+//   const [allCustomers, setAllCustomers] = useState<User[]>([])
+//   const [loading, setLoading] = useState(true)
+
+//   // Fetch data once on mount
+//   const fetchData = useCallback(async () => {
+//     try {
+//       setLoading(true)
+//       const response = await getCustomers()
+//       setAllCustomers(response)
+//     } catch (error) {
+//       console.error("Error fetching customers:", error)
+//       toast.error("Failed to load customers")
+//     } finally {
+//       setLoading(false)
+//     }
+//   }, [])
+
+//   // Handle delete
+//   const handleDelete = useCallback(async (id: string) => {
+//     try {
+//       const res = await deleteCustomer(id)
+//       if (res) {
+//         setAllCustomers((prev) => prev.filter((item) => item.id !== id))
+//         toast.success("Customer deleted successfully")
+//       } else {
+//         throw new Error("Deletion failed")
+//       }
+//     } catch (error) {
+//       console.error("Error deleting customer:", error)
+//       toast.error("Failed to delete customer")
+//     }
+//   }, [])
+
+//   // Memoized columns to prevent recreation
+//   const memoizedColumns = useMemo(() => columns(handleDelete), [handleDelete])
+
+//   // Filter customers based on activeTab
+//   const filteredCustomers = useMemo(() => {
+//     return allCustomers.filter((item: User) => {
+//       if (activeTab === "Active") {
+//         return item.isActive === true
+//       } else if (activeTab === "Inactive") {
+//         return item.isActive === false
+//       }
+//       return true // "All" tab
+//     })
+//   }, [allCustomers, activeTab])
+
+//   // Initial data fetch
+//   useEffect(() => {
+//     fetchData()
+//   }, [fetchData])
+
+//   return (
+//     <div className="h-full w-full flex flex-col">
+//       <div className="space-y-4">
+//         <PageTabs
+//           isReminder
+//           activeTab={activeTab}
+//           onTabChange={onActiveTab}
+//           customTabs={pageOptions}
+//         />
+//         <TablePageHeader
+//           title="Customer"
+//           description="Manage and Customize Customer Here."
+//           newButton="New Customer"
+//           route="/customer/create/"
+//         />
+//         {loading ? (
+//           <div className="flex justify-center items-center py-20 text-muted-foreground">
+//             Loading customers...
+//           </div>
+//         ) : (
+//           <div className="overflow-x-auto">
+//             <DataTable
+//               columns={memoizedColumns}
+//               data={filteredCustomers}
+//               searchFieldName="name"
+//             />
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   )
+// }
+
+// export default CustomerPage
+
+// ------ to get the fresh data ------
 "use client"
 
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState, useMemo } from "react"
 import { deleteCustomer, getCustomers } from "@/features/customer/api/api"
 import { useCustomerStore } from "@/state/store"
 import { toast } from "sonner"
@@ -9,91 +114,106 @@ import TablePageHeader from "@/components/table/table-header"
 import { columns } from "./_components/column"
 import { User } from "@/features/customer/types/types"
 import { DataTable } from "@/components/table/data-table"
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
+import DataTableSkeleton from "@/components/table/skeleton-table"
 
 const pageOptions = ["Active", "Inactive", "All"]
+const REFETCH_INTERVAL = 5 * 60 * 1000 // 5 minutes
 
 const CustomerPage = () => {
   const { activeTab, onActiveTab } = useCustomerStore()
-  const [customers, setCustomers] = useState<User[]>([])
+  const [allCustomers, setAllCustomers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  // fetch data: Customer
-  const fetchData = useCallback(async () => {
+  // Fetch data
+  const fetchData = useCallback(async (isManualRefresh = false) => {
     try {
-      setLoading(true)
+      if (isManualRefresh) setIsRefreshing(true)
+      else setLoading(true)
       const response = await getCustomers()
-      const filteredData = response.filter((item: User) => {
-        if (activeTab === "Active") {
-          return item.isActive === true
-        } else if (activeTab === "Inactive") {
-          return item.isActive === false
-        }
-        return true // "All" tab
-      })
-      setCustomers(filteredData)
+      setAllCustomers(response)
     } catch (error) {
       console.error("Error fetching customers:", error)
       toast.error("Failed to load customers")
     } finally {
-      setLoading(false)
+      if (isManualRefresh) setIsRefreshing(false)
+      else setLoading(false)
     }
-  }, [activeTab])
+  }, [])
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      console.log("Deleting appointment with ID:", id)
-
-      try {
-        const res = await deleteCustomer(id) // Use correct API
-        if (res) {
-          setCustomers((prevData) => prevData.filter((item) => item.id !== id))
-          toast.success("Customer deleted successfully")
-        } else {
-          throw new Error("Deletion failed")
-        }
-      } catch (error) {
-        console.error("Error deleting appointment:", error)
-        toast.error("Failed to delete appointment")
+  // Handle delete
+  const handleDelete = useCallback(async (id: string) => {
+    try {
+      const res = await deleteCustomer(id)
+      if (res) {
+        setAllCustomers((prev) => prev.filter((item) => item.id !== id))
+        toast.success("Customer deleted successfully")
+      } else {
+        throw new Error("Deletion failed")
       }
-    },
-    [customers] // Include data as a dependency
-  )
+    } catch (error) {
+      console.error("Error deleting customer:", error)
+      toast.error("Failed to delete customer")
+    }
+  }, [])
 
-  // Handle initial data fetch
+  // Memoized columns
+  const memoizedColumns = useMemo(() => columns(handleDelete), [handleDelete])
+
+  // Filter customers based on activeTab
+  const filteredCustomers = useMemo(() => {
+    return allCustomers.filter((item: User) => {
+      if (activeTab === "Active") {
+        return item.isActive === true
+      } else if (activeTab === "Inactive") {
+        return item.isActive === false
+      }
+      return true // "All" tab
+    })
+  }, [allCustomers, activeTab])
+
+  // Initial fetch and periodic refetch
   useEffect(() => {
     fetchData()
+
+    // Set up periodic refetch
+    const interval = setInterval(() => {
+      fetchData(true) // Silent refresh (no loading UI)
+    }, REFETCH_INTERVAL)
+
+    return () => clearInterval(interval) // Cleanup on unmount
   }, [fetchData])
 
-  // return (
-  //   <div className="flex flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
-  //     <TableFilterTabs onChange={setFilterType} />
-  //     <TablePageHeader
-  //       title="Customer"
-  //       description="Manage and Customize Customer Here."
-  //       newButton="New Customer"
-  //       handleClick={() => {
-  //         router.push("/customer/create/")
-  //       }}
-  //     />
-  //     <div className="hidden md:block">
-  //       <DataTable columns={columns} data={filteredCustomer} />
-  //     </div>
-  //     <div className="block md:hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  //       {filteredCustomer?.map((customer: any, index: number) => (
-  //         <CustomerCard key={index} customer={customer} />
-  //       ))}
-  //     </div>
-  //   </div>
-  // )
+  // Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    fetchData(true) // Show refresh indicator
+  }, [fetchData])
+
   return (
     <div className="h-full w-full flex flex-col">
       <div className="space-y-4">
-        <PageTabs
-          isReminder
-          activeTab={activeTab}
-          onTabChange={onActiveTab}
-          customTabs={pageOptions}
-        />
+        <div className="flex justify-between items-center">
+          <PageTabs
+            isReminder
+            activeTab={activeTab}
+            onTabChange={onActiveTab}
+            customTabs={pageOptions}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </Button>
+        </div>
         <TablePageHeader
           title="Customer"
           description="Manage and Customize Customer Here."
@@ -101,14 +221,12 @@ const CustomerPage = () => {
           route="/customer/create/"
         />
         {loading ? (
-          <div className="flex justify-center items-center py-20 text-muted-foreground">
-            Loading customers...
-          </div>
+          <DataTableSkeleton />
         ) : (
           <div className="overflow-x-auto">
             <DataTable
-              columns={columns(handleDelete)}
-              data={customers}
+              columns={memoizedColumns}
+              data={filteredCustomers}
               searchFieldName="name"
             />
           </div>

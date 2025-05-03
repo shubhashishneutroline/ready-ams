@@ -20,8 +20,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
-
-import { deleteService, Service } from "@/features/service/api/api"
+import { Service } from "@/features/service/api/api"
 import { shortenText } from "@/features/reminder/lib/lib"
 import {
   TooltipProvider,
@@ -33,12 +32,8 @@ import {
   formatDuration,
   getActiveStatusStyles,
 } from "@/features/service/lib/lib"
-import { toast } from "sonner"
-import DeleteAlert from "@/components/shared/delete-alert"
 import { useState } from "react"
-
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+import DeleteAlert from "@/components/shared/delete-alert"
 
 export const columns = (
   handleDelete: (id: string) => void
@@ -118,45 +113,55 @@ export const columns = (
       return <div className="">{formatDuration(estimatedDuration)}</div>
     },
   },
-
   {
     id: "actions",
     header: "Actions",
-
     cell: ({ row }) => {
       const router = useRouter()
-      const [open, setOpen] = useState(false)
+      const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuLabel className="flex gap-2 items-center justify-start">
-              Action
-              <Settings className="h-4 w-4" />
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex gap-2 items-center justify-start">
-              <Eye className="h-4 w-4 text-blue-400 " /> View
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push(`/service/edit/${row.original.id}`)}
-              className="flex gap-2 items-center justify-start"
-            >
-              <FilePenLine className="h-4 w-4 text-green-600" /> Edit
-            </DropdownMenuItem>
-            <DeleteAlert
-              onDelete={() => handleDelete(row.original.id as string)}
-              open={open}
-              onOpenChange={setOpen}
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel className="flex gap-2 items-center justify-start">
+                Action
+                <Settings className="h-4 w-4" />
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="flex gap-2 items-center justify-start">
+                <Eye className="h-4 w-4 text-blue-400" /> View
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push(`/service/edit/${row.original.id}`)}
+                className="flex gap-2 items-center justify-start"
+              >
+                <FilePenLine className="h-4 w-4 text-green-600" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="flex gap-2 items-center justify-start text-red-600"
+              >
+                <Trash2 className="h-4 w-4 text-red-600" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {/* Delete Alert */}
+          <DeleteAlert
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            onDelete={() => {
+              handleDelete(row.original.id as string)
+              setIsDeleteDialogOpen(false)
+            }}
+          />
+        </>
       )
     },
   },
