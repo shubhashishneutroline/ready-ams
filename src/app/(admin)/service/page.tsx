@@ -1,83 +1,50 @@
 "use client"
 
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { getServices, deleteService, Service } from "@/features/service/api/api"
-import PageTabs from "@/components/shared/page-tabs"
+import { columns } from "@/features/service/components/admin/table/column"
+import { DataTable } from "@/components/table/data-table"
+import PageTabs from "@/components/table/page-tabs"
 import TablePageHeader from "@/components/table/table-header"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
-import { useServiceStore } from "@/state/store"
-import { columns } from "./_components/column"
 import DataTableSkeleton from "@/components/table/skeleton-table"
-import { DataTable } from "@/components/table/data-table"
+import { useServiceStore } from "./_store/service-store"
 
 const pageOptions = ["Active", "Inactive", "All"]
 
 const ServicePage = () => {
-  const { activeTab, onActiveTab } = useServiceStore()
-  const [services, setServices] = useState<Service[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
-  // Fetch services
-  const fetchServices = useCallback(
-    async (isManualRefresh = false) => {
-      try {
-        if (isManualRefresh) setIsRefreshing(true)
-        else setLoading(true)
-        const data = await getServices()
-        if (Array.isArray(data)) {
-          setServices(data)
-        } else {
-          throw new Error("Invalid service data: expected an array")
-        }
-      } catch (error) {
-        console.error("Error fetching services:", error)
-        toast.error("Failed to load services")
-      } finally {
-        if (isManualRefresh) setIsRefreshing(false)
-        else setLoading(false)
-      }
-    },
-    [setServices]
-  )
+  const router = useRouter()
+  const {
+    services,
+    loading,
+    isRefreshing,
+    activeTab,
+    onActiveTab,
+    fetchServices,
+    deleteService,
+  } = useServiceStore()
 
   // Handle delete
+  // useCallback stabilizes prop for memoizedColumns/DataTable
+  // Memory: ~10 bytes, prevents DataTable re-renders
   const handleDelete = useCallback(
     async (id: string) => {
-      try {
-        const res = await deleteService(id)
-        if (res) {
-          setServices((prev) => prev.filter((item) => item.id !== id))
-          toast.success("Service deleted successfully")
-        } else {
-          throw new Error("Deletion failed")
-        }
-      } catch (error) {
-        console.error("Error deleting service:", error)
-        toast.error("Failed to delete service")
-      }
+      await deleteService(id)
     },
-    [setServices]
+    [deleteService]
   )
 
   // Manual refresh handler
-  const handleRefresh = useCallback(() => {
-    fetchServices(true) // Show refresh indicator
-  }, [fetchServices])
-
-  // Initial fetch
-  useEffect(() => {
-    if (services.length === 0) {
-      fetchServices()
-    } else {
-      setLoading(false) // Use cached services
-    }
-  }, [fetchServices, services])
+  // No useCallback: lightweight, not a prop for memoized components
+  // Memory: 0 bytes (recreated on render, negligible CPU cost)
+  const handleRefresh = () => {
+    fetchServices(true) // Triggers toast
+  }
 
   // Filter services based on activeTab
+  // useMemo caches filtered array, critical for large datasets
+  // Memory: ~100KB-10MB (depends on services size), prevents expensive re-filtering
   const filteredServices = useMemo(() => {
     return services.filter((service) => {
       switch (activeTab.toLowerCase()) {
@@ -93,15 +60,18 @@ const ServicePage = () => {
   }, [services, activeTab])
 
   // Memoized columns
+  // useMemo stabilizes prop for DataTable
+  // Memory: ~1KB (column definitions), prevents DataTable re-renders
   const memoizedColumns = useMemo(() => columns(handleDelete), [handleDelete])
 
   return (
     <div className="h-full w-full flex flex-col">
       <div className="space-y-4">
         <div className="flex justify-between items-center">
+          {/* pageOptions not memoized: small array, stable reference unnecessary */}
           <PageTabs
             activeTab={activeTab}
-            onTabChange={onActiveTab}
+            onTabChange={onActiveTab} // Store function, stable
             customTabs={pageOptions}
           />
           <Button

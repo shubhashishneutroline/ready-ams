@@ -29,7 +29,7 @@ import { DataTableColumnToggle } from "@/components/shared/table/data-table-togg
 import { DataTablePagination } from "@/components/shared/table/data-table-pagination"
 import TableSearch from "./table-search"
 
-interface DataTableProps<TData, TValue> {
+export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   searchFieldName: string

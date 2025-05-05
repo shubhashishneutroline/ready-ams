@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAnnouncementOrOfferById } from "@/db/announcement-offer"
 import { getAppointmentById } from "@/db/appointment"
-import { appointmentSchema } from "@/features/appointment/schemas/schema"
 import { prisma } from "@/lib/prisma"
 import { ZodError } from "zod"
+import { Appointment } from "@/app/(admin)/appointment/_types/appoinment"
+import { appointmentSchema } from "@/app/(admin)/appointment/_schema/appoinment"
 
 interface ParamsProps {
   params: Promise<{ id: string }>
@@ -12,18 +13,26 @@ interface ParamsProps {
 export async function GET(req: NextRequest, { params }: ParamsProps) {
   try {
     const { id } = await params
-    const announcement = await getAppointmentById(id)
+    const appointment = await getAppointmentById(id)
 
-    if (!announcement) {
+    if (!appointment) {
       return NextResponse.json(
-        { error: "Appointment with id not found" },
+        { message: "Appointment with id not found!", success: false },
         { status: 404 }
       )
     }
-    return NextResponse.json(announcement, { status: 200 })
+
+    return NextResponse.json(
+      {
+        data: appointment,
+        success: true,
+        message: "Appointment fetched successfully!",
+      },
+      { status: 200 }
+    )
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch appointment" },
+      { message: "Failed to fetch appointment!", success: false, error: error },
       { status: 500 }
     )
   }
@@ -35,7 +44,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
 
     if (!id) {
       return NextResponse.json(
-        { error: "Appointment Id required!" },
+        { message: "Appointment Id required!", success: false },
         { status: 400 }
       )
     }
@@ -45,16 +54,16 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
 
     if (!existingAppointment) {
       return NextResponse.json(
-        { error: "Appointment not found" },
+        { message: "Appointment not found!", success: false },
         { status: 404 }
       )
     }
 
     const body = await req.json()
-    const parsedData = appointmentSchema.parse(body)
+    const parsedData: Appointment = appointmentSchema.parse(body)
 
     // update appointment in prisma database
-    const updatedService = await prisma.appointment.update({
+    const updatedAppointment = await prisma.appointment.update({
       where: { id },
       data: {
         customerName: parsedData.customerName,
@@ -73,26 +82,31 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
       },
     })
 
-    if (!updatedService) {
-      return NextResponse.json(
-        { error: "Failed to update appointment" },
-        { status: 500 }
-      )
-    }
-
     return NextResponse.json(
-      { message: "Appointment updated successfully", service: updatedService },
+      {
+        data: updatedAppointment,
+        success: true,
+        message: "Appointment updated successfully!",
+      },
       { status: 200 }
     )
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Validation failed", details: error },
+        {
+          message: "Validation failed!",
+          error: error.errors[0].message,
+          success: false,
+        },
         { status: 400 }
       )
     }
     return NextResponse.json(
-      { error: "Internal server error", details: (error as Error).message },
+      {
+        message: "Failed to update appointment!",
+        success: false,
+        error: error,
+      },
       { status: 500 }
     )
   }
@@ -105,7 +119,7 @@ export async function DELETE(req: NextRequest, { params }: ParamsProps) {
 
     if (!id) {
       return NextResponse.json(
-        { error: "Appointment Id required!" },
+        { message: "Appointment Id required!", success: false },
         { status: 400 }
       )
     }
@@ -114,7 +128,7 @@ export async function DELETE(req: NextRequest, { params }: ParamsProps) {
 
     if (!existingAppointment) {
       return NextResponse.json(
-        { error: "Appointment not found" },
+        { message: "Appointment not found!", success: false },
         { status: 404 }
       )
     }
@@ -125,20 +139,25 @@ export async function DELETE(req: NextRequest, { params }: ParamsProps) {
 
     if (!deletedAppointment) {
       return NextResponse.json(
-        { error: "Failed to delete appointment" },
+        { message: "Failed to delete appointment!", success: false },
         { status: 500 }
       )
     }
 
     return NextResponse.json(
-      { message: "Appointment deleted successfully" },
+      {
+        data: deletedAppointment,
+        success: true,
+        message: "Appointment deleted successfully!",
+      },
       { status: 200 }
     )
   } catch (error) {
     return NextResponse.json(
       {
-        error: "Failed to delete appointment",
-        details: error,
+        message: "Failed to delete appointment!",
+        success: false,
+        error: error,
       },
       { status: 500 }
     )

@@ -16,47 +16,27 @@
 
 // export default ServicePage;
 
+"use client"
 import ServiceForm, {
   BusinessAvailability,
-} from "@/features/service/components/admin/form/add/service-form";
-import { getBusinesses } from "@/features/business-detail/api/api";
-import { BusinessDetail } from "@/features/business-detail/types/types";
-import { transformBusinessAvailabilityData } from "@/features/service/action/action";
+} from "@/features/service/components/admin/form/add/service-form"
+import { getBusinesses } from "@/features/business-detail/api/api"
+import { BusinessDetail } from "@/features/business-detail/types/types"
+import { transformBusinessAvailabilityData } from "@/features/service/action/action"
+import { useBusinessStore } from "@/state/store"
+import ServiceFormSkeleton from "@/features/service/components/skeleton-form"
 
-const ServicePage = async () => {
-  let businessAvailability: BusinessAvailability;
-  let businessId: string;
+const ServicePage = () => {
+  const { businessAvailability, businessId } = useBusinessStore()
 
-  try {
-    const businesses: BusinessDetail[] = await getBusinesses();
-    const business = businesses[0];
-    businessId = business.id;
-    businessAvailability = transformBusinessAvailabilityData(business);
-    console.log(businessAvailability, "businessAvailability");
-  } catch (err) {
-    console.error("Error fetching businesses:", err);
-    // Fallback if fetching fails
-    businessAvailability = {
-      breaks: {
-        Mon: [],
-        Tue: [],
-        Wed: [],
-        Thu: [],
-        Fri: [],
-        Sat: [],
-        Sun: [],
-      },
-      holidays: [],
-    };
-    businessId = "";
-  }
+  if (!businessId) return <ServiceFormSkeleton />
 
   return (
     <ServiceForm
       businessAvailability={businessAvailability}
       businessId={businessId}
     />
-  );
-};
+  )
+}
 
-export default ServicePage;
+export default ServicePage

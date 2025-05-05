@@ -1,4 +1,4 @@
-// app/(admin)/appointment-form.tsx
+// app/(admin)/appointment/create/page.tsx (or relevant form file)
 "use client"
 
 import { useForm, FormProvider } from "react-hook-form"
@@ -14,31 +14,27 @@ import FormHeader from "@/components/admin/form-header"
 import { useRouter, useParams } from "next/navigation"
 import DatePickerField from "@/components/custom-form-fields/date-field"
 import { Mail, SlidersHorizontal, UserPen } from "lucide-react"
-import { getServices } from "@/features/service/api/api"
+
+// Import TYPEs
+import { PostAppoinmentData } from "@/features/appointment/api/api"
+
+import { useEffect, useState, useMemo } from "react" // Added useMemo
+import { toast } from "sonner"
 import {
-  createAppointment,
-  updateAppointment,
-  getAppointmentById,
-  type AppointmentData,
-} from "@/features/appointment/api/api"
-import { useEffect, useState } from "react"
-import { Toaster, toast } from "sonner"
-import { Service } from "../../../../../service/api/api"
-import {
-  isoToNormalDate,
   isoToNormalTime,
   normalOrFormTimeToIso,
   normalDateToIso,
-  formatAppointmentDate,
 } from "@/utils/utils"
+import { useAppointmentStore } from "@/app/(admin)/appointment/_store/appointment-store"
+import { useServiceStore } from "@/app/(admin)/service/_store/service-store"
 
 interface ServiceOption {
   label: string
   value: string
 }
 
-// Validation schema
 const appointmentSchema = z.object({
+  // ... (schema remains the same)
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Invalid email address").min(1, "Email is required"),
@@ -52,6 +48,7 @@ const appointmentSchema = z.object({
 type FormData = z.infer<typeof appointmentSchema>
 
 const availableTimeSlots = [
+  // ... (time slots remain the same)
   "09:00 AM",
   "10:00 AM",
   "10:15 AM",
@@ -65,33 +62,30 @@ const availableTimeSlots = [
 ]
 
 export default function AppointmentForm() {
-  // Get router and params
   const router = useRouter()
   const params = useParams()
-
-  // Get ID from params
   const id = params?.id as string | undefined
-
-  // Check if we're in edit mode
   const isEditMode = !!id
 
-  // Debug: Log params and mode
-  useEffect(() => {
-    console.log("URL params:", params)
-    console.log("Appointment ID:", id)
-    console.log("isEditMode:", isEditMode)
-  }, [params, id, isEditMode])
+  // --- Get actions/state from Appointment Store ---
+  const {
+    createAppointment: storeCreateAppointment,
+    updateAppointment: storeUpdateAppointment,
+    getAppointmentById: storeGetAppointmentById,
+  } = useAppointmentStore()
 
-  // Serive options
-  const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([])
-  // Service Loading states
-  const [isLoadingServices, setIsLoadingServices] = useState(true)
-  // Appointment Loading states
+  // --- Get state/actions from Service Store ---
+  const {
+    services, // The array of service objects
+    fetchServices, // Action to fetch services
+    loading: isLoadingServices, // Use the store's loading state
+    hasFetched: hasFetchedServices, // Check if store has already fetched
+  } = useServiceStore()
+
+  // State for this form specifically
   const [isLoadingAppointment, setIsLoadingAppointment] = useState(isEditMode)
-  // Form Loading states
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Form
   const form = useForm<FormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: {
@@ -106,84 +100,84 @@ export default function AppointmentForm() {
     },
   })
 
-  // Fetch services
+  // *** Fetch services using the Service Store ***
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        setIsLoadingServices(true)
-        const services = await getServices()
-        const options = services.map((service: Service) => ({
-          label: service.title,
-          value: service.id,
-        }))
-        setServiceOptions(options as ServiceOption[])
-      } catch (error) {
-        console.error("Error fetching services:", error)
-        toast.error("Failed to load services")
-      } finally {
-        setIsLoadingServices(false)
-      }
+    // Only fetch if the store hasn't fetched them yet
+    if (!isLoadingServices && !hasFetchedServices) {
+      console.log("AppointmentForm: Triggering fetchServices via store.")
+      fetchServices()
     }
-    fetchServices()
-  }, [])
+    // Dependencies ensure this runs once on mount or if these specific store flags change
+  }, [fetchServices, hasFetchedServices, isLoadingServices])
 
-  // Fetch appointment data for edit mode
+  // *** Derive serviceOptions from the store's services state ***
+  const serviceOptions = useMemo<ServiceOption[]>(() => {
+    if (!Array.isArray(services)) {
+      console.warn(
+        "AppointmentForm: services from store is not an array:",
+        services
+      )
+      return [] // Return empty array if services is not as expected
+    }
+    return services
+      .filter((service) => service.status === "ACTIVE") // Optional: Filter for active services if needed
+      .map((service) => ({
+        label: service.title, // Assuming 'title' is the display name
+        value: service.id, // Assuming 'id' is the value
+      }))
+  }, [services]) // Re-run only when the services array from the store changes
+
+  // Fetch appointment data for edit mode (Keep this as is, uses Appointment Store)
   useEffect(() => {
-    // Check if we're in edit mode
     if (isEditMode && id) {
-      // Fetch appointment
       const fetchAppointment = async () => {
+        // ... (existing logic using storeGetAppointmentById is correct)
         try {
           setIsLoadingAppointment(true)
-          const { data: appointment } = await getAppointmentById(id)
-          console.log("Raw appointment response:", appointment)
+          const appointment = await storeGetAppointmentById(id)
+          console.log("Fetched appointment via store:", appointment)
 
-          if (!appointment || !appointment.customerName) {
-            throw new Error("Invalid appointment data: customerName is missing")
+          if (appointment && appointment.customerName) {
+            const date = appointment.selectedDate
+            const time = isoToNormalTime(appointment.selectedTime)
+            const [firstName, ...lastNameParts] = appointment.customerName
+              .trim()
+              .split(" ")
+
+            form.reset({
+              firstName: firstName || "",
+              lastName: lastNameParts.join(" ") || "",
+              email: appointment.email || "",
+              phone: appointment.phone || "",
+              service: appointment.serviceId || "",
+              date: isNaN(date.getTime()) ? undefined : date,
+              time: time || "",
+              message: appointment.message || "",
+            })
+            console.log("Form populated with:", {
+              /* ... */
+            })
+          } else {
+            console.warn("Appointment not found or invalid data for ID:", id)
+            toast.error("Could not load appointment data to edit.") // More specific feedback
           }
-
-          const date = new Date(isoToNormalDate(appointment.selectedDate))
-          const time = isoToNormalTime(appointment.selectedTime)
-          const [firstName, ...lastNameParts] = appointment.customerName
-            .trim()
-            .split(" ")
-          form.reset({
-            firstName: firstName || "",
-            lastName: lastNameParts.join(" ") || "",
-            email: appointment.email || "",
-            phone: appointment.phone || "",
-            service: appointment.serviceId || "",
-            date: isNaN(date.getTime()) ? undefined : date,
-            time: time || "",
-            message: appointment.message || "",
-          })
-          console.log("Form populated with:", {
-            firstName,
-            lastName: lastNameParts.join(" "),
-            email: appointment.email,
-            phone: appointment.phone,
-            service: appointment.serviceId,
-            date: formatAppointmentDate(appointment.selectedDate),
-            time,
-            message: appointment.message,
-            rawSelectedDate: appointment.selectedDate,
-            rawSelectedTime: appointment.selectedTime,
-          })
         } catch (error: any) {
-          console.error("Error fetching appointment:", error)
-          toast.error(error.message || "Failed to load appointment data")
+          console.error("Error fetching appointment in form:", error)
+          // Toast handled by store method
         } finally {
           setIsLoadingAppointment(false)
         }
       }
       fetchAppointment()
     }
-  }, [id, isEditMode, form])
+  }, [id, isEditMode, form, storeGetAppointmentById])
 
+  // onSubmit function (Keep this as is, uses Appointment Store actions)
   const onSubmit = async (formData: FormData) => {
+    // ... (existing logic using storeCreateAppointment/storeUpdateAppointment is correct)
     try {
       setIsSubmitting(true)
-      const appointmentData: AppointmentData = {
+      const appointmentData: PostAppoinmentData = {
         customerName: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         phone: formData.phone,
@@ -197,26 +191,20 @@ export default function AppointmentForm() {
         createdById: "cm9gu8ms60000vdg0zdnsxb6z",
         status: "SCHEDULED",
       }
-      console.log("Submitting appointment:", appointmentData)
+      console.log("Submitting appointment via store:", appointmentData)
 
-      if (isEditMode) {
-        await updateAppointment(id as string, appointmentData)
-        toast.success("Appointment updated successfully")
+      if (isEditMode && id) {
+        await storeUpdateAppointment(id, appointmentData)
       } else {
-        await createAppointment(appointmentData)
-        toast.success("Appointment created successfully")
+        await storeCreateAppointment(appointmentData)
       }
       handleBack()
     } catch (error: any) {
       console.error(
-        `Error ${isEditMode ? "updating" : "creating"} appointment:`,
+        `Error ${isEditMode ? "updating" : "creating"} appointment in form:`,
         error
       )
-      const errorMessage = error.message.includes("already exists")
-        ? "This email is already registered for an appointment"
-        : error.message ||
-          `Failed to ${isEditMode ? "update" : "create"} appointment`
-      toast.error(errorMessage)
+      // Toast is handled by store method
     } finally {
       setIsSubmitting(false)
     }
@@ -226,6 +214,7 @@ export default function AppointmentForm() {
     router.push("/appointment")
   }
 
+  // --- Return JSX ---
   return (
     <>
       <FormHeader
@@ -236,9 +225,12 @@ export default function AppointmentForm() {
             : "View and manage your upcoming appointments"
         }
       />
-      {isLoadingAppointment ? (
+      {/* Show loading indicator if either appointment OR initial service list is loading */}
+      {isLoadingAppointment || (isLoadingServices && !hasFetchedServices) ? (
         <div className="flex justify-center items-center py-20 text-muted-foreground">
-          Loading appointment...
+          {isLoadingAppointment
+            ? "Loading appointment..."
+            : "Loading services..."}
         </div>
       ) : (
         <FormProvider {...form}>
@@ -247,6 +239,7 @@ export default function AppointmentForm() {
             className="space-y-5"
             aria-busy={isSubmitting}
           >
+            {/* ... (Input fields for name, email, phone remain the same) ... */}
             <div className="grid grid-cols-2 gap-4">
               <InputField
                 name="firstName"
@@ -276,15 +269,32 @@ export default function AppointmentForm() {
               placeholder="Enter your number"
             />
 
+            {/* *** Updated SelectField *** */}
             <SelectField
               name="service"
               label="Select a Service"
-              options={serviceOptions}
+              options={serviceOptions} // Use derived options
               icon={SlidersHorizontal}
-              placeholder="Select a service"
-              disabled={isLoadingServices || serviceOptions.length === 0}
+              placeholder={
+                isLoadingServices ? "Loading services..." : "Select a service"
+              }
+              // Disable while loading services OR if no options are available after loading
+              disabled={
+                isLoadingServices ||
+                (!isLoadingServices && serviceOptions.length === 0)
+              }
             />
 
+            {/* Display message if services loaded but none are available */}
+            {!isLoadingServices &&
+              serviceOptions.length === 0 &&
+              hasFetchedServices && (
+                <p className="text-sm text-muted-foreground text-center">
+                  No services currently available.
+                </p>
+              )}
+
+            {/* ... (Date, Time, Message fields remain the same) ... */}
             <div className="grid grid-cols-2 items-center gap-4">
               <DatePickerField
                 name="date"
@@ -304,6 +314,7 @@ export default function AppointmentForm() {
               placeholder="Any special requests?"
             />
 
+            {/* ... (Buttons remain the same, update disabled state) ... */}
             <div className="flex flex-col gap-3 md:flex-row justify-between mt-6">
               <Button
                 type="button"
@@ -317,7 +328,10 @@ export default function AppointmentForm() {
               <Button
                 type="submit"
                 className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
-                disabled={isLoadingServices || isSubmitting}
+                // Disable submit if services are loading, appointment is loading, or submitting
+                disabled={
+                  isLoadingServices || isLoadingAppointment || isSubmitting
+                }
               >
                 {isEditMode
                   ? isSubmitting

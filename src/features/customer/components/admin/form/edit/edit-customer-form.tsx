@@ -14,21 +14,18 @@ import {
   Lock,
   Eye,
   EyeOff,
-  ShieldCheck,
   ShieldAlert,
 } from "lucide-react"
 import PhoneField from "@/components/custom-form-fields/phone-field"
-import {
-  Customer,
-  getCoustomersById,
-  getCustomers,
-  updateCustomer,
-} from "@/features/customer/api/api"
-import { toast, Toaster } from "sonner"
+import { toast } from "sonner"
 import { useParams, useRouter } from "next/navigation"
 import ToggleSwitch from "@/components/custom-form-fields/toggle-switch"
 import FormHeader from "@/components/admin/form-header"
+import { PostCustomerData } from "@/features/customer/api/api"
+import { useCustomerStore } from "@/app/(admin)/customer/_store/customer-store"
+import { Role } from "@/app/(admin)/customer/_types/customer"
 
+// Form data type
 type FormData = {
   fullName: string
   email: string
@@ -38,11 +35,16 @@ type FormData = {
   isActive: boolean
 }
 
-interface CustomerFormProps {
-  onSubmit: (data: FormData) => void
-}
+// Validation schemas
+const createSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email address").min(1, "Email is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  role: z.string().min(1, "Role is required"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+  isActive: z.boolean(),
+})
 
-// Validation schema for edit mode
 const updateSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address").min(1, "Email is required"),
@@ -58,76 +60,92 @@ const roleOptions = [
   { value: "SUPERADMIN", label: "Super Admin" },
 ]
 
-const EditCustomerForm = () => {
+const CustomerForm = () => {
   const router = useRouter()
   const params = useParams()
-  const id = params.id as string
+  const id = params.id as string | undefined
+  const isEditMode = !!id
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(isEditMode)
 
-  // Initialize form with create schema
+  const { getCustomerById, createCustomer, updateCustomer } = useCustomerStore()
+
+  // Initialize form with appropriate schema
   const form = useForm<FormData>({
-    resolver: zodResolver(updateSchema),
+    resolver: zodResolver(isEditMode ? updateSchema : createSchema),
     defaultValues: {
       fullName: "",
       email: "",
-      phone: "95129871987391",
-      role: "",
+      phone: "",
+      role: "USER",
       password: "",
-      isActive: false,
+      isActive: true,
     },
   })
-  // fetch the cusotmer data
-  useEffect(() => {
-    const fetchCustomer = async () => {
-      try {
-        const customer = await getCoustomersById(id)
 
-        const formData = {
-          fullName: customer.name,
-          email: customer.email,
-          phone: customer.phone,
-          role: customer.role,
-          password: customer.password || "",
-          isActive: customer.isActive,
+  // Fetch customer data for edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchCustomer = async () => {
+        try {
+          const customer = await getCustomerById(id)
+          if (customer) {
+            const formData: FormData = {
+              fullName: customer.name,
+              email: customer.email,
+              phone: customer.phone || "",
+              role: customer.role || "USER",
+              password: "", // Password is not fetched for security
+              isActive: customer.isActive ?? true,
+            }
+            console.log("Setting form data:", formData)
+            form.reset(formData)
+          } else {
+            toast.error("Customer not found")
+            router.push("/customer")
+          }
+        } catch (error) {
+          console.error("Error fetching customer:", error)
+          toast.error("Failed to load customer data")
+        } finally {
+          setIsLoading(false)
         }
-        console.log("Setting form data:", formData)
-        form.reset(formData)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        toast.error("Failed to load appointment data")
-      } finally {
-        setIsLoading(false)
       }
+      fetchCustomer()
+    } else {
+      setIsLoading(false)
     }
-    fetchCustomer()
-  }, [])
+  }, [id, isEditMode, getCustomerById, form, router])
 
   // Handle form submission
   const onSubmit = async (formData: FormData) => {
     try {
-      console.log("Form Data:", formData)
-      const customerData: Omit<Customer, "id"> = {
+      const customerData: PostCustomerData = {
         name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
-        role: formData.role,
-        password: formData.password || "",
+        role: formData.role as Role,
+        password: formData.password || undefined,
         isActive: formData.isActive,
       }
-      if (!id) {
-        throw new Error("Appointment ID is required for updating")
-      }
-      console.log("Customer Data to Update:", customerData)
-      const response = await updateCustomer(id, customerData)
 
-      if (response) {
+      if (isEditMode) {
+        if (!id) {
+          throw new Error("Customer ID is required for updating")
+        }
+        await updateCustomer(id, customerData)
         toast.success("Customer updated successfully!")
-        router.push("/customer")
+      } else {
+        await createCustomer(customerData)
+        toast.success("Customer created successfully!")
       }
+      router.push("/customer")
     } catch (error) {
-      console.error("Error updating customer:", error)
-      toast.error("Failed to update customer")
+      console.error(
+        `Error ${isEditMode ? "updating" : "creating"} customer:`,
+        error
+      )
+      toast.error(`Failed to ${isEditMode ? "update" : "create"} customer`)
     }
   }
 
@@ -138,88 +156,97 @@ const EditCustomerForm = () => {
   return (
     <>
       <FormHeader
-        title="Enter Customer Details"
-        description="View and manage your current customers"
+        title={isEditMode ? "Edit Customer Details" : "Create Customer"}
+        description={
+          isEditMode
+            ? "Update customer information"
+            : "Add a new customer to the system"
+        }
       />
-      <FormProvider {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 h-full"
-        >
-          <div className="space-y-4">
-            <InputField
-              name="fullName"
-              label="Full Name"
-              placeholder="Enter Service Name"
-              icon={User}
-            />
-            <InputField
-              name="email"
-              label="Email"
-              type="email"
-              placeholder="Enter Email Address"
-              icon={Mail}
-            />
-            <PhoneField name="phone" label="Phone" />
-
-            <SelectField
-              name="role"
-              label="Role"
-              placeholder="Select a Role"
-              options={roleOptions}
-              icon={UserCheck}
-            />
-            <ToggleSwitch
-              name="isActive"
-              label="Active"
-              icon={<ShieldAlert className="size-4 text-gray-500" />}
-            />
-
-            <div className="relative">
+      {isLoading ? (
+        <div className="flex justify-center items-center py-10">Loading...</div>
+      ) : (
+        <FormProvider {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 h-full"
+          >
+            <div className="space-y-4">
               <InputField
-                name="password"
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter Password"
-                icon={Lock}
+                name="fullName"
+                label="Full Name"
+                placeholder="Enter full name"
+                icon={User}
               />
+              <InputField
+                name="email"
+                label="Email"
+                type="email"
+                placeholder="Enter email address"
+                icon={Mail}
+              />
+              <PhoneField name="phone" label="Phone" />
+              <SelectField
+                name="role"
+                label="Role"
+                placeholder="Select a role"
+                options={roleOptions}
+                icon={UserCheck}
+              />
+              <ToggleSwitch
+                name="isActive"
+                label="Active"
+                icon={<ShieldAlert className="size-4 text-gray-500" />}
+              />
+              <div className="relative">
+                <InputField
+                  name="password"
+                  label="Password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder={
+                    isEditMode
+                      ? "Enter new password (optional)"
+                      : "Enter password"
+                  }
+                  icon={Lock}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-6 rounded-full"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-4 text-gray-500" />
+                  ) : (
+                    <Eye className="size-4 text-gray-500" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 md:flex-row justify-between mt-6">
               <Button
                 type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-6 rounded-full"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                variant="outline"
+                className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+                onClick={handleBack}
               >
-                {showPassword ? (
-                  <EyeOff className="size-4 text-gray-500" />
-                ) : (
-                  <Eye className="size-4 text-gray-500" />
-                )}
+                ← Back
+              </Button>
+              <Button
+                type="submit"
+                className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
+              >
+                {isEditMode ? "Update Customer" : "Create Customer"}
               </Button>
             </div>
-          </div>
-
-          <div className="flex flex-col gap-3 md:flex-row justify-between mt-6">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
-              onClick={handleBack}
-            >
-              ← Back
-            </Button>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto hover:opacity-95 active:translate-y-0.5 transition-transform duration-200"
-            >
-              Update User
-            </Button>
-          </div>
-        </form>
-      </FormProvider>
+          </form>
+        </FormProvider>
+      )}
     </>
   )
 }
 
-export default EditCustomerForm
+export default CustomerForm

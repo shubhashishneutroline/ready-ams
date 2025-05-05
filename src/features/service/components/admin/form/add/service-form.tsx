@@ -67,7 +67,7 @@ const formatAvailabilityNote = () => {
 }
 
 interface Props {
-  businessAvailability?: BusinessAvailability
+  businessAvailability?: BusinessAvailability | null
   businessId?: string
 }
 
@@ -80,7 +80,7 @@ export default function ServiceForm({
 
   // Dynamically set default serviceDays to exclude holidays
   const defaultServiceDays = days.filter(
-    (day) => !businessAvailability.holidays.includes(day)
+    (day) => !businessAvailability?.holidays.includes(day)
   )
 
   const router = useRouter()
@@ -89,7 +89,7 @@ export default function ServiceForm({
   const defaultServiceHours = days.reduce(
     (acc, day) => ({
       ...acc,
-      [day]: businessAvailability.holidays.includes(day)
+      [day]: businessAvailability?.holidays.includes(day)
         ? []
         : [["09:00 AM", "05:00 PM"]],
     }),
@@ -138,8 +138,13 @@ export default function ServiceForm({
         businessDetailId: businessId,
       }
       console.log(serviceData, "servicedata inside onSubmit")
-      await createService(serviceData)
-      toast.success("Service created successfully")
+      const { success, message, error } = await createService(serviceData)
+
+      if (res) {
+        toast.success("Service created successfully")
+      } else {
+        toast.error("Failed to create service")
+      }
       router.push("/service")
     } catch (error) {
       toast.error("Failed to create service")

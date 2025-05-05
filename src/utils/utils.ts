@@ -24,12 +24,16 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Format appointment date
- * @param selectedDate - ISO date string with time (e.g., "2025-04-20T00:00:00.000Z")
+ * @param selectedDate - ISO date string or Date object (e.g., "2025-04-20T00:00:00.000Z" or Date)
  * @returns Formatted date string (e.g., "20 April 2025")
  */
-export const formatAppointmentDate = (selectedDate: string): string => {
+export const formatAppointmentDate = (selectedDate: string | Date): string => {
   try {
-    const date = parseISO(selectedDate)
+    const date =
+      typeof selectedDate === "string" ? parseISO(selectedDate) : selectedDate
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      throw new Error("Invalid date")
+    }
     return format(date, "dd MMMM yyyy")
   } catch (error) {
     console.error("Error formatting date:", error)
@@ -39,12 +43,16 @@ export const formatAppointmentDate = (selectedDate: string): string => {
 
 /**
  * Format appointment time
- * @param selectedTime - ISO date string with time (e.g., "2025-04-16T18:15:00.000Z")
+ * @param selectedTime - ISO date string or Date object (e.g., "2025-04-16T18:15:00.000Z" or Date)
  * @returns Formatted time string (e.g., "06:15 PM")
  */
-export const formatAppointmentTime = (selectedTime: string): string => {
+export const formatAppointmentTime = (selectedTime: string | Date): string => {
   try {
-    const time = parseISO(selectedTime)
+    const time =
+      typeof selectedTime === "string" ? parseISO(selectedTime) : selectedTime
+    if (!(time instanceof Date) || isNaN(time.getTime())) {
+      throw new Error("Invalid time")
+    }
     return format(time, "hh:mm a")
   } catch (error) {
     console.error("Error formatting time:", error)
@@ -54,14 +62,15 @@ export const formatAppointmentTime = (selectedTime: string): string => {
 
 /**
  * Convert ISO date/time to normal date string
- * @param isoDateTime - ISO date/time string (e.g., "2025-05-01T18:15:00.000Z")
+ * @param isoDateTime - ISO date/time string or Date object (e.g., "2025-05-01T18:15:00.000Z" or Date)
  * @returns Formatted date string (e.g., "01 May 2025")
  */
-export function isoToNormalDate(isoDateTime: string): string {
+export function isoToNormalDate(isoDateTime: string | Date): string {
   try {
-    const date = parseISO(isoDateTime)
-    if (isNaN(date.getTime())) {
-      throw new Error("Invalid ISO date/time string")
+    const date =
+      typeof isoDateTime === "string" ? parseISO(isoDateTime) : isoDateTime
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      throw new Error("Invalid ISO date/time")
     }
     return format(date, "dd MMMM yyyy")
   } catch (error) {
@@ -72,14 +81,15 @@ export function isoToNormalDate(isoDateTime: string): string {
 
 /**
  * Convert ISO date/time to normal time string with AM/PM
- * @param isoDateTime - ISO date/time string (e.g., "2025-05-01T18:15:00.000Z")
+ * @param isoDateTime - ISO date/time string or Date object (e.g., "2025-05-01T18:15:00.000Z" or Date)
  * @returns Formatted time string (e.g., "06:15 PM")
  */
-export function isoToNormalTime(isoDateTime: string): string {
+export function isoToNormalTime(isoDateTime: string | Date): string {
   try {
-    const date = parseISO(isoDateTime)
-    if (isNaN(date.getTime())) {
-      throw new Error("Invalid ISO date/time string")
+    const date =
+      typeof isoDateTime === "string" ? parseISO(isoDateTime) : isoDateTime
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      throw new Error("Invalid ISO date/time")
     }
     return format(date, "hh:mm a")
   } catch (error) {
@@ -100,7 +110,7 @@ export function normalOrFormTimeToIso(
 ): string {
   try {
     const dateObj = typeof date === "string" ? new Date(date) : date
-    if (isNaN(dateObj.getTime())) {
+    if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
       throw new Error("Invalid date input")
     }
 
@@ -138,7 +148,7 @@ export function normalOrFormTimeToIso(
  */
 export function normalDateToIso(date: Date): string {
   try {
-    if (isNaN(date.getTime())) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
       throw new Error("Invalid date input")
     }
     const resultDate = new Date(date)

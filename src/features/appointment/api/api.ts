@@ -8,8 +8,15 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 })
-console.log(api.defaults.baseURL)
-export interface AppointmentData {
+
+export interface ApiReturnType {
+  data?: any
+  success: boolean
+  error?: string
+  message?: string
+}
+
+export interface PostAppoinmentData {
   id?: string
   customerName: string
   email: string
@@ -32,8 +39,10 @@ async function getAppointments(): Promise<{
   message?: string
 }> {
   try {
-    const { data } = await api.get("/api/appointment")
-    return { data, success: true }
+    const {
+      data: { data, success, error, message },
+    } = (await api.get("/api/appointment")) as ApiReturnType
+    return { data, success, message, error }
   } catch (error) {
     console.error("Error fetching appointments:", error)
     if (error instanceof AxiosError) {
@@ -41,9 +50,9 @@ async function getAppointments(): Promise<{
         message: error?.response?.data.error,
         success: false,
         error: error.message,
-      } // Issue here
+      }
     }
-    return { error: "Failed to fetch appointment by Id", success: false }
+    return { message: "Failed to fetch appointments", success: false }
   }
 }
 
@@ -54,62 +63,76 @@ async function getAppointmentById(id: string): Promise<{
   message?: string
 }> {
   try {
-    const { data } = await api.get(`/api/appointment/${id}`)
-
-    return { data, success: true }
+    const {
+      data: { data, success, error, message },
+    } = (await api.get(`/api/appointment/${id}`)) as ApiReturnType
+    return { data, success, message, error }
   } catch (error) {
     if (error instanceof AxiosError) {
       return {
         message: error?.response?.data.error,
         success: false,
         error: error.message,
-      } // Issue here
+      }
     }
     return { error: "Failed to fetch appointment by Id", success: false }
   }
 }
 
-async function createAppointment(appointmentData: AppointmentData): Promise<{
-  data?: AppointmentData
+async function createAppointment(appointmentData: PostAppoinmentData): Promise<{
+  data?: Appointment
   success: boolean
   error?: string
   message?: string
 }> {
   try {
-    const { data } = await api.post("/api/appointment", appointmentData)
-    return { data, success: true }
+    const {
+      data: { data, success, error, message },
+    } = (await api.post("/api/appointment", appointmentData)) as ApiReturnType
+    return {
+      data,
+      success,
+      message,
+      error,
+    }
   } catch (error) {
     if (error instanceof AxiosError) {
       return {
         message: error?.response?.data.error,
         success: false,
         error: error.message,
-      } // Issue here
+      }
     }
-    return { error: "Failed to creating appointment", success: false }
+    return { error: "Failed to create appointment", success: false }
   }
 }
 
 async function updateAppointment(
   id: string,
-  appointmentData: Omit<AppointmentData, "id">
-) {
+  appointmentData: PostAppoinmentData
+): Promise<{
+  data?: Appointment
+  success: boolean
+  error?: string
+  message?: string
+}> {
   try {
-    const { data } = await api.put(`/api/appointment`, {
+    const {
+      data: { data, success, error, message },
+    } = (await api.put(`/api/appointment/${id}`, {
       ...appointmentData,
-      id,
       status: appointmentData.status || "SCHEDULED",
-    })
-    return { data, success: true }
+    })) as ApiReturnType
+    return { data, success, message, error }
   } catch (error) {
     if (error instanceof AxiosError) {
       return {
         message: error?.response?.data.error,
         success: false,
         error: error.message,
-      } // Issue here
+      }
     }
-    return { error: "Failed to updating appointment", success: false }
+    return { error: "Failed to update appointment", success: false }
   }
 }
 
@@ -117,15 +140,17 @@ async function deleteAppointment(
   id: string
 ): Promise<{ success: boolean; error?: string; message?: string }> {
   try {
-    const { data } = await api.delete(`/api/appointment/${id}`, {})
-    return { message: "Appointment deleted successfully", success: true }
+    const {
+      data: { data, success, error, message },
+    } = (await api.delete(`/api/appointment/${id}`)) as ApiReturnType
+    return { success, message, error }
   } catch (error) {
     if (error instanceof AxiosError) {
       return {
         message: error?.response?.data.error,
         success: false,
         error: error.message,
-      } // Issue here
+      }
     }
     return { error: "Failed to delete appointment", success: false }
   }

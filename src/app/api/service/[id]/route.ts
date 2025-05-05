@@ -14,18 +14,18 @@ interface ParamsProps {
 export async function GET(req: NextRequest, { params }: ParamsProps) {
   try {
     const { id } = await params
-    const announcement = await getServiceById(id)
+    const serviceById = await getServiceById(id)
 
-    if (!announcement) {
+    if (!serviceById) {
       return NextResponse.json(
-        { error: "Service with id not found" },
+        { message: "Service with id not found" },
         { status: 404 }
       )
     }
-    return NextResponse.json(announcement, { status: 200 })
+    return NextResponse.json(serviceById, { status: 200 })
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch service" },
+      { error: "Failed to fetch service", detail: error },
       { status: 500 }
     )
   }

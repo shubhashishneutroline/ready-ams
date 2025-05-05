@@ -1,4 +1,6 @@
+import { BusinessDetail } from "@/features/business-detail/types/types"
 import { getBaseUrl } from "@/lib/baseUrl"
+import { Service } from "@prisma/client"
 import axios, { AxiosError } from "axios"
 
 const api = axios.create({
@@ -8,7 +10,13 @@ const api = axios.create({
   },
 })
 
-export interface Service {
+export interface ServiceAvailability {
+  day: string
+  startTime: string
+  endTime: string
+}
+
+export interface PostServiceData {
   id?: string
   title: string
   description: string
@@ -16,6 +24,9 @@ export interface Service {
   status: string
   createdAt?: string
   updatedAt?: string
+  serviceAvailability?: ServiceAvailability[]
+  businessDetailId?: string
+  BusinessDetail?: BusinessDetail[]
 }
 
 async function getServices(): Promise<Service[]> {
@@ -30,33 +41,39 @@ async function getServices(): Promise<Service[]> {
 
 async function getServiceById(id: string) {
   try {
-    const { data } = await api.get("/api/service", {
-      params: { id },
-    })
-    const service = data.find((service: Service) => service.id === id)
+    const { data } = await api.get(`/api/service/${id}`)
 
-    return service
+    return data
   } catch (error) {
     console.error("Error fetching customer:", error)
     throw error
   }
 }
 
-async function createService(
-  serviceData: Omit<Service, "id">
-): Promise<Service> {
+async function createService(serviceData: PostServiceData): Promise<{
+  data?: Service
+  success: boolean
+  error?: string
+  message?: string
+}> {
   try {
     const { data } = await api.post("/api/service", serviceData)
-    return data
+    return { data, success: true }
   } catch (error) {
-    console.error("Error creating service:", error)
-    throw error
+    if (error instanceof AxiosError) {
+      return {
+        message: error?.response?.data.error,
+        success: false,
+        error: error.message,
+      } // Issue here
+    }
+    return { error: "Failed to delete service", success: false }
   }
 }
 
 async function updateService(
   id: string,
-  serviceData: Omit<Service, "id">
+  serviceData: Omit<PostServiceData, "id">
 ): Promise<Service> {
   try {
     const { data } = await api.put(`/api/service/${id}`, {
