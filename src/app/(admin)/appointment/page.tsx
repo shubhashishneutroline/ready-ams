@@ -10,6 +10,7 @@ import DataTableSkeleton from "@/components/table/skeleton-table"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
+import { cn } from "@/utils/utils"
 
 const pageOptions = [
   "Today",
@@ -122,7 +123,7 @@ const AppointmentPage = () => {
   return (
     <div className="h-full w-full flex flex-col">
       <div className="space-y-4">
-        <div className="flex items-center gap-4">
+        <div className="flex justify-between items-center">
           <PageTabs
             isReminder
             activeTab={activeTab}
@@ -134,24 +135,12 @@ const AppointmentPage = () => {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="ml-auto"
-            aria-label={
-              isRefreshing ? "Refreshing appointments" : "Refresh appointments"
-            }
-            aria-busy={isRefreshing}
+            className="flex items-center gap-2"
           >
-            {/* Button content */}
-            {isRefreshing ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Refreshing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </>
-            )}
+            <RefreshCw
+              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
         </div>
         <TablePageHeader
@@ -165,20 +154,13 @@ const AppointmentPage = () => {
           <DataTableSkeleton />
         ) : filteredAppointments.length === 0 && hasFetched ? ( // Show no data message only after fetch attempt
           <div className="text-center py-4 text-sm text-muted-foreground italic">
-            No appointments found for the selected filter
+            No appointments found for the selected tab
             {activeTab !== "All" ? ` ['${activeTab}']` : ""}. Try refreshing or
-            adjusting filters.
+            adjusting tabs.
           </div>
         ) : (
           // Render table if data exists or if still loading initially (covered by first condition)
           <div className="relative overflow-x-auto">
-            {isRefreshing && ( // Show subtle refresh indicator during manual/auto refresh
-              <div className="absolute top-2 right-2 z-10">
-                {" "}
-                {/* Added z-index */}
-                <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            )}
             <DataTable
               columns={memoizedColumns}
               data={filteredAppointments} // This uses the reactively updated data

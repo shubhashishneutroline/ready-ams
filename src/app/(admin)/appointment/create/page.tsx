@@ -1,4 +1,4 @@
-import AppointmentForm from "@/features/appointment/components/admin/form/add/appointment-form"
+import AppointmentForm from "../_components/appointment-form"
 
 const AppointmentPage = () => {
   return (

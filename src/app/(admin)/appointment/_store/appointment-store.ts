@@ -26,12 +26,20 @@ interface AppointmentState {
   isRefreshing: boolean
   hasFetched: boolean
   error: string | null
+  router: string
   onActiveTab: (tab: string) => void
   fetchAppointments: (isManualRefresh?: boolean) => Promise<void>
-  createAppointment: (data: PostAppoinmentData) => Promise<void>
+  createAppointment: (
+    data: PostAppoinmentData
+  ) => Promise<{ success: boolean; message?: string; error?: string }>
   getAppointmentById: (id: string) => Promise<Appointment | null>
-  updateAppointment: (id: string, data: PostAppoinmentData) => Promise<void>
-  deleteAppointment: (id: string) => Promise<void>
+  updateAppointment: (
+    id: string,
+    data: PostAppoinmentData
+  ) => Promise<{ success: boolean; message?: string; error?: string }>
+  deleteAppointment: (
+    id: string
+  ) => Promise<{ success: boolean; message?: string; error?: string }>
   getFilteredAppointments: () => Appointment[]
 }
 
@@ -42,7 +50,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   isRefreshing: false,
   hasFetched: false,
   error: null,
-
+  router: "/appointment",
   onActiveTab: (tab: string) => set({ activeTab: tab }),
 
   fetchAppointments: async (isManualRefresh = false) => {
@@ -109,14 +117,20 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
           ],
         }))
         toast.success(message || "Appointment created successfully")
+        return {
+          success: true,
+          message: message || "Appointment created successfully",
+        }
       } else {
         const errorMsg = message || "Failed to create appointment"
         toast.error(errorMsg)
-        throw new Error(error || "Failed to create appointment")
+        return { success: false, error: errorMsg }
       }
     } catch (error) {
       console.error("Error creating appointment:", error)
-      toast.error("Failed to create appointment")
+      const errorMsg = "Failed to create appointment"
+      toast.error(errorMsg)
+      return { success: false, error: errorMsg }
     }
   },
 
@@ -133,7 +147,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       } else {
         const errorMsg = message || "Failed to fetch appointment"
         toast.error(errorMsg)
-        throw new Error(error || "Failed to fetch appointment")
+        return null
       }
     } catch (error) {
       console.error("Error fetching appointment by ID:", error)
@@ -163,14 +177,20 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
           ),
         }))
         toast.success(message || "Appointment updated successfully")
+        return {
+          success: true,
+          message: message || "Appointment updated successfully",
+        }
       } else {
         const errorMsg = message || "Failed to update appointment"
         toast.error(errorMsg)
-        throw new Error(error || "Failed to update appointment")
+        return { success: false, error: errorMsg }
       }
     } catch (error) {
       console.error("Error updating appointment:", error)
-      toast.error("Failed to update appointment")
+      const errorMsg = "Failed to update appointment"
+      toast.error(errorMsg)
+      return { success: false, error: errorMsg }
     }
   },
 
@@ -182,14 +202,20 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
           appointments: state.appointments.filter((appt) => appt.id !== id),
         }))
         toast.success(response.message || "Appointment deleted successfully")
+        return {
+          success: true,
+          message: response.message || "Appointment deleted successfully",
+        }
       } else {
         const errorMsg = response.message || "Failed to delete appointment"
         toast.error(errorMsg)
-        throw new Error(response.error || "Failed to delete appointment")
+        return { success: false, error: errorMsg }
       }
     } catch (error) {
       console.error("Error deleting appointment:", error)
-      toast.error("Failed to delete appointment")
+      const errorMsg = "Failed to delete appointment"
+      toast.error(errorMsg)
+      return { success: false, error: errorMsg }
     }
   },
 
@@ -199,20 +225,12 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       console.warn("appointments is not an array:", appointments)
       return []
     }
-    console.log("Filtering appointments:", { activeTab, appointments })
     return appointments.filter((item) => {
       const isValidDate =
         item.selectedDate instanceof Date && !isNaN(item.selectedDate.getTime())
       const isValidStatus = Object.values(AppointmentStatus).includes(
         item.status as AppointmentStatus
       )
-      console.log("Filtering item:", {
-        id: item.id,
-        selectedDate: item.selectedDate,
-        status: item.status,
-        isValidDate,
-        isValidStatus,
-      })
       if (activeTab === "Today") {
         return isValidDate && isSameDay(item.selectedDate, new Date())
       } else if (activeTab === "Upcoming") {

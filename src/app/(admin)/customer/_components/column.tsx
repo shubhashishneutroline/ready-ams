@@ -22,7 +22,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
-import { Customer, deleteCustomer } from "@/features/customer/api/api"
+import { PostCustomerData, deleteCustomer } from "@/features/customer/api/api"
 import {
   getActiveStatusStyles,
   getRoleStyles,
@@ -32,7 +32,7 @@ import { useState } from "react"
 
 export const columns = (
   handleDelete: (id: string) => void
-): ColumnDef<Customer>[] => [
+): ColumnDef<PostCustomerData>[] => [
   {
     id: "select",
     header: ({ table }) => (

@@ -23,6 +23,7 @@ const CustomerPage = () => {
     isRefreshing,
     fetchCustomers,
     deleteCustomer,
+    hasFetched,
     getFilteredCustomers,
   } = useCustomerStore()
 
@@ -115,13 +116,20 @@ const CustomerPage = () => {
           newButton="New Customer"
           route="/customer/create/"
         />
-        {loading ? (
+        {loading && !hasFetched ? ( // Show skeleton only on initial load
           <DataTableSkeleton />
+        ) : filteredCustomers.length === 0 && hasFetched ? ( // Show no data message only after fetch attempt
+          <div className="text-center py-4 text-sm text-muted-foreground italic">
+            No customers found for the selected tab
+            {activeTab !== "All" ? ` ['${activeTab}']` : ""}. Try refreshing or
+            adjusting tabs.
+          </div>
         ) : (
-          <div className="overflow-x-auto">
+          // Render table if data exists or if still loading initially (covered by first condition)
+          <div className="relative overflow-x-auto">
             <DataTable
               columns={memoizedColumns}
-              data={filteredCustomers}
+              data={filteredCustomers} // This uses the reactively updated data
               searchFieldName="name"
             />
           </div>

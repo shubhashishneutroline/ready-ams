@@ -1,11 +1,11 @@
-import CustomerForm from "@/features/customer/components/admin/form/add/customer-form";
+import CustomerForm from "../_components/customer-form"
 
 const CustomerPage = () => {
   return (
     <>
       <CustomerForm />
     </>
-  );
-};
+  )
+}
 
-export default CustomerPage;
+export default CustomerPage

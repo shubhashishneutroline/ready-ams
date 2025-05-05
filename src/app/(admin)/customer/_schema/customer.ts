@@ -26,14 +26,20 @@ export const userSchema = z.object({
   address: addressSchema.optional(), // Optional address
 })
 
-// // Zod schema for User update
-// export const userUpdateSchema = z.object({
-//   id: z.string().optional(),
-//   email: z.string().email("Invalid email format"),
-//   password: z.string().optional(),
-//   name: z.string().min(1, "Name is required"),
-//   phone: z.string().optional(),
-//   role: roleSchema,
-//   isActive: z.boolean().optional().default(true), // Optional, defaults to true
-//   address: addressSchema.optional(), // Optional address
-// })
+// --- Admin User CRUD
+// Validation schemas
+export const createSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email address").min(1, "Email is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  isActive: z.boolean(),
+})
+
+export const updateSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email address").min(1, "Email is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  password: z.string().optional(),
+  isActive: z.boolean(),
+})

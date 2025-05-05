@@ -9,7 +9,7 @@ export interface PostCustomerData {
   password?: string // Optional for update
   name: string
   phone?: string
-  role?: Role
+  role: Role
   isActive?: boolean
   address?: Address
 }

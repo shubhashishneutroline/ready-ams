@@ -21,10 +21,17 @@ interface CustomerState {
   error: string | null
   onActiveTab: (tab: string) => void
   fetchCustomers: (isManualRefresh?: boolean) => Promise<void>
-  createCustomer: (data: PostCustomerData) => Promise<void>
+  createCustomer: (
+    data: PostCustomerData
+  ) => Promise<{ success: boolean; message?: string; error?: string }>
   getCustomerById: (id: string) => Promise<User | null>
-  updateCustomer: (id: string, data: PostCustomerData) => Promise<void>
-  deleteCustomer: (id: string) => Promise<void>
+  updateCustomer: (
+    id: string,
+    data: PostCustomerData
+  ) => Promise<{ success: boolean; message?: string; error?: string }>
+  deleteCustomer: (
+    id: string
+  ) => Promise<{ success: boolean; message?: string; error?: string }>
   getFilteredCustomers: () => User[]
 }
 
@@ -51,10 +58,9 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
       console.log("fetchCustomers response:", response)
 
       if (response.success && Array.isArray(response.data)) {
-        // Normalize isActive to ensure no undefined values
         const normalizedCustomers = response.data.map((customer) => ({
           ...customer,
-          isActive: customer.isActive ?? true, // Default to true if undefined
+          isActive: customer.isActive ?? true,
         }))
         set({ customers: normalizedCustomers, hasFetched: true })
         if (isManualRefresh) {
@@ -98,20 +104,26 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
               ...response.data,
               createdAt: new Date(response.data.createdAt),
               updatedAt: new Date(response.data.updatedAt),
-              isActive: response.data.isActive ?? true, // Normalize isActive
+              isActive: response.data.isActive ?? true,
             },
             ...state.customers,
           ],
         }))
         toast.success(response.message || "Customer created successfully")
+        return {
+          success: true,
+          message: response.message || "Customer created successfully",
+        }
       } else {
         const errorMsg = response.message || "Failed to create customer"
         toast.error(errorMsg)
-        throw new Error(response.error || "Failed to create customer")
+        return { success: false, error: errorMsg }
       }
     } catch (error) {
       console.error("Error creating customer:", error)
-      toast.error("Failed to create customer")
+      const errorMsg = "Failed to create customer"
+      toast.error(errorMsg)
+      return { success: false, error: errorMsg }
     }
   },
 
@@ -123,12 +135,12 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
           ...response.data,
           createdAt: new Date(response.data.createdAt),
           updatedAt: new Date(response.data.updatedAt),
-          isActive: response.data.isActive ?? true, // Normalize isActive
+          isActive: response.data.isActive ?? true,
         }
       } else {
         const errorMsg = response.message || "Failed to fetch customer"
         toast.error(errorMsg)
-        throw new Error(response.error || "Failed to fetch customer")
+        return null
       }
     } catch (error) {
       console.error("Error fetching customer by ID:", error)
@@ -150,24 +162,29 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
                   ...data,
                   createdAt: new Date(data.createdAt),
                   updatedAt: new Date(data.updatedAt),
-                  isActive: data.isActive ?? true, // Normalize isActive
+                  isActive: data.isActive ?? true,
                 }
               : customer
           ),
         }))
         toast.success(message || "Customer updated successfully")
+        return {
+          success: true,
+          message: message || "Customer updated successfully",
+        }
       } else {
         const errorMsg = message || "Failed to update customer"
         toast.error(errorMsg)
-        throw new Error(error || "Failed to update customer")
+        return { success: false, error: errorMsg }
       }
     } catch (error) {
-      if (error instanceof AxiosError) {
-        console.error("Error updating customer:", error)
-        toast.error(error.response?.data.message || "Failed to update customer")
-      }
+      const errorMsg =
+        error instanceof AxiosError
+          ? error.response?.data.message || "Failed to update customer"
+          : "Failed to update customer"
       console.error("Error updating customer:", error)
-      toast.error("Failed to update customer")
+      toast.error(errorMsg)
+      return { success: false, error: errorMsg }
     }
   },
 
@@ -179,14 +196,20 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
           customers: state.customers.filter((customer) => customer.id !== id),
         }))
         toast.success(response.message || "Customer deleted successfully")
+        return {
+          success: true,
+          message: response.message || "Customer deleted successfully",
+        }
       } else {
         const errorMsg = response.message || "Failed to delete customer"
         toast.error(errorMsg)
-        throw new Error(response.error || "Failed to delete customer")
+        return { success: false, error: errorMsg }
       }
     } catch (error) {
       console.error("Error deleting customer:", error)
-      toast.error("Failed to delete customer")
+      const errorMsg = "Failed to delete customer"
+      toast.error(errorMsg)
+      return { success: false, error: errorMsg }
     }
   },
 
