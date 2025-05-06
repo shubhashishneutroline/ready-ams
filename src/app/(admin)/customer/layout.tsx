@@ -1,10 +1,7 @@
 import Heading from "@/components/admin/heading"
-import { CalendarDays, Users } from "lucide-react"
-import AppointmentForm from "@/features/appointment/components/admin/form/add/appointment-form"
-import Breadcrumbs from "@/components/shared/bread-crumb"
 import { Card } from "@/components/ui/card"
 import PageHeader from "@/components/shared/page-header"
-import { Children } from "react"
+import { Users } from "lucide-react"
 
 const CustomerLayout = ({ children }: { children: React.ReactNode }) => {
   return (

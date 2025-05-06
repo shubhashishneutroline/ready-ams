@@ -17,10 +17,20 @@ export interface User {
   password: string // Required
   name: string // Required
   phone?: string // Optional
-  role?: Role // Required
+  role: Role // Required
   isActive?: boolean // Optional, defaults to true
   address?: Address // Optional
   createdAt: Date
   lastActiveAt: Date
   updatedAt: Date
+}
+
+export interface ApiReturnType<T = any> {
+  data?: T
+  success: boolean
+  message?: string
+  error?: string
+}
+export interface AxiosResponseType<T> {
+  data: { success: boolean; error?: string; message?: string; data: T }
 }
