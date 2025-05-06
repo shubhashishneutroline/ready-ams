@@ -13,9 +13,7 @@ import FormHeader from "@/components/admin/form-header"
 import { useRouter, useParams } from "next/navigation"
 import DatePickerField from "@/components/custom-form-fields/date-field"
 import { Mail, SlidersHorizontal, UserPen } from "lucide-react"
-import { PostAppoinmentData } from "@/features/appointment/api/api"
 import { useEffect, useState, useMemo } from "react"
-import { toast } from "sonner"
 import {
   isoToNormalTime,
   normalOrFormTimeToIso,
@@ -24,19 +22,23 @@ import {
 import { useAppointmentStore } from "@/app/(admin)/appointment/_store/appointment-store"
 import { useServiceStore } from "@/app/(admin)/service/_store/service-store"
 import LoadingSpinner from "@/components/loading-spinner"
+import { PostAppoinmentData } from "../_api-call/appoinment-api-call"
+// import { AppointmentStatus } from "../_types/appoinment-response"
+import { AppointmentStatus } from "../_types/appoinment"
 
 interface ServiceOption {
   label: string
   value: string
 }
 
+// Define the form schema using Zod
 const appointmentSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Invalid email address").min(1, "Email is required"),
   phone: z.string().min(1, "Phone number is required"),
   service: z.string().min(1, "Service is required"),
-  date: z.date({ required_error: "Date is required" }),
+  date: z.date({ required_error: "Date is required" }), // shadcn Calendar outputs a Date object
   time: z.string().min(1, "Time is required"),
   message: z.string().optional(),
 })
@@ -62,11 +64,12 @@ export default function AppointmentForm() {
   const id = params?.id as string | undefined
   const isEditMode = !!id
 
+  // Access store methods and router path
   const {
     createAppointment: storeCreateAppointment,
     updateAppointment: storeUpdateAppointment,
     getAppointmentById: storeGetAppointmentById,
-    router: appointmentRouter, // Access the router path from store
+    router: appointmentRouter,
   } = useAppointmentStore()
 
   const {
@@ -79,6 +82,7 @@ export default function AppointmentForm() {
   const [isLoadingAppointment, setIsLoadingAppointment] = useState(isEditMode)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Initialize react-hook-form with Zod validation
   const form = useForm<FormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: {
@@ -93,19 +97,17 @@ export default function AppointmentForm() {
     },
   })
 
+  // Fetch services if not already fetched
   useEffect(() => {
     if (!isLoadingServices && !hasFetchedServices) {
-      console.log("AppointmentForm: Triggering fetchServices via store.")
       fetchServices()
     }
   }, [fetchServices, hasFetchedServices, isLoadingServices])
 
+  // Transform services into select options
   const serviceOptions = useMemo<ServiceOption[]>(() => {
     if (!Array.isArray(services)) {
-      console.warn(
-        "AppointmentForm: services from store is not an array:",
-        services
-      )
+      console.warn("Services is not an array:", services)
       return []
     }
     return services
@@ -116,14 +118,13 @@ export default function AppointmentForm() {
       }))
   }, [services])
 
+  // Fetch appointment data for edit mode
   useEffect(() => {
     if (isEditMode && id) {
       const fetchAppointment = async () => {
+        setIsLoadingAppointment(true)
         try {
-          setIsLoadingAppointment(true)
           const appointment = await storeGetAppointmentById(id)
-          console.log("Fetched appointment via store:", appointment)
-
           if (appointment && appointment.customerName) {
             const date = appointment.selectedDate
             const time = isoToNormalTime(appointment.selectedTime)
@@ -142,10 +143,8 @@ export default function AppointmentForm() {
               message: appointment.message || "",
             })
           } else {
-            console.warn("Appointment not found or invalid data for ID:", id)
+            console.warn("Appointment not found for ID:", id)
           }
-        } catch (error: any) {
-          console.error("Error fetching appointment in form:", error)
         } finally {
           setIsLoadingAppointment(false)
         }
@@ -154,42 +153,36 @@ export default function AppointmentForm() {
     }
   }, [id, isEditMode, form, storeGetAppointmentById])
 
+  // Handle form submission
   const onSubmit = async (formData: FormData) => {
+    setIsSubmitting(true)
     try {
-      setIsSubmitting(true)
+      // Transform form data to match PostAppoinmentData
+      // Note: shadcn Calendar outputs a Date object for `date`, which is converted to ISO string
       const appointmentData: PostAppoinmentData = {
         customerName: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         phone: formData.phone,
         serviceId: formData.service,
-        selectedDate: normalDateToIso(formData.date),
-        selectedTime: normalOrFormTimeToIso(formData.date, formData.time),
+        selectedDate: normalDateToIso(formData.date), // Converts Date to ISO string (e.g., "2025-05-06T00:00:00.000Z")
+        selectedTime: normalOrFormTimeToIso(formData.date, formData.time), // Converts time to ISO format
         message: formData.message,
-        userId: "cma6lpzwl0000ms1hows1zgi2",
+        userId: "cma6lpzwl0000ms1hows1zgi2", // TODO: Replace with dynamic user ID
         isForSelf: false,
-        bookedById: "cma6lpzwl0000ms1hows1zgi2",
-        createdById: "cma6lpzwl0000ms1hows1zgi2",
-        status: "SCHEDULED",
+        bookedById: "cma6lpzwl0000ms1hows1zgi2", // TODO: Replace with dynamic bookedById
+        createdById: "cma6lpzwl0000ms1hows1zgi2", // TODO: Replace with dynamic createdById
+        status: AppointmentStatus.SCHEDULED, // TODO: Add status dropdown
       }
-      console.log("Submitting appointment via store:", appointmentData)
 
-      let result
-      if (isEditMode && id) {
-        result = await storeUpdateAppointment(id, appointmentData)
-      } else {
-        result = await storeCreateAppointment(appointmentData)
-      }
+      // Submit via store (toasts are handled by the store)
+      const result =
+        isEditMode && id
+          ? await storeUpdateAppointment(id, appointmentData)
+          : await storeCreateAppointment(appointmentData)
 
       if (result.success) {
-        router.push(appointmentRouter) // Redirect to the store's router path
+        router.push(appointmentRouter) // Redirect to appointments list
       }
-      // Toast is handled by the store, so no need to show it here
-    } catch (error: any) {
-      console.error(
-        `Error ${isEditMode ? "updating" : "creating"} appointment in form:`,
-        error
-      )
-      // Toast is handled by the store
     } finally {
       setIsSubmitting(false)
     }

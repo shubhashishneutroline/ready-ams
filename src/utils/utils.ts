@@ -108,6 +108,7 @@ export function normalOrFormTimeToIso(
   date: Date | string,
   time: string
 ): string {
+  console.log("shadcndata and time", date, time)
   try {
     const dateObj = typeof date === "string" ? new Date(date) : date
     if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
@@ -147,6 +148,7 @@ export function normalOrFormTimeToIso(
  * @returns ISO date/time string with time set to midnight (e.g., "2025-05-01T00:00:00.000Z")
  */
 export function normalDateToIso(date: Date): string {
+  console.log("shadcndata", date)
   try {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
       throw new Error("Invalid date input")

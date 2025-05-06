@@ -1,19 +1,26 @@
 // Create appointment
 // src/lib/createAppointment.js
 // Import Prisma client for database operations
+import { Appointment } from "@/app/(admin)/appointment/_types/appoinment"
 import { prisma } from "@/lib/prisma"
-import { Appointment } from "@/features/appointment/types/types"
 
 // Function to create an appointment and set up its reminders
 export async function createAppointment(appointmentData: Appointment) {
+  // Remove reminderOffsets from the data passed to create
+  const { reminderOffsets, ...appointmentDataWithoutReminders } =
+    appointmentData
+
   // Create the appointment record
-  const appointment = await prisma.appointment.create({ data: appointmentData })
+  const appointment = await prisma.appointment.create({
+    data: appointmentDataWithoutReminders,
+  })
 
   // Fetch all reminders associated with the appointment’s service
   const reminders = await prisma.reminder.findMany({
     where: { services: { some: { id: appointment.serviceId } } },
     include: { reminderOffset: true }, // Include offset details
   })
+  console.log("reminder is", reminders)
 
   // Create AppointmentReminderOffset for each reminder offset
   for (const reminder of reminders) {
@@ -39,6 +46,55 @@ export async function createAppointment(appointmentData: Appointment) {
 
   // Return the created appointment
   return appointment
+}
+
+// Function to update and appointment reminder offset
+export async function updateAppointment(
+  id: string,
+  appointmentData: Appointment
+) {
+  // Remove reminderOffsets from the data passed to update
+  const { reminderOffsets, ...appointmentDataWithoutReminders } =
+    appointmentData
+
+  //  Update the appointment
+  const updatedAppointment = await prisma.appointment.update({
+    where: { id },
+    data: appointmentDataWithoutReminders,
+  })
+
+  //  Delete old offsets
+  await prisma.appointmentReminderOffset.deleteMany({
+    where: { appointmentId: id },
+  })
+
+  //  Fetch reminders for the (possibly new) service
+  const reminders = await prisma.reminder.findMany({
+    where: { services: { some: { id: updatedAppointment.serviceId } } },
+    include: { reminderOffset: true },
+  })
+
+  // Recreate offsets based on the new state
+  for (const reminder of reminders) {
+    for (const offset of reminder.reminderOffset) {
+      const scheduledAt = new Date(
+        updatedAppointment.selectedDate.getTime() +
+          (offset.sendBefore ? -offset.sendOffset : offset.sendOffset) *
+            60 *
+            1000
+      )
+      await prisma.appointmentReminderOffset.create({
+        data: {
+          appointmentId: updatedAppointment.id,
+          reminderOffsetId: offset.id,
+          scheduledAt,
+          status: "PENDING",
+        },
+      })
+    }
+  }
+
+  return updatedAppointment
 }
 
 // function to create schedule at a specific time in reminder/followup/missed/cancellation

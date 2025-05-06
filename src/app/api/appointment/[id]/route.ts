@@ -3,6 +3,7 @@ import { getAnnouncementOrOfferById } from "@/db/announcement-offer"
 import { getAppointmentById } from "@/db/appointment"
 import { prisma } from "@/lib/prisma"
 import { ZodError } from "zod"
+import { updateAppointment } from "@/lib/appointment"
 import { Appointment } from "@/app/(admin)/appointment/_types/appoinment"
 import { appointmentSchema } from "@/app/(admin)/appointment/_schema/appoinment"
 
@@ -63,23 +64,20 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
     const parsedData: Appointment = appointmentSchema.parse(body)
 
     // update appointment in prisma database
-    const updatedAppointment = await prisma.appointment.update({
-      where: { id },
-      data: {
-        customerName: parsedData.customerName,
-        email: parsedData.email,
-        phone: parsedData.phone,
-        status: parsedData.status,
-        userId: parsedData.userId,
-        bookedById: parsedData.bookedById,
-        serviceId: parsedData.serviceId,
-        selectedDate: parsedData.selectedDate,
-        selectedTime: parsedData.selectedTime,
-        message: parsedData.message,
-        isForSelf: parsedData.isForSelf,
-        createdById: parsedData.createdById,
-        resourceId: parsedData.resourceId,
-      },
+    const updatedAppointment = await updateAppointment(id, {
+      customerName: parsedData.customerName,
+      email: parsedData.email,
+      phone: parsedData.phone,
+      status: parsedData.status,
+      userId: parsedData.userId,
+      bookedById: parsedData.bookedById,
+      serviceId: parsedData.serviceId,
+      selectedDate: parsedData.selectedDate,
+      selectedTime: parsedData.selectedTime,
+      message: parsedData.message,
+      isForSelf: parsedData.isForSelf,
+      createdById: parsedData.createdById,
+      resourceId: parsedData.resourceId,
     })
 
     return NextResponse.json(
