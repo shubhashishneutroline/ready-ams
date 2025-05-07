@@ -1,0 +1,102 @@
+import { NextRequest, NextResponse } from "next/server";
+import { appointmentSchema } from "@/features/appointment/schemas/schema";
+import {
+  Appointment,
+  AppointmentStatus,
+} from "@/features/appointment/types/types";
+import { ZodError } from "zod";
+import { prisma } from "@/lib/prisma";
+import { getAppointmentById } from "@/db/appointment";
+import { createAppointment } from "@/lib/appointment";
+
+//create new appointment
+export async function POST(req: NextRequest) {
+  try {
+    // Parse the request body
+    const body = await req.json();
+
+    // Validate the request body
+    const parsedData: Appointment = appointmentSchema.parse(body);
+
+    // Create a new appointment in prisma
+    const newAppointment = await createAppointment({
+      customerName: parsedData.customerName,
+      email: parsedData.email,
+      phone: parsedData.phone,
+      status: parsedData.status,
+      userId: parsedData.userId,
+      bookedById: parsedData.bookedById,
+      serviceId: parsedData.serviceId,
+      selectedDate: parsedData.selectedDate,
+      selectedTime: parsedData.selectedTime,
+      message: parsedData.message,
+      isForSelf: parsedData.isForSelf,
+      createdById: parsedData.createdById,
+      resourceId: parsedData.resourceId,
+    });
+
+    // Return a success response
+    return NextResponse.json(
+      {
+        data: newAppointment,
+        success: true,
+        message: "Appointment booked successfully!",
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    // Handle validation errors
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          message: "Validation failed!",
+          error: error.errors[0].message,
+          success: false,
+        },
+        { status: 400 }
+      );
+    }
+    // Handle other errors
+    return NextResponse.json(
+      { message: "Failed to book appointment!", success: false, error: error },
+      { status: 500 }
+    );
+  }
+}
+
+//read all appointment
+export async function GET() {
+  try {
+    const appointments = await prisma.appointment.findMany({
+      include: {
+        user: true,
+        service: true,
+        Resource: true,
+      },
+    });
+    if (appointments.length === 0) {
+      return NextResponse.json(
+        { message: "No appointments found!", success: false },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        data: appointments,
+        success: true,
+        message: "Appointment fetched successfully!",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: "Failed to fetch appointments!",
+        success: false,
+        error: error,
+      },
+      { status: 500 }
+    );
+  }
+}

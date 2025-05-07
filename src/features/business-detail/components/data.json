@@ -1,0 +1,71 @@
+{
+  "business": {
+    "id": "cm9gvwy4s0003vdg0f24wf178",
+    "name": "Tech Solutions Pvt. Ltd.",
+    "industry": "IT Services",
+    "phone": "+977 1 4002000",
+    "email": "contact@techsolutions.com",
+    "website": "https://www.techsolutions.com",
+    "businessRegistrationNumber": "BRN-12345",
+    "status": "ACTIVE",
+    "createdAt": "2025-04-14T09:41:55.269Z",
+    "updatedAt": "2025-04-14T09:41:55.269Z",
+    "addresses": [
+      {
+        "businessId": "cm9gvwy4s0003vdg0f24wf178",
+        "city": "Kathmandu",
+        "country": "Nepal",
+        "googleMap": "https://goo.gl/maps/1234xyz",
+        "id": "cm9gvwy5b0004vdg0vkw71umg",
+        "street": "123 Main Street",
+        "zipCode": "44600",
+        "supportId": null
+      },
+      {
+        "businessId": "cm9gvwy4s0003vdg0f24wf178",
+        "city": "Pokhara",
+        "country": "Nepal",
+        "googleMap": "https://goo.gl/maps/abcd1234",
+        "id": "cm9gvwy5c0005vdg0mup6un3n",
+        "street": "456 Secondary Street",
+        "zipCode": "33700",
+        "supportId": null
+      }
+    ],
+    "businessAvailability": [
+      {
+        "id": "cm9gvwy5h0006vdg07n43g2me",
+        "businessId": "cm9gvwy4s0003vdg0f24wf178",
+        "weekDay": "MONDAY",
+        "type": "GENERAL",
+        "supportBusinessDetailId": null,
+        "timeSlots": [
+          {
+            "id": "cm9gvwy5l0007vdg0spap8vtm",
+            "type": "WORK",
+            "businessAvailabilityId": "cm9gvwy5h0006vdg07n43g2me",
+            "startTime": "2025-03-01T09:00:00.000Z",
+            "endTime": "2025-03-01T17:00:00.000Z"
+          },
+          {
+            "id": "cm9gvwy5o0008vdg0c47m37d7",
+            "type": "WORK",
+            "businessAvailabilityId": "cm9gvwy5h0006vdg07n43g2me",
+            "startTime": "2025-03-02T09:00:00.000Z",
+            "endTime": "2025-03-02T17:00:00.000Z"
+          }
+        ]
+      }
+    ],
+    "holiday": [
+      {
+        "id": "cm9gvwy5p0009vdg0t71zqz1y",
+        "businessId": "cm9gvwy4s0003vdg0f24wf178",
+        "holiday": "SATURDAY",
+        "type": "GENERAL",
+        "date": "2025-04-15T00:00:00.000Z",
+        "supportBusinessDetailId": null
+      }
+    ]
+  }
+}
