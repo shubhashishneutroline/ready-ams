@@ -2,18 +2,19 @@
 import Header from "@/components/admin/header"
 import SidebarDesktop from "@/components/admin/sidebar-desktop"
 import SidebarMobile from "@/components/admin/sidebar-mobile"
-import { useBusinessStore } from "@/state/store"
+// import { useBusinessStore } from "@/state/store"
 import { useEffect } from "react"
 import { Toaster } from "sonner"
 import { useAppointmentStore } from "./appointment/_store/appointment-store"
 import { useServiceStore } from "./service/_store/service-store"
 import { useCustomerStore } from "./customer/_store/customer-store"
+import { useBusinessStore } from "./business-settings/_store/business-store"
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   // Auto load services after admin loads
   const { fetchServices } = useServiceStore()
   const { fetchAppointments } = useAppointmentStore()
-  const { fetchBusiness } = useBusinessStore()
+  const { fetchBusinesses, businesses } = useBusinessStore()
   const { fetchCustomers } = useCustomerStore()
   // Fetch services on app load
   useEffect(() => {
@@ -21,9 +22,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     // Fetch once after app loads
     fetchAppointments()
     fetchServices()
-    fetchBusiness()
+    fetchBusinesses("cmadr26aq0000msamhiabkpzu")
     fetchCustomers()
-  }, [fetchServices, fetchBusiness, fetchAppointments, fetchCustomers])
+  }, [fetchServices, fetchAppointments, fetchCustomers])
 
   return (
     <div className="relative min-h-screen bg-stone-100 overflow-hidden">

@@ -5,6 +5,7 @@ import { getBusinessDetailById } from "@/db/businessDetail"
 import { prisma } from "@/lib/prisma"
 import { ZodError } from "zod"
 import { businessDetailSchema } from "@/features/business-detail/schemas/schema"
+import { Prisma } from "@prisma/client"
 
 interface ParamsProps {
   params: Promise<{ id: string }>
@@ -69,8 +70,10 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
           email: parsedData.email,
           phone: parsedData.phone,
           website: parsedData.website,
+          businessOwner: parsedData.businessOwner,
           businessRegistrationNumber: parsedData.businessRegistrationNumber,
           status: parsedData.status,
+          timeZone: parsedData.timeZone,
 
           // Handle addresses
           address: {
@@ -101,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
             create: parsedData.holiday.map((holiday) => ({
               holiday: holiday.holiday,
               type: holiday.type,
-              date: holiday.date,
+              date: holiday.date || null,
             })),
           },
         },
@@ -124,6 +127,14 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
       }
     }
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      console.error("Validation error:", error.message)
+      // Handle the validation error specifically
+      return {
+        error: "Validation failed",
+        details: error, // or use error.stack for full stack trace
+      }
+    }
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error },

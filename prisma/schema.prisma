@@ -33,10 +33,11 @@ model User {
 
   address Address? // Optional one-to-one relation to Address
 
-  FAQ        FAQ[] // FAQs created/updated by this user
-  Ticket     Ticket[] // Support tickets raised by this user
-  individual Individual?
-  events     Event[]
+  FAQ            FAQ[] // FAQs created/updated by this user
+  Ticket         Ticket[] // Support tickets raised by this user
+  individual     Individual?
+  events         Event[]
+  businessDetail BusinessDetail[]
 }
 
 model Address {
@@ -68,9 +69,9 @@ model Service {
   appointments        Appointment[] // Appointments booked for this service
   reminders           Reminder[] // Reminders associated with this service
   resources           Resource[] // Resources (e.g., staff) for this service
-
-  BusinessDetail   BusinessDetail? @relation(fields: [businessDetailId], references: [id]) // Link to business
-  businessDetailId String? // Optional foreign key
+  updatedAt           DateTime              @updatedAt
+  businessDetail      BusinessDetail?       @relation(fields: [businessDetailId], references: [id]) // Link to business
+  businessDetailId    String? // Optional foreign key
 }
 
 model ServiceAvailability {
@@ -85,8 +86,8 @@ model ServiceTime {
   id                    String              @id @default(cuid()) // Unique ID
   serviceAvailability   ServiceAvailability @relation(fields: [serviceAvailabilityId], references: [id], onDelete: Cascade)
   serviceAvailabilityId String // Foreign key
-  startTime             DateTime // Start time of slot
-  endTime               DateTime // End time of slot
+  startTime             String // e.g., "08:00:00" (24-hour)
+  endTime               String // e.g., "17:00:00" (24-hour)
 }
 
 enum Status {
@@ -254,6 +255,9 @@ model BusinessDetail {
   address                    BusinessAddress[] // Physical addresses
   businessRegistrationNumber String // Registration number
   status                     BusinessStatus    @default(PENDING) // Business status
+  timeZone                   String?
+  user                       User?             @relation(fields: [businessOwner], references: [id], onDelete: Cascade)
+  businessOwner              String? // Optional link to business
 
   businessAvailability BusinessAvailability[] // Operating hours
   holiday              Holiday[] // Holidays
@@ -304,8 +308,8 @@ model BusinessTime {
   businessAvailability   BusinessAvailability @relation(fields: [businessAvailabilityId], references: [id], onDelete: Cascade)
   type                   BusinessTimeType     @default(WORK)
   businessAvailabilityId String // Foreign key
-  startTime              DateTime // Start time
-  endTime                DateTime // End time
+  startTime              String // e.g., "08:00:00" (24-hour)
+  endTime                String // e.g., "17:00:00" (24-hour)
 }
 
 model Holiday {

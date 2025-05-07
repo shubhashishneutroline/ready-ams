@@ -1,8 +1,8 @@
-import { getBusinessById } from "@/features/business-detail/api/api"
-import { getServiceById } from "@/features/service/api/api"
 import ServiceForm from "@/features/service/components/admin/form/edit/edit-service-form"
 import ServiceFormSkeleton from "@/features/service/components/skeleton-form"
-import { useBusinessStore } from "@/state/store"
+import { useServiceStore } from "../../_store/service-store"
+import { useBusinessStore } from "@/app/(admin)/business-settings/_store/business-store"
+import { getServiceById } from "@/db/service"
 
 export default async function EditServicePage({
   params,
@@ -11,10 +11,9 @@ export default async function EditServicePage({
 }) {
   const { id } = await params
   const serviceDetail = await getServiceById(id)
-  console.log(serviceDetail)
-  const { businessAvailability } = useBusinessStore()
 
-  if (!businessAvailability) return <ServiceFormSkeleton />
+  console.log(serviceDetail, "serviceDetail")
+  if (!id) return <ServiceFormSkeleton />
 
   return <ServiceForm serviceDetail={serviceDetail} />
 }

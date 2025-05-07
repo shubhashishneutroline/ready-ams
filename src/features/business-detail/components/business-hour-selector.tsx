@@ -29,7 +29,7 @@ const timeOptions = [
   "07:00 PM",
   "08:00 PM",
 ]
-type WorkType = "work" | "break"
+
 const defaultBreak = ["12:00 PM", "01:00 PM"]
 
 const BusinessHourSelector = ({

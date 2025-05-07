@@ -20,7 +20,6 @@ import {
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
-import { Service } from "@/features/service/api/api"
 import { shortenText } from "@/features/reminder/lib/lib"
 import {
   TooltipProvider,
@@ -34,6 +33,7 @@ import {
 } from "@/features/service/lib/lib"
 import { useState } from "react"
 import DeleteAlert from "@/components/shared/delete-alert"
+import { Service } from "../_types/service"
 
 export const columns = (
   handleDelete: (id: string) => void

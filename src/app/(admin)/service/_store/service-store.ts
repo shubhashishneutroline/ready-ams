@@ -9,6 +9,7 @@ import {
 import { Service } from "@prisma/client"
 import { toast } from "sonner"
 import { PostServiceData } from "@/features/service/api/api"
+import { ApiReturnType } from "../_types/service"
 
 interface ServiceState {
   services: Service[]
@@ -20,7 +21,7 @@ interface ServiceState {
   error: string | null
   setServices: (services: Service[]) => void
   fetchServices: (isManualRefresh?: boolean) => Promise<void>
-  fetchServiceById: (id: string) => Promise<void>
+  fetchServiceById: (id: string) => Promise<Service | null>
   createService: (data: PostServiceData) => Promise<void>
   updateService: (id: string, data: PostServiceData) => Promise<void>
   deleteService: (id: string) => Promise<void>
@@ -46,8 +47,13 @@ export const useServiceStore = create<ServiceState>((set, get) => ({
     }
     try {
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: true, error: null })
-      const data = await getServices()
-      if (Array.isArray(data)) {
+      const response: ApiReturnType<Service[]> = await getServices()
+      const { data, success } = response
+      console.log("fetchCustomers response:", response)
+
+      console.log(data, "data")
+      console.log(data)
+      if (success && Array.isArray(data)) {
         console.log("useServiceStore: fetchServices: Fetched services =", data)
         set({ services: data, hasFetched: true })
         if (isManualRefresh) {
@@ -59,7 +65,7 @@ export const useServiceStore = create<ServiceState>((set, get) => ({
                   : ""
               }`
             : "No services found"
-          toast.success(message)
+          toast.success(message, { id: "fetch-services" })
         }
       } else {
         throw new Error("Invalid service data: expected an array")
@@ -67,41 +73,30 @@ export const useServiceStore = create<ServiceState>((set, get) => ({
     } catch (error) {
       console.error("useServiceStore: fetchServices: Error =", error)
       set({ error: "Failed to load services", loading: false })
-      toast.error("Failed to load services")
+      toast.error("Failed to load services", { id: "fetch-services" })
     } finally {
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: false })
     }
   },
 
   fetchServiceById: async (id: string) => {
-    const { services } = get()
-    const cachedService = services.find((service) => service.id === id)
-
-    if (
-      cachedService &&
-      cachedService.BusinessDetail &&
-      cachedService.serviceAvailability
-    ) {
-      console.log(
-        "useServiceStore: fetchServiceById: Using cached service for id =",
-        id
-      )
-      set({ serviceById: cachedService, loading: false, error: null })
-      return
-    }
-
-    set({ loading: true, error: null })
     try {
-      const service = await getServiceById(id)
-      if (service) {
-        set({ serviceById: service, loading: false })
+      const response: ApiReturnType<Service> = await getServiceById(id)
+      if (response.success && response.data && !Array.isArray(response.data)) {
+        return {
+          ...response.data,
+        }
       } else {
-        throw new Error("Service not found")
+        const errorMessage =
+          response.message || response.error || "Failed to fetch service"
+        toast.error(errorMessage, { id: "fetch-service" })
+        return null
       }
-    } catch (error: any) {
-      console.error("useServiceStore: fetchServiceById: Error =", error)
-      set({ error: error.message || "Failed to fetch service", loading: false })
-      toast.error("Failed to fetch service")
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch service"
+      toast.error(errorMessage, { id: "fetch-service" })
+      return null
     }
   },
 

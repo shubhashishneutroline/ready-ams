@@ -7,7 +7,6 @@ import { DataTable } from "@/components/table/data-table"
 import PageTabs from "@/components/table/page-tabs"
 import TablePageHeader from "@/components/table/table-header"
 import DataTableSkeleton from "@/components/table/skeleton-table"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import { cn } from "@/utils/utils"
@@ -21,9 +20,6 @@ const pageOptions = [
   "All",
 ]
 
-// Keep enum if needed elsewhere, but store handles status mapping internally
-// export enum AppointmentStatus { ... }
-
 const AppointmentPage = () => {
   const {
     activeTab,
@@ -31,45 +27,26 @@ const AppointmentPage = () => {
     getFilteredAppointments,
     deleteAppointment,
     fetchAppointments,
-    appointments, // This will now update reactively
+    appointments,
     loading,
     isRefreshing,
     hasFetched,
-    error,
   } = useAppointmentStore()
 
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
+  const hasFetchedOnce = useRef(false) // Track if fetch has been attempted
 
   // Initial fetch only if not fetched
   useEffect(() => {
-    // Fetch only if not already loading/refreshing AND data hasn't been fetched yet.
-    if (!loading && !isRefreshing && !hasFetched) {
-      console.log("Initial fetch triggered: no data fetched or not loading.")
-      fetchAppointments()
+    if (hasFetchedOnce.current || loading || isRefreshing || hasFetched) {
+      return // Skip if already fetched, loading, or refreshing
     }
-    // Intentionally limited dependencies: Only run on mount essentially,
-    // or if these specific flags change in a way that indicates a need for initial fetch.
+    console.log("Initial fetch triggered: no data fetched")
+    hasFetchedOnce.current = true
+    fetchAppointments()
   }, [loading, isRefreshing, hasFetched, fetchAppointments])
 
-  // *** REMOVE THIS EFFECT ***
-  // It's inefficient and unnecessary now that the store handles updates
-  /*
-  useEffect(() => {
-    fetchAppointments() // DON'T REFETCH ALL DATA HERE
-    console.log("Appointments updated/created", appointments)
-  }, [appointments, fetchAppointments])
-  */
-
-  // Handle error toasts (Keep this)
-  useEffect(() => {
-    if (error) {
-      console.log("Error state:", error)
-      // Debounce or ensure toast doesn't appear repeatedly if error state persists
-      // toast.error(error); // Store methods likely already toasted errors
-    }
-  }, [error])
-
-  // Auto-refresh every 5 minutes (Keep this)
+  // Auto-refresh every 5 minutes (silent)
   useEffect(() => {
     const interval = setInterval(() => {
       console.log("Silent auto-refresh triggered")
@@ -79,7 +56,6 @@ const AppointmentPage = () => {
     return () => clearInterval(interval)
   }, [fetchAppointments])
 
-  // Delete handler (Keep this - uses store method correctly)
   const handleDelete = useCallback(
     async (id: string) => {
       await deleteAppointment(id)
@@ -87,7 +63,6 @@ const AppointmentPage = () => {
     [deleteAppointment]
   )
 
-  // Manual refresh handler (Keep this)
   const handleRefresh = useCallback(() => {
     if (debounceTimeout.current) {
       return
@@ -99,7 +74,7 @@ const AppointmentPage = () => {
     }, 300)
   }, [fetchAppointments])
 
-  // Cleanup debounce on unmount (Keep this)
+  // Cleanup debounce on unmount
   useEffect(() => {
     return () => {
       if (debounceTimeout.current) {
@@ -108,18 +83,14 @@ const AppointmentPage = () => {
     }
   }, [])
 
-  // Filtered appointments will re-compute automatically when `appointments` state changes
   const filteredAppointments = useMemo(() => {
     const result = getFilteredAppointments()
     console.log("Rendered filtered appointments:", result)
     return result
-    // Depend on activeTab and the appointments array from the store
-  }, [activeTab, appointments, getFilteredAppointments]) // Added getFilteredAppointments dependency
+  }, [activeTab, appointments, getFilteredAppointments])
 
-  // Memoized columns (Keep this)
   const memoizedColumns = useMemo(() => columns(handleDelete), [handleDelete])
 
-  // --- (Keep the JSX return structure the same) ---
   return (
     <div className="h-full w-full flex flex-col">
       <div className="space-y-4">
@@ -136,9 +107,13 @@ const AppointmentPage = () => {
             onClick={handleRefresh}
             disabled={isRefreshing}
             className="flex items-center gap-2"
+            aria-label={
+              isRefreshing ? "Refreshing appointments" : "Refresh appointments"
+            }
+            aria-busy={isRefreshing}
           >
             <RefreshCw
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+              className={cn("h-4 w-4", isRefreshing && "animate-spin")}
             />
             {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
@@ -147,23 +122,30 @@ const AppointmentPage = () => {
           title="Appointment"
           description="Manage and Customize Appointment Here."
           newButton="New Appointment"
-          route="/appointment/create/" // Ensure this route matches your form's location
+          route="/appointment/create/"
         />
-        {/* Loading/Empty/Data states */}
-        {loading && !hasFetched ? ( // Show skeleton only on initial load
+        {loading && !hasFetched ? (
           <DataTableSkeleton />
-        ) : filteredAppointments.length === 0 && hasFetched ? ( // Show no data message only after fetch attempt
-          <div className="text-center py-4 text-sm text-muted-foreground italic">
+        ) : filteredAppointments.length === 0 ? (
+          <div className="text-center py-8 text-sm text-muted-foreground italic">
             No appointments found for the selected tab
-            {activeTab !== "All" ? ` ['${activeTab}']` : ""}. Try refreshing or
-            adjusting tabs.
+            {activeTab !== "All" ? ` ['${activeTab}']` : ""}.
+            <Button
+              variant="link"
+              className="p-1 ml-1 text-blue-600 hover:underline"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label="Retry fetching appointments"
+            >
+              Try refreshing
+            </Button>
+            or creating a new appointment.
           </div>
         ) : (
-          // Render table if data exists or if still loading initially (covered by first condition)
           <div className="relative overflow-x-auto">
             <DataTable
               columns={memoizedColumns}
-              data={filteredAppointments} // This uses the reactively updated data
+              data={filteredAppointments}
               searchFieldName="customerName"
             />
           </div>

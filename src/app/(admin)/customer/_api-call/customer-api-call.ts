@@ -55,16 +55,14 @@ async function getCustomers(): Promise<ApiReturnType<User[]>> {
       message: message || "Failed to fetch customers",
       error: error || "Invalid response data",
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching customers:", error)
     const errorMsg =
-      error instanceof AxiosError
-        ? error.response?.data?.message || error.message
-        : "An unknown error occurred"
+      error instanceof AxiosError && error.response?.data?.message
     return {
       success: false,
-      message: "Failed to fetch customers",
-      error: errorMsg,
+      message: errorMsg,
+      error: error.toString(),
     }
   }
 }
@@ -104,7 +102,7 @@ async function getCustomerById(id: string): Promise<ApiReturnType<User>> {
         : "An unknown error occurred"
     return {
       success: false,
-      message: `Failed to fetch customer ${id}`,
+      message: errorMsg || `Failed to fetch customer ${id}`,
       error: errorMsg,
     }
   }
@@ -114,8 +112,11 @@ async function createCustomer(
   customerData: PostCustomerData
 ): Promise<ApiReturnType<User>> {
   try {
-    const response = await api.post("/api/user", customerData)
-    const responseData = response.data as ApiReturnType<User>
+    const response: AxiosResponseType<User> = await api.post(
+      "/api/user",
+      customerData
+    )
+    const responseData = response.data
     console.log("customer create response", responseData)
 
     if (responseData.success && responseData.data) {
@@ -158,30 +159,33 @@ async function updateCustomer(
   customerData: PostCustomerData
 ): Promise<ApiReturnType<User>> {
   try {
-    const response = await api.put(`/api/user/${id}`, customerData)
-    const responseData = response.data as { message: string; user: User }
+    const response: AxiosResponseType<User> = await api.put(
+      `/api/user/${id}`,
+      customerData
+    )
+    const { data: responseData, message, success, error } = response.data
 
-    if (responseData.user) {
+    if (success && responseData) {
       const normalizedUser = {
-        ...responseData.user,
-        createdAt: responseData.user.createdAt
-          ? new Date(responseData.user.createdAt)
-          : new Date(),
-        updatedAt: responseData.user.updatedAt
-          ? new Date(responseData.user.updatedAt)
-          : new Date(),
+        ...responseData,
+        // createdAt: responseData.user.createdAt
+        //   ? new Date(responseData.user.createdAt)
+        //   : new Date(),
+        // updatedAt: responseData.user.updatedAt
+        //   ? new Date(responseData.user.updatedAt)
+        //   : new Date(),
       }
       return {
-        success: true,
+        success,
         data: normalizedUser,
-        message: responseData.message,
+        message: message,
       }
     }
 
     return {
       success: false,
-      message: responseData.message || "Failed to update customer",
-      error: "Invalid response data",
+      message: message || "Failed to update customer",
+      error: error || "Invalid response data",
     }
   } catch (error) {
     console.error(`Error updating customer (${id}):`, error)
@@ -191,7 +195,7 @@ async function updateCustomer(
         : "An unknown error occurred"
     return {
       success: false,
-      message: "Failed to update customer",
+      message: errorMsg || "Failed to update customer",
       error: errorMsg,
     }
   }
@@ -216,7 +220,7 @@ async function deleteCustomer(
         : "An unknown error occurred"
     return {
       success: false,
-      message: "Failed to delete customer",
+      message: errorMsg || "Failed to delete customer",
       error: errorMsg,
     }
   }

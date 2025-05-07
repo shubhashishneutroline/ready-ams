@@ -48,15 +48,15 @@ interface AppointmentState {
 const handleApiError = (
   error: any,
   defaultMessage: string,
-  set: (state: Partial<AppointmentState>) => void
+  set: (state: Partial<AppointmentState>) => void,
+  showToast: boolean = true
 ): { success: boolean; errorMessage: string } => {
-  let errorMessage = defaultMessage
-  if (error instanceof Error) {
-    errorMessage = error.message || defaultMessage
-  }
+  const errorMessage = error instanceof Error ? error.message : defaultMessage
   console.error(`${defaultMessage}:`, error)
   set({ error: errorMessage })
-  toast.error(errorMessage)
+  if (showToast) {
+    toast.error(errorMessage, { id: "appointment-error" })
+  }
   return { success: false, errorMessage }
 }
 
@@ -79,6 +79,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     try {
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: true, error: null })
       const response: ApiCallReturnType = await getAppointments()
+      console.log("fetchAppointments response:", response)
 
       if (response.success && Array.isArray(response.data)) {
         const normalizedData = response.data.map((appt: Appointment) => ({
@@ -87,7 +88,6 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
           selectedTime: appt.selectedTime,
           status: appt.status as AppointmentStatus,
         }))
-
         set({ appointments: normalizedData, hasFetched: true })
         if (isManualRefresh) {
           const latestAppointment = normalizedData[0]
@@ -98,16 +98,23 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
                   : ""
               }`
             : "No appointments found"
-          toast.success(toastMessage)
+          toast.success(toastMessage, { id: "fetch-appointments" })
         }
       } else {
         const errorMessage =
           response.message || response.error || "Failed to load appointments"
         set({ appointments: [], error: errorMessage })
-        toast.error(errorMessage)
+        if (isManualRefresh) {
+          toast.error(errorMessage, { id: "fetch-appointments" })
+        }
       }
     } catch (error) {
-      handleApiError(error, "Failed to fetch appointments", set)
+      handleApiError(
+        error,
+        "Failed to fetch appointments",
+        set,
+        isManualRefresh
+      )
     } finally {
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: false })
     }
@@ -119,7 +126,6 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       if (response.success && response.data) {
         set((state) => ({
           appointments: [
-            ...state.appointments,
             {
               ...response.data,
               status: (response.data?.status ||
@@ -130,104 +136,107 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
               createdAt: response.data.createdAt || new Date(),
               updatedAt: response.data.updatedAt || new Date(),
             } as Appointment,
+            ...state.appointments,
           ],
         }))
-
-        toast.success(response.message || "Appointment created successfully")
+        toast.success(response.message || "Appointment created successfully", {
+          id: "create-appointment",
+        })
         return {
           success: true,
           message: response.message || "Appointment created successfully",
         }
       } else {
-        const errorMessage = response.message || "Failed to create appointment"
-        toast.error(errorMessage)
-        return { success: false, error: errorMessage }
+        const errorMessage =
+          response.message || response.error || "Failed to create appointment"
+        toast.error(errorMessage, { id: "create-appointment" })
+        return { success: false, errorMessage }
       }
     } catch (error) {
       return handleApiError(error, "Failed to create appointment", set)
     }
   },
+
   getAppointmentById: async (id) => {
     try {
-      const res: ApiCallReturnType = await getAppointmentById(id)
-      if (res.success && res.data) {
-        const data = res.data
+      const response: ApiCallReturnType = await getAppointmentById(id)
+      if (response.success && response.data) {
         return {
-          ...data,
-          selectedDate: new Date(data.selectedDate),
-          selectedTime: data.selectedTime || "",
-          status: data.status as AppointmentStatus,
+          ...response.data,
+          selectedDate: new Date(response.data.selectedDate),
+          selectedTime: response.data.selectedTime || "",
+          status: response.data.status as AppointmentStatus,
         }
       } else {
-        const errorMsg = res.message || "Failed to fetch appointment"
-        toast.error(errorMsg)
+        const errorMessage =
+          response.message || response.error || "Failed to fetch appointment"
+        toast.error(errorMessage, { id: "fetch-appointment" })
         return null
       }
     } catch (error) {
-      console.error("Error fetching appointment by ID:", error)
-      toast.error("Failed to fetch appointment")
+      handleApiError(error, "Failed to fetch appointment", set)
       return null
     }
   },
 
   updateAppointment: async (id, postData) => {
     try {
-      const { success, data, message, error }: ApiCallReturnType =
-        await updateAppointment(id, postData)
-      if (success && data) {
+      const response: ApiCallReturnType = await updateAppointment(id, postData)
+      if (response.success && response.data) {
         set((state) => ({
           appointments: state.appointments.map((appt) =>
             appt.id === id
               ? {
                   ...appt,
-                  ...data,
-                  status: (data?.status || appt.status) as AppointmentStatus,
-                  selectedDate: new Date(data.selectedDate),
-                  selectedTime: data.selectedTime,
+                  ...response.data,
+                  status: (response.data?.status ||
+                    appt.status) as AppointmentStatus,
+                  selectedDate: new Date(response.data.selectedDate),
+                  selectedTime: response.data.selectedTime,
                 }
               : appt
           ),
         }))
-        toast.success(message || "Appointment updated successfully")
+        toast.success(response.message || "Appointment updated successfully", {
+          id: "update-appointment",
+        })
         return {
           success: true,
-          message: message || "Appointment updated successfully",
+          message: response.message || "Appointment updated successfully",
         }
       } else {
-        const errorMsg = message || "Failed to update appointment"
-        toast.error(errorMsg)
-        return { success: false, error: errorMsg }
+        const errorMessage =
+          response.message || response.error || "Failed to update appointment"
+        toast.error(errorMessage, { id: "update-appointment" })
+        return { success: false, errorMessage }
       }
     } catch (error) {
-      console.error("Error updating appointment:", error)
-      const errorMsg = "Failed to update appointment"
-      toast.error(errorMsg)
-      return { success: false, error: errorMsg }
+      return handleApiError(error, "Failed to update appointment", set)
     }
   },
 
   deleteAppointment: async (id) => {
     try {
-      const response = await deleteAppointment(id)
+      const response: ApiCallReturnType = await deleteAppointment(id)
       if (response.success) {
         set((state) => ({
           appointments: state.appointments.filter((appt) => appt.id !== id),
         }))
-        toast.success(response.message || "Appointment deleted successfully")
+        toast.success(response.message || "Appointment deleted successfully", {
+          id: "delete-appointment",
+        })
         return {
           success: true,
           message: response.message || "Appointment deleted successfully",
         }
       } else {
-        const errorMsg = response.message || "Failed to delete appointment"
-        toast.error(errorMsg)
-        return { success: false, error: errorMsg }
+        const errorMessage =
+          response.message || response.error || "Failed to delete appointment"
+        toast.error(errorMessage, { id: "delete-appointment" })
+        return { success: false, errorMessage }
       }
     } catch (error) {
-      console.error("Error deleting appointment:", error)
-      const errorMsg = "Failed to delete appointment"
-      toast.error(errorMsg)
-      return { success: false, error: errorMsg }
+      return handleApiError(error, "Failed to delete appointment", set)
     }
   },
 

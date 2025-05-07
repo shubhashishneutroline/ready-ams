@@ -42,7 +42,7 @@ async function getAppointments(): Promise<{
     console.error("Error fetching appointments:", error)
     if (error instanceof AxiosError) {
       return {
-        message: error?.response?.data.error,
+        message: error?.response?.data.message,
         success: false,
         error: error.message,
       }

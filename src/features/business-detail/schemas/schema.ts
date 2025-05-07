@@ -5,38 +5,29 @@ import {
   WeekDays,
   AvailabilityType,
   BusinessTimeType,
-} from "../types/types";
-import { z } from "zod";
+} from "../types/types"
+import { z } from "zod"
 
 /* Zod schema for BusinessTime (Working hours) */
 const businessTimeSchema = z.object({
-  startTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Start time must be a valid ISO date string",
-  }),
-  endTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "End time must be a valid ISO date string",
-  }),
+  startTime: z.string(),
+  endTime: z.string(),
   type: z.nativeEnum(BusinessTimeType),
-});
+})
 
 // Zod schema for BusinessAvailability (Business availability)
 const businessAvailabilitySchema = z.object({
   weekDay: z.nativeEnum(WeekDays),
   type: z.nativeEnum(AvailabilityType),
   timeSlots: z.array(businessTimeSchema),
-});
+})
 
 // Zod schema for Holiday (Holidays for business)
 const holidaySchema = z.object({
   holiday: z.nativeEnum(WeekDays),
   type: z.nativeEnum(HolidayType),
-  date: z
-    .string()
-    .optional()
-    .refine((val) => !val || !isNaN(Date.parse(val)), {
-      message: "Holiday date must be a valid ISO date string if provided",
-    }),
-});
+  date: z.string().optional(),
+})
 
 // Zod schema for BusinessAddress
 const businessAddressSchema = z.object({
@@ -45,7 +36,7 @@ const businessAddressSchema = z.object({
   country: z.string(),
   zipCode: z.string(),
   googleMap: z.string(),
-});
+})
 
 // Zod schema for BusinessDetail
 export const businessDetailSchema = z.object({
@@ -56,13 +47,15 @@ export const businessDetailSchema = z.object({
   website: z.string().url().optional(),
   businessRegistrationNumber: z.string(),
   status: z.nativeEnum(BusinessStatus),
+  timeZone: z.string().optional(),
   address: z.array(businessAddressSchema),
   businessAvailability: z.array(businessAvailabilitySchema),
   holiday: z.array(holidaySchema),
+  businessOwner: z.string(),
   supportBusinessDetail: z
     .object({
       supportPhone: z.string().optional(),
       supportEmail: z.string().optional(),
     })
     .optional(),
-});
+})

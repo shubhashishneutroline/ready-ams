@@ -19,6 +19,7 @@ const ServicePage = () => {
     services,
     loading,
     isRefreshing,
+    hasFetched,
     activeTab,
     onActiveTab,
     fetchServices,
@@ -93,10 +94,25 @@ const ServicePage = () => {
           newButton="New Service"
           route="/service/create/"
         />
-        {loading ? (
+        {loading && !hasFetched ? (
           <DataTableSkeleton />
+        ) : filteredServices.length === 0 ? (
+          <div className="text-center py-8 text-sm text-muted-foreground italic">
+            No appointments found for the selected tab
+            {activeTab !== "All" ? ` ['${activeTab}']` : ""}.
+            <Button
+              variant="link"
+              className="p-1 ml-1 text-blue-600 hover:underline"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label="Retry fetching appointments"
+            >
+              Try refreshing
+            </Button>
+            or creating a new appointment.
+          </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <DataTable
               columns={memoizedColumns}
               data={filteredServices}

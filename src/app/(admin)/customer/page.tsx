@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useEffect, useMemo } from "react"
+import { useEffect, useMemo, useCallback, useRef } from "react"
 import PageTabs from "@/components/table/page-tabs"
 import TablePageHeader from "@/components/table/table-header"
 import { columns } from "./_components/column"
@@ -8,8 +8,8 @@ import { DataTable } from "@/components/table/data-table"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import DataTableSkeleton from "@/components/table/skeleton-table"
-import { User } from "@/app/(admin)/customer/_types/customer"
 import { useCustomerStore } from "./_store/customer-store"
+import { cn } from "@/utils/utils"
 
 const pageOptions = ["Active", "Inactive", "All"]
 const REFETCH_INTERVAL = 5 * 60 * 1000 // 5 minutes
@@ -27,65 +27,67 @@ const CustomerPage = () => {
     getFilteredCustomers,
   } = useCustomerStore()
 
-  // Debug customers state
-  console.log("customers from store:", customers)
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
+  const hasFetchedOnce = useRef(false) // Track if fetch has been attempted
 
-  // Fetch data
-  const fetchData = useCallback(
-    async (isManualRefresh = false) => {
-      await fetchCustomers(isManualRefresh)
-    },
-    [fetchCustomers]
-  )
+  // Initial fetch only if not fetched
+  useEffect(() => {
+    if (hasFetchedOnce.current || loading || isRefreshing || hasFetched) {
+      return // Skip if already fetched, loading, or refreshing
+    }
+    console.log("Initial fetch triggered: no data fetched")
+    hasFetchedOnce.current = true
+    fetchCustomers()
+  }, [loading, isRefreshing, hasFetched, fetchCustomers])
+
+  // Auto-refresh every 5 minutes (silent)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log("Silent auto-refresh triggered")
+      fetchCustomers(false) // Silent refresh
+    }, REFETCH_INTERVAL)
+    return () => clearInterval(interval)
+  }, [fetchCustomers])
 
   // Handle delete
   const handleDelete = useCallback(
     async (id: string) => {
-      try {
-        await deleteCustomer(id)
-        // No need for toast, store handles it
-        console.log(`Deleted customer with id: ${id}`)
-      } catch (error) {
-        console.error("Error deleting customer:", error)
-        // Store handles toast
-      }
+      await deleteCustomer(id) // Store handles toast
+      console.log(`Deleted customer with id: ${id}`)
     },
     [deleteCustomer]
   )
 
-  // Memoized columns
-  const memoizedColumns = useMemo(() => columns(handleDelete), [handleDelete])
+  // Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    if (debounceTimeout.current) {
+      return
+    }
+    console.log("Manual refresh triggered")
+    debounceTimeout.current = setTimeout(() => {
+      fetchCustomers(true)
+      debounceTimeout.current = null
+    }, 300)
+  }, [fetchCustomers])
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current)
+      }
+    }
+  }, [])
 
   // Memoized filtered customers
   const filteredCustomers = useMemo(() => {
     const result = getFilteredCustomers()
-    if (!Array.isArray(result)) {
-      console.warn(
-        "filteredCustomers: getFilteredCustomers did not return an array:",
-        result
-      )
-      return []
-    }
-    console.log("filteredCustomers:", result) // Debug
+    console.log("filteredCustomers:", result)
     return result
-  }, [customers, activeTab]) // Simplified dependencies
+  }, [customers, activeTab, getFilteredCustomers])
 
-  // Initial fetch and periodic refetch
-  useEffect(() => {
-    fetchData()
-
-    // Set up periodic refetch
-    const interval = setInterval(() => {
-      fetchData(true) // Silent refresh
-    }, REFETCH_INTERVAL)
-
-    return () => clearInterval(interval) // Cleanup on unmount
-  }, [fetchData])
-
-  // Manual refresh handler
-  const handleRefresh = useCallback(() => {
-    fetchData(true) // Show refresh indicator
-  }, [fetchData])
+  // Memoized columns
+  const memoizedColumns = useMemo(() => columns(handleDelete), [handleDelete])
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -103,9 +105,13 @@ const CustomerPage = () => {
             onClick={handleRefresh}
             disabled={isRefreshing}
             className="flex items-center gap-2"
+            aria-label={
+              isRefreshing ? "Refreshing customers" : "Refresh customers"
+            }
+            aria-busy={isRefreshing}
           >
             <RefreshCw
-              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+              className={cn("h-4 w-4", isRefreshing && "animate-spin")}
             />
             {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
@@ -116,20 +122,28 @@ const CustomerPage = () => {
           newButton="New Customer"
           route="/customer/create/"
         />
-        {loading && !hasFetched ? ( // Show skeleton only on initial load
+        {loading && !hasFetched ? (
           <DataTableSkeleton />
-        ) : filteredCustomers.length === 0 && hasFetched ? ( // Show no data message only after fetch attempt
-          <div className="text-center py-4 text-sm text-muted-foreground italic">
+        ) : filteredCustomers.length === 0 ? (
+          <div className="text-center py-8 text-sm text-muted-foreground italic">
             No customers found for the selected tab
-            {activeTab !== "All" ? ` ['${activeTab}']` : ""}. Try refreshing or
-            adjusting tabs.
+            {activeTab !== "All" ? ` ['${activeTab}']` : ""}.
+            <Button
+              variant="link"
+              className="p-1 ml-1 text-blue-600 hover:underline"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label="Retry fetching customers"
+            >
+              Try refreshing
+            </Button>
+            or creating a new customer.
           </div>
         ) : (
-          // Render table if data exists or if still loading initially (covered by first condition)
           <div className="relative overflow-x-auto">
             <DataTable
               columns={memoizedColumns}
-              data={filteredCustomers} // This uses the reactively updated data
+              data={filteredCustomers}
               searchFieldName="name"
             />
           </div>

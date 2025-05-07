@@ -52,8 +52,9 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
     try {
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: true, error: null })
       const response: ApiReturnType<User[]> = await getCustomers()
+      console.log("fetchCustomers response:", response)
 
-      if (response.success && response.data && Array.isArray(response.data)) {
+      if (response.success && Array.isArray(response.data)) {
         const normalizedCustomers = response.data.map((customer) => ({
           ...customer,
           createdAt: new Date(customer.createdAt),
@@ -70,19 +71,22 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
                   : ""
               }`
             : "No customers found"
-          toast.success(toastMessage)
+          toast.success(toastMessage, { id: "fetch-customers" })
         }
       } else {
         const errorMessage =
           response.message || response.error || "Failed to load customers"
         set({ customers: [], error: errorMessage })
-        toast.error(errorMessage)
+        if (isManualRefresh) {
+          toast.error(errorMessage, { id: "fetch-customers" })
+        }
       }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to fetch customers"
+    } catch (error: any) {
+      const errorMessage = error.message || "Failed to fetch customers"
       set({ customers: [], error: errorMessage })
-      toast.error(errorMessage)
+      if (isManualRefresh) {
+        toast.error(errorMessage, { id: "fetch-customers" })
+      }
     } finally {
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: false })
     }
@@ -101,7 +105,9 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
         set((state) => ({
           customers: [newCustomer, ...state.customers],
         }))
-        toast.success(response.message || "Customer created successfully")
+        toast.success(response.message || "Customer created successfully", {
+          id: "create-customer",
+        })
         return {
           success: true,
           message: response.message || "Customer created successfully",
@@ -109,13 +115,13 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
       } else {
         const errorMessage =
           response.message || response.error || "Failed to create customer"
-        toast.error(errorMessage)
+        toast.error(errorMessage, { id: "create-customer" })
         return { success: false, errorMessage }
       }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to create customer"
-      toast.error(errorMessage)
+      toast.error(errorMessage, { id: "create-customer" })
       return { success: false, errorMessage }
     }
   },
@@ -133,13 +139,13 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
       } else {
         const errorMessage =
           response.message || response.error || "Failed to fetch customer"
-        toast.error(errorMessage)
+        toast.error(errorMessage, { id: "fetch-customer" })
         return null
       }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to fetch customer"
-      toast.error(errorMessage)
+      toast.error(errorMessage, { id: "fetch-customer" })
       return null
     }
   },
@@ -159,7 +165,9 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
             customer.id === id ? updatedCustomer : customer
           ),
         }))
-        toast.success(response.message || "Customer updated successfully")
+        toast.success(response.message || "Customer updated successfully", {
+          id: "update-customer",
+        })
         return {
           success: true,
           message: response.message || "Customer updated successfully",
@@ -167,13 +175,13 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
       } else {
         const errorMessage =
           response.message || response.error || "Failed to update customer"
-        toast.error(errorMessage)
+        toast.error(errorMessage, { id: "update-customer" })
         return { success: false, errorMessage }
       }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to update customer"
-      toast.error(errorMessage)
+      toast.error(errorMessage, { id: "update-customer" })
       return { success: false, errorMessage }
     }
   },
@@ -185,7 +193,9 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
         set((state) => ({
           customers: state.customers.filter((customer) => customer.id !== id),
         }))
-        toast.success(response.message || "Customer deleted successfully")
+        toast.success(response.message || "Customer deleted successfully", {
+          id: "delete-customer",
+        })
         return {
           success: true,
           message: response.message || "Customer deleted successfully",
@@ -193,13 +203,13 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
       } else {
         const errorMessage =
           response.message || response.error || "Failed to delete customer"
-        toast.error(errorMessage)
+        toast.error(errorMessage, { id: "delete-customer" })
         return { success: false, errorMessage }
       }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to delete customer"
-      toast.error(errorMessage)
+      toast.error(errorMessage, { id: "delete-customer" })
       return { success: false, errorMessage }
     }
   },
