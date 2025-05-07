@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 
 import { DataTableColumnToggle } from "@/components/shared/table/data-table-toggle-column"
-import TableSearch from "@/components/shared/table/table-search"
+import TableSearch from "@/components/table/table-search"
 import { DataTablePagination } from "@/components/shared/table/data-table-pagination"
 
 interface DataTableProps<TData, TValue> {
@@ -67,7 +67,7 @@ export function DataTable<TData, TValue>({
 
         <DataTableColumnToggle table={table} />
       </div>
-      <div className="rounded-md border ">
+      <div className="rounded-md border max-h-[600px] overflow-y-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

@@ -1,4 +1,4 @@
-export const getActiveStatusStyles = (status: string) => {
+export const getActiveStatusStyles = (status: string | undefined) => {
   switch (status) {
     case "ACTIVE":
       return {

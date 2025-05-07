@@ -1,23 +1,23 @@
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
-import ToggleTableTabs from "./toggle-table-filter";
+import { useEffect } from "react"
+import { useForm, FormProvider } from "react-hook-form"
+import ToggleTableTabs from "./toggle-table-filter"
 
-const TableFilterTabs = () => {
+const TableFilterTabs = ({ onChange }: { onChange: (val: string) => void }) => {
   const form = useForm({
     defaultValues: {
-      filterType: "today",
+      filterType: "active",
     },
-  });
+  })
 
   // Watch the selected value directly in the parent component
-  const selectedFilterType = form.watch("filterType");
+  const selectedFilterType = form.watch("filterType")
 
   // Log the selected value whenever it changes
   useEffect(() => {
-    console.log("Selected filter type:", selectedFilterType);
-  }, [selectedFilterType]);
+    onChange(selectedFilterType)
+  }, [selectedFilterType, onChange])
 
   return (
     <FormProvider {...form}>
@@ -25,7 +25,7 @@ const TableFilterTabs = () => {
         <ToggleTableTabs name="filterType" />
       </form>
     </FormProvider>
-  );
-};
+  )
+}
 
-export default TableFilterTabs;
+export default TableFilterTabs

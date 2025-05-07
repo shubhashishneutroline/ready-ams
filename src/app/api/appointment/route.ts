@@ -1,22 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
-import { appointmentSchema } from "@/features/appointment/schemas/schema";
-import {
-  Appointment,
-  AppointmentStatus,
-} from "@/features/appointment/types/types";
-import { ZodError } from "zod";
-import { prisma } from "@/lib/prisma";
-import { getAppointmentById } from "@/db/appointment";
-import { createAppointment } from "@/lib/appointment";
+import { NextRequest, NextResponse } from "next/server"
+
+import { ZodError } from "zod"
+import { prisma } from "@/lib/prisma"
+import { getAppointmentById } from "@/db/appointment"
+import { createAppointment } from "@/lib/appointment"
+import { Appointment } from "@/app/(admin)/appointment/_types/appoinment"
+import { appointmentSchema } from "@/app/(admin)/appointment/_schema/appoinment"
 
 //create new appointment
 export async function POST(req: NextRequest) {
   try {
     // Parse the request body
-    const body = await req.json();
+    const body = await req.json()
 
     // Validate the request body
-    const parsedData: Appointment = appointmentSchema.parse(body);
+    const parsedData: Appointment = appointmentSchema.parse(body)
 
     // Create a new appointment in prisma
     const newAppointment = await createAppointment({
@@ -33,7 +31,7 @@ export async function POST(req: NextRequest) {
       isForSelf: parsedData.isForSelf,
       createdById: parsedData.createdById,
       resourceId: parsedData.resourceId,
-    });
+    })
 
     // Return a success response
     return NextResponse.json(
@@ -43,7 +41,7 @@ export async function POST(req: NextRequest) {
         message: "Appointment booked successfully!",
       },
       { status: 201 }
-    );
+    )
   } catch (error) {
     // Handle validation errors
     if (error instanceof ZodError) {
@@ -54,13 +52,13 @@ export async function POST(req: NextRequest) {
           success: false,
         },
         { status: 400 }
-      );
+      )
     }
     // Handle other errors
     return NextResponse.json(
       { message: "Failed to book appointment!", success: false, error: error },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -73,12 +71,12 @@ export async function GET() {
         service: true,
         Resource: true,
       },
-    });
+    })
     if (appointments.length === 0) {
       return NextResponse.json(
         { message: "No appointments found!", success: false },
         { status: 404 }
-      );
+      )
     }
 
     return NextResponse.json(
@@ -88,7 +86,7 @@ export async function GET() {
         message: "Appointment fetched successfully!",
       },
       { status: 200 }
-    );
+    )
   } catch (error) {
     return NextResponse.json(
       {
@@ -97,6 +95,6 @@ export async function GET() {
         error: error,
       },
       { status: 500 }
-    );
+    )
   }
 }

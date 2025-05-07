@@ -1,62 +1,99 @@
-// import ServiceForm from "@/features/service/components/admin/form/add/service-form";
+"use client"
 
-// const ServicePage = () => {
-//   //  Fetch from the api
-//   // Business for break time and holiday
-
-//   // If id is present in URL
-//   // Fetch service data from API
-
-//   return (
-//     <>
-//       <ServiceForm />
-//     </>
-//   );
-// };
-
-// export default ServicePage;
-
+import { useEffect, useState } from "react"
 import ServiceForm, {
   BusinessAvailability,
-} from "@/features/service/components/admin/form/add/service-form";
-import { getBusinesses } from "@/features/business-detail/api/api";
-import { BusinessDetail } from "@/features/business-detail/types/types";
-import { transformBusinessAvailabilityData } from "@/features/service/action/action";
+} from "@/features/service/components/admin/form/add/service-form"
+import ServiceFormSkeleton from "@/features/service/components/skeleton-form"
+import { useBusinessStore } from "../../business-settings/_store/business-store"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
-const ServicePage = async () => {
-  let businessAvailability: BusinessAvailability;
-  let businessId: string;
+const ServicePage = () => {
+  const {
+    businesses,
+    businessAvailabilities,
+    fetchBusinesses,
+    hasFetched,
+    loading,
+    error,
+  } = useBusinessStore()
+  const [fetchAttempted, setFetchAttempted] = useState(false)
 
-  try {
-    const businesses: BusinessDetail[] = await getBusinesses();
-    const business = businesses[0];
-    businessId = /* business.id */ "cmacgqszn0001msf6gqkxp5as";
-    businessAvailability = transformBusinessAvailabilityData(business);
-    console.log(businessAvailability, "businessAvailability");
-  } catch (err) {
-    console.error("Error fetching businesses:", err);
-    // Fallback if fetching fails
-    businessAvailability = {
-      breaks: {
-        Mon: [],
-        Tue: [],
-        Wed: [],
-        Thu: [],
-        Fri: [],
-        Sat: [],
-        Sun: [],
-      },
-      holidays: [],
-    };
-    businessId = "";
+  // Owner ID for fetching businesses
+  // INSERT OWNER ID HERE: Replace with cmacg3d560000ms5cuttqj6ev
+  const businessOwnerId = "cmacg3d560000ms5cuttqj6ev"
+
+  // Fetch businesses on mount if not already fetched
+  useEffect(() => {
+    if (!hasFetched && !loading && !fetchAttempted) {
+      console.log(
+        "ServicePage: Triggering fetchBusinesses for owner:",
+        businessOwnerId
+      )
+      setFetchAttempted(true)
+      fetchBusinesses(businessOwnerId)
+    }
+  }, [hasFetched, loading, fetchBusinesses, fetchAttempted, businessOwnerId])
+
+  // Log state for debugging
+  useEffect(() => {
+    console.log("ServicePage: State =", {
+      hasFetched,
+      loading,
+      businessesLength: businesses.length,
+      error,
+      businessAvailabilities,
+    })
+  }, [hasFetched, loading, businesses, error, businessAvailabilities])
+
+  // Show skeleton during initial load
+  if (loading || !hasFetched) {
+    return <ServiceFormSkeleton />
+  }
+
+  // Show error or no businesses message
+  if (error || businesses.length === 0) {
+    return (
+      <div className="p-6">
+        <h2 className="text-lg font-semibold">
+          {error ? "Error Loading Businesses" : "No Businesses Found"}
+        </h2>
+        <p className="mt-2">
+          {error
+            ? `An error occurred: ${error}`
+            : "Please create a business before adding a service."}
+        </p>
+        <Button asChild className="mt-4">
+          <Link href="/business-settings">
+            {error ? "Try Again" : "Create Business"}
+          </Link>
+        </Button>
+      </div>
+    )
+  }
+
+  // Use the first business by default
+  const defaultBusiness = businesses[0]
+  const businessAvailability = businessAvailabilities[defaultBusiness.id] || {
+    breaks: {
+      Mon: [],
+      Tue: [],
+      Wed: [],
+      Thu: [],
+      Fri: [],
+      Sat: [],
+      Sun: [],
+    },
+    holidays: [],
   }
 
   return (
     <ServiceForm
       businessAvailability={businessAvailability}
-      businessId={businessId}
+      businessId={defaultBusiness.id}
     />
-  );
-};
+  )
+}
 
-export default ServicePage;
+export default ServicePage

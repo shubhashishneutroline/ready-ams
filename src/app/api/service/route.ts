@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { serviceSchema } from "@/features/service/schemas/schema";
-import { Service } from "@/features/service/types/types";
-import { ZodError } from "zod";
-import { prisma } from "@/lib/prisma";
-import { getServiceById } from "@/db/service";
+import { NextRequest, NextResponse } from "next/server"
+import { ZodError } from "zod"
+import { prisma } from "@/lib/prisma"
+import { getServiceById } from "@/db/service"
+import { Service } from "@/app/(admin)/service/_types/service"
+import { serviceSchema } from "@/app/(admin)/service/_schemas/service"
 
 export async function POST(req: NextRequest) {
   try {

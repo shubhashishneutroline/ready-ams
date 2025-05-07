@@ -1,24 +1,19 @@
-import { getServiceById } from "@/features/service/api/api"
-import EditServiceForm from "@/features/service/components/admin/form/edit/edit-service-form"
+import ServiceForm from "@/features/service/components/admin/form/edit/edit-service-form"
+import ServiceFormSkeleton from "@/features/service/components/skeleton-form"
+import { useServiceStore } from "../../_store/service-store"
+import { useBusinessStore } from "@/app/(admin)/business-settings/_store/business-store"
+import { getServiceById } from "@/db/service"
 
-const ServicePage = async ({ params }: { params: Promise<{ id: string }> }) => {
+export default async function EditServicePage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id } = await params
+  const serviceDetail = await getServiceById(id)
 
-  let serviceData: any = null
+  console.log(serviceDetail, "serviceDetail")
+  if (!id) return <ServiceFormSkeleton />
 
-  try {
-    // 2. Get serviceId from URL (App Router way)
-
-    if (id) {
-      // 3. Fetch service data
-      serviceData = await getServiceById(id)
-      console.log(serviceData, "Out side of the endit file")
-    }
-  } catch (err) {
-    console.error("Error loading data:", err)
-  }
-
-  return <EditServiceForm serviceDetail={serviceData} />
+  return <ServiceForm serviceDetail={serviceDetail} />
 }
-
-export default ServicePage

@@ -1,69 +1,153 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import Table from "@/features/customer/components/admin/table/table"
-import TableFilterTabs from "@/features/customer/components/admin/table/table-filter-tabs"
-import TablePageHeader from "@/components/shared/table/table-page-header"
-import { useRouter } from "next/navigation"
-import { getCustomers } from "@/features/customer/api/api"
-import { columns } from "@/features/customer/components/admin/table/column"
-import { DataTable } from "@/features/customer/components/admin/table/data-table"
-import CustomerCard from "@/features/customer/components/admin/table/customer-cards"
+import { useEffect, useMemo, useCallback, useRef } from "react"
+import PageTabs from "@/components/table/page-tabs"
+import TablePageHeader from "@/components/table/table-header"
+import { columns } from "./_components/column"
+import { DataTable } from "@/components/table/data-table"
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
+import DataTableSkeleton from "@/components/table/skeleton-table"
+import { useCustomerStore } from "./_store/customer-store"
+import { cn } from "@/utils/utils"
+
+const pageOptions = ["Active", "Inactive", "All"]
+const REFETCH_INTERVAL = 5 * 60 * 1000 // 5 minutes
 
 const CustomerPage = () => {
-  const router = useRouter()
-  const [customer, setCustomer] = useState([])
-  const [filteredCustomer, setFilteredCustomer] = useState([])
-  const [filterType, setFilterType] = useState("all")
+  const {
+    activeTab,
+    onActiveTab,
+    customers,
+    loading,
+    isRefreshing,
+    fetchCustomers,
+    deleteCustomer,
+    hasFetched,
+    getFilteredCustomers,
+  } = useCustomerStore()
 
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
+  const hasFetchedOnce = useRef(false) // Track if fetch has been attempted
+
+  // Initial fetch only if not fetched
   useEffect(() => {
-    const fetchAppointments = async () => {
-      const data = await getCustomers()
-      setCustomer(data)
+    if (hasFetchedOnce.current || loading || isRefreshing || hasFetched) {
+      return // Skip if already fetched, loading, or refreshing
     }
+    console.log("Initial fetch triggered: no data fetched")
+    hasFetchedOnce.current = true
+    fetchCustomers()
+  }, [loading, isRefreshing, hasFetched, fetchCustomers])
 
-    fetchAppointments()
+  // Auto-refresh every 5 minutes (silent)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log("Silent auto-refresh triggered")
+      fetchCustomers(false) // Silent refresh
+    }, REFETCH_INTERVAL)
+    return () => clearInterval(interval)
+  }, [fetchCustomers])
+
+  // Handle delete
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await deleteCustomer(id) // Store handles toast
+      console.log(`Deleted customer with id: ${id}`)
+    },
+    [deleteCustomer]
+  )
+
+  // Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    if (debounceTimeout.current) {
+      return
+    }
+    console.log("Manual refresh triggered")
+    debounceTimeout.current = setTimeout(() => {
+      fetchCustomers(true)
+      debounceTimeout.current = null
+    }, 300)
+  }, [fetchCustomers])
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current)
+      }
+    }
   }, [])
 
-  console.log(customer, "Customer Data fetched")
+  // Memoized filtered customers
+  const filteredCustomers = useMemo(() => {
+    const result = getFilteredCustomers()
+    console.log("filteredCustomers:", result)
+    return result
+  }, [customers, activeTab, getFilteredCustomers])
 
-  useEffect(() => {
-    const filtered = customer.filter((cust: any) => {
-      console.log(cust.isActive, "hello")
-
-      switch (filterType) {
-        case "active":
-          return cust.isActive === true
-        case "inactive":
-          return cust.isActive === false
-        case "all":
-        default:
-          return true
-      }
-    })
-    setFilteredCustomer(filtered)
-  }, [customer, filterType])
-
-  console.log(filteredCustomer, "filteredCustomer")
+  // Memoized columns
+  const memoizedColumns = useMemo(() => columns(handleDelete), [handleDelete])
 
   return (
-    <div className="flex flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
-      <TableFilterTabs onChange={setFilterType} />
-      <TablePageHeader
-        title="Customer"
-        description="Manage and Customize Customer Here."
-        newButton="New Customer"
-        handleClick={() => {
-          router.push("/customer/create/")
-        }}
-      />
-      <div className="hidden md:block">
-        <DataTable columns={columns} data={filteredCustomer} />
-      </div>
-      <div className="block md:hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredCustomer?.map((customer: any, index: number) => (
-          <CustomerCard key={index} customer={customer} />
-        ))}
+    <div className="h-full w-full flex flex-col">
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <PageTabs
+            isReminder
+            activeTab={activeTab}
+            onTabChange={onActiveTab}
+            customTabs={pageOptions}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+            aria-label={
+              isRefreshing ? "Refreshing customers" : "Refresh customers"
+            }
+            aria-busy={isRefreshing}
+          >
+            <RefreshCw
+              className={cn("h-4 w-4", isRefreshing && "animate-spin")}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </Button>
+        </div>
+        <TablePageHeader
+          title="Customer"
+          description="Manage and Customize Customer Here."
+          newButton="New Customer"
+          route="/customer/create/"
+        />
+        {loading && !hasFetched ? (
+          <DataTableSkeleton />
+        ) : filteredCustomers.length === 0 ? (
+          <div className="text-center py-8 text-sm text-muted-foreground italic">
+            No customers found for the selected tab
+            {activeTab !== "All" ? ` ['${activeTab}']` : ""}.
+            <Button
+              variant="link"
+              className="p-1 ml-1 text-blue-600 hover:underline"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label="Retry fetching customers"
+            >
+              Try refreshing
+            </Button>
+            or creating a new customer.
+          </div>
+        ) : (
+          <div className="relative overflow-x-auto">
+            <DataTable
+              columns={memoizedColumns}
+              data={filteredCustomers}
+              searchFieldName="name"
+            />
+          </div>
+        )}
       </div>
     </div>
   )

@@ -1,81 +1,66 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getAnnouncementOrOfferById } from "@/db/announcement-offer";
-import { getAppointmentById } from "@/db/appointment";
-import { getBusinessDetailById } from "@/db/businessDetail";
-import { prisma } from "@/lib/prisma";
-import { ZodError } from "zod";
-import { businessDetailSchema } from "@/features/business-detail/schemas/schema";
+import { NextRequest, NextResponse } from "next/server"
+import { getAnnouncementOrOfferById } from "@/db/announcement-offer"
+import { getAppointmentById } from "@/db/appointment"
+import { getBusinessDetailById } from "@/db/businessDetail"
+import { prisma } from "@/lib/prisma"
+import { ZodError } from "zod"
+import { businessDetailSchema } from "@/features/business-detail/schemas/schema"
+import { Prisma } from "@prisma/client"
 
 interface ParamsProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }
 
 export async function GET(req: NextRequest, { params }: ParamsProps) {
   try {
-    const { id } = await params;
-    const businessDetails = await getBusinessDetailById(id);
+    const { id } = await params
+    const announcement = await getBusinessDetailById(id)
 
-    if (!businessDetails) {
+    if (!announcement) {
       return NextResponse.json(
-        { message: "Business Detail with id not found!", success: false },
+        { error: "Business Detail with id not found" },
         { status: 404 }
-      );
+      )
     }
-    return NextResponse.json(
-      {
-        data: businessDetails,
-        success: true,
-        message: "Business fetched successfully!",
-      },
-      { status: 200 }
-    );
+    return NextResponse.json(announcement, { status: 200 })
   } catch (error) {
     return NextResponse.json(
-      { message: "Failed to fetch business-detail!", success: false, error: error },
+      { error: "Failed to fetch business-detail" },
       { status: 500 }
-    );
+    )
   }
 }
 
 // Update an existing business detail
 export async function PUT(req: NextRequest, { params }: ParamsProps) {
   try {
-    const { id } = await params; // or Get the ID from the request body
-    const body = await req.json();
+    const { id } = await params // or Get the ID from the request body
+    const body = await req.json()
 
     if (!id) {
       return NextResponse.json(
-        { message: "Business ID is required!", success: false },
+        { error: "Business ID is required" },
         { status: 400 }
-      );
+      )
     }
 
-    const parsedData = businessDetailSchema.parse(body);
+    const parsedData = businessDetailSchema.parse(body)
 
     // Log parsed data for debugging
-    console.log("Parsed Data:", JSON.stringify(parsedData, null, 2));
+    console.log("Parsed Data:", JSON.stringify(parsedData, null, 2))
 
-    const business = await getBusinessDetailById(id);
+    const business = await getBusinessDetailById(id)
 
     if (!business) {
       return NextResponse.json(
-        { message: "Business Detail with id not found!", success: false },
+        { error: "Business Detail with id not found" },
         { status: 404 }
-      );
+      )
     }
-
-    // Store related services/resources before deletion
-    const existingServices = await prisma.service.findMany({
-      where: { businessDetailId: id },
-    });
-
-    const existingResources = await prisma.resource.findMany({
-      where: { businessId: id },
-    });
 
     const deletedBusiness = await prisma.businessDetail.delete({
       where: { id },
-    });
+    })
     if (deletedBusiness) {
       const updatedBusiness = await prisma.businessDetail.create({
         data: {
@@ -85,8 +70,10 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
           email: parsedData.email,
           phone: parsedData.phone,
           website: parsedData.website,
+          businessOwner: parsedData.businessOwner,
           businessRegistrationNumber: parsedData.businessRegistrationNumber,
           status: parsedData.status,
+          timeZone: parsedData.timeZone,
 
           // Handle addresses
           address: {
@@ -107,7 +94,6 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
                 create: availability.timeSlots.map((slot) => ({
                   startTime: slot.startTime,
                   endTime: slot.endTime,
-                  type: slot.type,
                 })),
               },
             })),
@@ -118,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
             create: parsedData.holiday.map((holiday) => ({
               holiday: holiday.holiday,
               type: holiday.type,
-              date: holiday.date,
+              date: holiday.date || null,
             })),
           },
         },
@@ -131,102 +117,75 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
           },
           holiday: true,
         },
-      });
-
-      // Reconnect Services
-      await Promise.all(
-        existingServices.map((service) =>
-          prisma.service.update({
-            where: { id: service.id },
-            data: { businessDetailId: updatedBusiness.id },
-          })
-        )
-      );
-
-      // Reconnect Resources
-      await Promise.all(
-        existingResources.map((resource) =>
-          prisma.resource.update({
-            where: { id: resource.id },
-            data: { businessId: updatedBusiness.id },
-          })
-        )
-      );
+      })
 
       if (updatedBusiness) {
         return NextResponse.json(
-          {
-            data: updatedBusiness,
-            success: true,
-            message: "Business updated successfully!",
-          },
+          { message: "Business updated successfully", data: updatedBusiness },
           { status: 200 }
-        );
+        )
       }
     }
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      console.error("Validation error:", error.message)
+      // Handle the validation error specifically
+      return {
+        error: "Validation failed",
+        details: error, // or use error.stack for full stack trace
+      }
+    }
     if (error instanceof ZodError) {
       return NextResponse.json(
-        {
-          message: "Validation failed!",
-          error: error.errors[0].message,
-          success: false,
-        },
+        { error: "Validation failed", details: error },
         { status: 400 }
-      );
+      )
     }
-
+    console.error("Prisma Error:", error) // Log the full error for debugging
     return NextResponse.json(
-      { message: "Failed to update business!", success: false, error: error },
+      { error: "Internal server error", detail: error },
       { status: 500 }
-    );
+    )
   }
 }
 
 // Delete a business detail
 export async function DELETE(req: NextRequest, { params }: ParamsProps) {
   try {
-    const { id } = await params;
+    const { id } = await params
 
     if (!id) {
       return NextResponse.json(
-        { message: "Business ID is required!", success: false },
+        { error: "Business ID is required" },
         { status: 400 }
-      );
+      )
     }
 
-    const existingBusiness = await getBusinessDetailById(id);
+    const existingBusiness = await getBusinessDetailById(id)
 
     if (!existingBusiness) {
-      return NextResponse.json(
-        { message: "Business not found!", success: false },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Business not found" }, { status: 404 })
     }
 
     const deletedBusiness = await prisma.businessDetail.delete({
       where: { id },
-    });
+    })
 
     if (!deletedBusiness) {
       return NextResponse.json(
-        { message: "Business couldn't be deleted!", success: false },
+        { error: "Business couldn't be deleted" },
         { status: 404 }
-      );
+      )
     }
 
     return NextResponse.json(
-      {
-        data: deletedBusiness,
-        success: true,
-        message: "Business deleted successfully!",
-      },
+      { message: "Business deleted successfully" },
       { status: 200 }
-    );
+    )
   } catch (error) {
     return NextResponse.json(
-      { message: "Failed to delete business!", success: false, error: error },
+      { error: "Failed to delete business", detail: error },
       { status: 500 }
-    );
+    )
   }
 }

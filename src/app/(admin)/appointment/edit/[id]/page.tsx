@@ -1,11 +1,11 @@
-import EditAppointmentForm from "@/features/appointment/components/admin/form/edit/edit-appointment-form";
+import AppointmentForm from "../../_components/appointment-form"
 
 const AppointmentPage = () => {
   return (
     <>
-      <EditAppointmentForm />
+      <AppointmentForm />
     </>
-  );
-};
+  )
+}
 
-export default AppointmentPage;
+export default AppointmentPage

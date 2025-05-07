@@ -21,8 +21,8 @@ import { toast, Toaster } from "sonner"
 import { timeOptions, toMin } from "@/lib/lib"
 import { updateService } from "@/features/service/api/api"
 import { useRouter } from "next/navigation"
-import { businessId } from "@/features/business-detail/action/action"
 import { BusinessDetail } from "../../../../../business-detail/types/types"
+import { Service } from "@prisma/client"
 
 // Define types
 export type WeekDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun"
@@ -74,8 +74,12 @@ const formatAvailabilityNote = () => {
   return "Holidays and break times are set in Business Availability. Update in Business Settings > Business Availability."
 }
 
-export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
-  console.log(serviceDetail?.BusinessDetail, "Business details")
+export default function ServiceForm({
+  serviceDetail,
+}: {
+  serviceDetail: any | null
+}) {
+  console.log(serviceDetail?.businessDetail, "Business details")
   // Derive holidays dynamically
   const holidays: WeekDay[] = serviceDetail?.BusinessDetail?.holiday.map(
     (h: any) => {
@@ -264,7 +268,7 @@ export default function ServiceForm({ serviceDetail }: { serviceDetail: any }) {
 
   return (
     <FormProvider {...form}>
-      <Toaster position="top-right" />
+      {/* <Toaster position="top-right" /> */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="">
           <div className="space-y-6">

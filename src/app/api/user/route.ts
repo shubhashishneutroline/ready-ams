@@ -1,31 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
-  userSchema,
-  userUpdateSchema,
-} from "@/features/customer/schemas/schema";
-import { User, Role } from "@/features/customer/types/types";
-import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { getUserByEmail, getUserById } from "@/db/user";
-import * as bcrypt from "bcryptjs";
-import { Prisma } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
+import { prisma } from "@/lib/prisma"
+import { getUserByEmail, getUserById } from "@/db/user"
+import * as bcrypt from "bcryptjs"
+import { Prisma } from "@prisma/client"
+import { userSchema } from "@/app/(admin)/customer/_schema/customer"
+import { User } from "@/app/(admin)/customer/_types/customer"
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as User;
+    const body = (await req.json()) as User
     const { email, password, name, phone, address, role } =
-      userSchema.parse(body);
+      userSchema.parse(body)
 
-    const existingUser = await getUserByEmail(email);
+    const existingUser = await getUserByEmail(email)
     if (existingUser) {
       return NextResponse.json(
         { message: "User with this email already exists!", success: false },
         { status: 400 }
-      );
+      )
     }
 
     // hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password!, 10)
 
     const newUser = await prisma.user.create({
       data: {
@@ -36,12 +33,12 @@ export async function POST(req: NextRequest) {
         address: address ? { create: { ...address } } : undefined,
         role,
       },
-    });
+    })
 
     return NextResponse.json(
       { data: newUser, success: true, message: "User created successfully!" },
       { status: 201 }
-    );
+    )
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -51,13 +48,13 @@ export async function POST(req: NextRequest) {
           success: false,
         },
         { status: 400 }
-      );
+      )
     }
 
     return NextResponse.json(
       { message: "Failed to create user!", success: false, error: error },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -66,6 +63,7 @@ export async function GET() {
   try {
     // get all users
     const users = await prisma.user.findMany({
+      where: { role: "USER" },
       select: {
         id: true,
         email: true,
@@ -82,28 +80,27 @@ export async function GET() {
           },
         },
       },
-    });
-    console.log(users);
+    })
+    console.log(users)
 
     // Check if there are any users
     if (users.length === 0) {
       return NextResponse.json(
         { message: "No users found!", success: false },
         { status: 404 }
-      );
+      )
     }
 
     // Return the users
     return NextResponse.json(
       { data: users, success: true, message: "User fetched successfully!" },
       { status: 200 }
-    );
+    )
   } catch (error) {
     // Handle errors
     return NextResponse.json(
       { message: "Failed to fetch users!", success: false, error: error },
       { status: 500 }
-    );
+    )
   }
 }
-

@@ -32,15 +32,16 @@ async function getBusinesses() {
 
 async function getBusinessById(id: string) {
   try {
-    const { data } = await api.get(`/api/business-detail/${id}`)
-    return data
+    const res = await api.get(`/api/business-detail/${id}`)
+    console.log(res, "inside Business details")
+    return res.data
   } catch (error) {
     console.error("Error fetching business:", error)
     throw error
   }
 }
 
-async function createBusiness(businessData: Omit<Business, "id">) {
+async function createBusiness(businessData: any) {
   try {
     const { data } = await api.post("/api/business-detail", businessData)
     return data
@@ -50,7 +51,7 @@ async function createBusiness(businessData: Omit<Business, "id">) {
   }
 }
 
-async function updateBusiness(id: string, businessData: Omit<Business, "id">) {
+async function updateBusiness(id: string, businessData: any) {
   try {
     console.log(businessData, "inside Business detailss")
     const { data } = await api.put(`/api/business-detail/${id}`, {

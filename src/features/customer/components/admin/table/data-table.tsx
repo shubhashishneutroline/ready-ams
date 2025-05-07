@@ -32,6 +32,7 @@ import TableSearch from "./table-search"
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  searchFiled: string
 }
 
 export function DataTable<TData, TValue>({

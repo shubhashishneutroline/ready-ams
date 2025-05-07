@@ -1,6 +1,6 @@
 "use client"
 
-import { format, addDays } from "date-fns"
+import { format, addDays, startOfToday } from "date-fns"
 import { CalendarIcon, LucideIcon } from "lucide-react"
 import {
   Popover,
@@ -35,7 +35,7 @@ const DatePickerField = ({
   label,
   placeholder = "Pick a date",
   disabled,
-  minDate = new Date(),
+  minDate = startOfToday(),
   maxDate = addDays(new Date(), 30),
   icon: Icon = CalendarIcon,
   className,
@@ -77,7 +77,9 @@ const DatePickerField = ({
                 mode="single"
                 selected={field.value}
                 onSelect={(date) => field.onChange(date)}
-                disabled={(date) => !!disabled || date < minDate || date > maxDate}
+                disabled={(date) =>
+                  !!disabled || date < minDate || date > maxDate
+                }
                 initialFocus
               />
             </PopoverContent>

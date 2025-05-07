@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState } from "react"
 import SidebarMobile from "./sidebar-mobile"
 import { useNavStore } from "@/state/store"
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
 
 const Header = () => {
   const { onOpen } = useNavStore()
@@ -24,11 +25,16 @@ const Header = () => {
         </div>
         {/* Notifications & Avatar */}
         <div className="flex gap-2 items-center ml-4">
-          <Bell className="text-white" />
-          <Avatar className="size-8">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          <SignedOut>
+            <Bell className="text-white" />
+            <Avatar className="size-8">
+              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
         </div>
       </div>
     </div>

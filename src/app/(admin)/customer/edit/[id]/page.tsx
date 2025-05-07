@@ -1,11 +1,11 @@
-import EditCustomerForm from "@/features/customer/components/admin/form/edit/edit-customer-form";
+import CustomerForm from "../../_components/customer-form"
 
 const CustomerPage = () => {
   return (
     <>
-      <EditCustomerForm />
+      <CustomerForm />
     </>
-  );
-};
+  )
+}
 
-export default CustomerPage;
+export default CustomerPage

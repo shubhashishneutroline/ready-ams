@@ -16,14 +16,11 @@ import {
   MoreHorizontal,
   Settings,
   Trash2,
-  ArrowUpDown,
-  MoreVertical,
 } from "lucide-react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/shared/table/data-table-column-header"
 
-import { capitalizeFirstChar } from "../../../../../utils/utils"
 import { deleteService, Service } from "@/features/service/api/api"
 import { shortenText } from "@/features/reminder/lib/lib"
 import {
@@ -36,11 +33,16 @@ import {
   formatDuration,
   getActiveStatusStyles,
 } from "@/features/service/lib/lib"
+import { toast } from "sonner"
+import DeleteAlert from "@/components/shared/delete-alert"
+import { useState } from "react"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 
-export const columns: ColumnDef<Service>[] = [
+export const columns = (
+  handleDelete: (id: string) => void
+): ColumnDef<Service>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -98,7 +100,7 @@ export const columns: ColumnDef<Service>[] = [
       const { bg, dot, text } = getActiveStatusStyles(isActive)
       return (
         <div
-          className={`w-[80px] flex gap-2 items-center text-[12px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
+          className={`w-[100px] flex gap-2 items-center text-[13px] py-[3px] px-3 rounded-lg ${bg} ${text}`}
         >
           <div className={`w-1.5 h-1.5 rounded-full ${dot}`}></div>
           {isActive ? "Active" : "Inactive"}
@@ -119,10 +121,11 @@ export const columns: ColumnDef<Service>[] = [
 
   {
     id: "actions",
+    header: "Actions",
 
     cell: ({ row }) => {
-      const payment = row.original
       const router = useRouter()
+      const [open, setOpen] = useState(false)
 
       return (
         <DropdownMenu>
@@ -147,12 +150,11 @@ export const columns: ColumnDef<Service>[] = [
             >
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => deleteService(row.original)}
-              className="flex gap-2 items-center justify-start"
-            >
-              <Trash2 className="h-4 w-4 text-red-600" /> Delete
-            </DropdownMenuItem>
+            <DeleteAlert
+              onDelete={() => handleDelete(row.original.id as string)}
+              open={open}
+              onOpenChange={setOpen}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       )

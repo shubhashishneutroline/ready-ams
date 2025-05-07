@@ -1,102 +1,233 @@
-import { getBaseUrl } from "@/lib/baseUrl"
-import axios from "axios"
+// import { getBaseUrl } from "@/lib/baseUrl"
+// import axios, { AxiosError } from "axios"
+// import { User, Address, Role } from "@/app/(admin)/customer/_types/customer"
 
-const api = axios.create({
-  baseURL: getBaseUrl(),
-  headers: {
-    "Content-Type": "application/json",
-  },
-})
-export interface Customer {
-  id?: number | string
-  name: string
-  email: string
-  phone: string
-  password: string
-  role: string
-  isActive?: boolean
-  address?: string
-  createdAt?: string
-  updatedAt?: string
-}
+// // Define the data structure for creating/updating customers
+// export interface PostCustomerData {
+//   id?: string // Optional for create, required for update
+//   email: string
+//   password?: string // Optional for update
+//   name: string
+//   phone?: string
+//   role: Role
+//   isActive?: boolean
+//   address?: Address
+// }
 
-async function getCustomers() {
-  try {
-    const { data } = await api.get("/api/user")
-    return data
-  } catch (error) {
-    console.error("Error fetching customers:", error)
-    return []
-  }
-}
-async function getCoustomersById(id: string) {
-  try {
-    const { data } = await api.get("/api/user", {
-      params: { id },
-    })
-    const customer = data.find((customer: Customer) => customer.id === id)
+// // API return type for responses
+// export interface ApiReturnType<T = any> {
+//   data?: T
+//   success: boolean
+//   message?: string
+//   error?: string
+// }
 
-    return customer
-  } catch (error) {
-    console.error("Error fetching customer:", error)
-    throw error
-  }
-}
+// const api = axios.create({
+//   baseURL: getBaseUrl(),
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+// })
 
-async function createCustomer(customerData: Customer) {
-  try {
-    const { data } = await api.post("/api/user", customerData)
-    return data
-  } catch (error) {
-    console.error("Error creating Customer:", error)
-    throw error
-  }
-}
+// // --- CRUD Functions for Customers ---
 
-async function updateCustomer(id: string, customerData: Omit<Customer, "id">) {
-  try {
-    const cleanedData: Record<string, any> = { ...customerData }
+// async function getCustomers(): Promise<ApiReturnType<User[]>> {
+//   try {
+//     const response = await api.get("/api/user")
+//     const { data, success, message, error } = response.data as ApiReturnType<
+//       User[]
+//     >
+//     console.log("customer get response", data)
 
-    // Remove password if it's empty (to prevent overriding with empty string)
-    if (!cleanedData.password) {
-      delete cleanedData.password
-    }
+//     if (success && Array.isArray(data)) {
+//       const normalizedData = data.map((customer) => ({
+//         ...customer,
+//         createdAt: customer.createdAt
+//           ? new Date(customer.createdAt)
+//           : new Date(),
+//         updatedAt: customer.updatedAt
+//           ? new Date(customer.updatedAt)
+//           : new Date(),
+//       }))
+//       return { data: normalizedData, success, message }
+//     }
 
-    // Optional: Remove isActive if not explicitly set (depends on your logic)
-    if (cleanedData.isActive === undefined) {
-      delete cleanedData.isActive
-    }
+//     return {
+//       success: false,
+//       message: message || "Failed to fetch customers",
+//       error: error || "Invalid response data",
+//     }
+//   } catch (error) {
+//     console.error("Error fetching customers:", error)
+//     const errorMsg =
+//       error instanceof AxiosError
+//         ? error.response?.data?.message || error.message
+//         : "An unknown error occurred"
+//     return {
+//       success: false,
+//       message: "Failed to fetch customers",
+//       error: errorMsg,
+//     }
+//   }
+// }
 
-    console.log(cleanedData, "Cleaned customer data before sending")
-    const { data } = await api.put(`/api/user`, {
-      ...cleanedData,
-      id,
-    })
+// async function getCustomerById(id: string): Promise<ApiReturnType<User>> {
+//   try {
+//     const response = await api.get(`/api/user/${id}`)
+//     const customer = response.data as User // Direct User object
 
-    console.log(data, "inside Update func")
-    return data
-  } catch (error) {
-    console.error("Error updating Customer:", error)
-    throw error
-  }
-}
+//     if (customer) {
+//       const normalizedCustomer = {
+//         ...customer,
+//         createdAt: customer.createdAt
+//           ? new Date(customer.createdAt)
+//           : new Date(),
+//         updatedAt: customer.updatedAt
+//           ? new Date(customer.updatedAt)
+//           : new Date(),
+//       }
+//       return {
+//         success: true,
+//         data: normalizedCustomer,
+//         message: "Customer fetched successfully",
+//       }
+//     }
 
-async function deleteCustomer(customer: Omit<Customer, "id">) {
-  try {
-    const { data } = await api.delete(`/api/user`, {
-      data: customer,
-    })
-    return data
-  } catch (error) {
-    console.error("Error deleting Customer:", error)
-    throw error
-  }
-}
+//     return {
+//       success: false,
+//       message: "Customer not found",
+//       error: "Customer not found",
+//     }
+//   } catch (error) {
+//     console.error(`Error fetching customer by ID (${id}):`, error)
+//     const errorMsg =
+//       error instanceof AxiosError
+//         ? error.response?.data?.message || error.message
+//         : "An unknown error occurred"
+//     return {
+//       success: false,
+//       message: `Failed to fetch customer ${id}`,
+//       error: errorMsg,
+//     }
+//   }
+// }
 
-export {
-  getCustomers,
-  getCoustomersById,
-  createCustomer,
-  updateCustomer,
-  deleteCustomer,
-}
+// async function createCustomer(
+//   customerData: PostCustomerData
+// ): Promise<ApiReturnType<User>> {
+//   try {
+//     const response = await api.post("/api/user", customerData)
+//     const responseData = response.data as ApiReturnType<User>
+//     console.log("customer create response", responseData)
+
+//     if (responseData.success && responseData.data) {
+//       const normalizedData = {
+//         ...responseData.data,
+//         createdAt: responseData.data.createdAt
+//           ? new Date(responseData.data.createdAt)
+//           : new Date(),
+//         updatedAt: responseData.data.updatedAt
+//           ? new Date(responseData.data.updatedAt)
+//           : new Date(),
+//       }
+//       return {
+//         ...responseData,
+//         data: normalizedData,
+//       }
+//     }
+
+//     return {
+//       success: false,
+//       message: responseData.message || "Failed to create customer",
+//       error: responseData.error || "Invalid response data",
+//     }
+//   } catch (error) {
+//     console.error("Error creating customer:", error)
+//     const errorMsg =
+//       error instanceof AxiosError
+//         ? error.response?.data?.message || error.message
+//         : "An unknown error occurred"
+//     return {
+//       success: false,
+//       message: errorMsg || "Failed to create customer",
+//       error: error as string,
+//     }
+//   }
+// }
+
+// async function updateCustomer(
+//   id: string,
+//   customerData: PostCustomerData
+// ): Promise<ApiReturnType<User>> {
+//   try {
+//     const response = await api.put(`/api/user/${id}`, customerData)
+//     const responseData = response.data as { message: string; user: User }
+
+//     if (responseData.user) {
+//       const normalizedUser = {
+//         ...responseData.user,
+//         createdAt: responseData.user.createdAt
+//           ? new Date(responseData.user.createdAt)
+//           : new Date(),
+//         updatedAt: responseData.user.updatedAt
+//           ? new Date(responseData.user.updatedAt)
+//           : new Date(),
+//       }
+//       return {
+//         success: true,
+//         data: normalizedUser,
+//         message: responseData.message,
+//       }
+//     }
+
+//     return {
+//       success: false,
+//       message: responseData.message || "Failed to update customer",
+//       error: "Invalid response data",
+//     }
+//   } catch (error) {
+//     console.error(`Error updating customer (${id}):`, error)
+//     const errorMsg =
+//       error instanceof AxiosError
+//         ? error.response?.data?.message || error.message
+//         : "An unknown error occurred"
+//     return {
+//       success: false,
+//       message: "Failed to update customer",
+//       error: errorMsg,
+//     }
+//   }
+// }
+
+// async function deleteCustomer(
+//   id: string
+// ): Promise<Pick<ApiReturnType, "success" | "error" | "message">> {
+//   try {
+//     const response = await api.delete(`/api/user/${id}`)
+//     const responseData = response.data as { message: string }
+
+//     return {
+//       success: true,
+//       message: responseData.message || "Customer deleted successfully",
+//     }
+//   } catch (error) {
+//     console.error(`Error deleting customer (${id}):`, error)
+//     const errorMsg =
+//       error instanceof AxiosError
+//         ? error.response?.data?.message || error.message
+//         : "An unknown error occurred"
+//     return {
+//       success: false,
+//       message: "Failed to delete customer",
+//       error: errorMsg,
+//     }
+//   }
+// }
+
+// export {
+//   getCustomers,
+//   getCustomerById,
+//   createCustomer,
+//   updateCustomer,
+//   deleteCustomer,
+// }

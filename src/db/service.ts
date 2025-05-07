@@ -1,10 +1,10 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma"
 
 // get service by id
 async function getServiceById(id: string) {
   return await prisma.service.findUnique({
     where: {
-      id: id,
+      id,
     },
     include: {
       appointments: true,
@@ -13,7 +13,7 @@ async function getServiceById(id: string) {
           timeSlots: true,
         },
       },
-      BusinessDetail: {
+      businessDetail: {
         include: {
           businessAvailability: {
             include: {
@@ -24,7 +24,7 @@ async function getServiceById(id: string) {
         },
       },
     },
-  });
+  })
 }
 
-export { getServiceById };
+export { getServiceById }
