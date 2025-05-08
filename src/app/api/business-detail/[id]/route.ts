@@ -92,6 +92,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
               type: availability.type,
               timeSlots: {
                 create: availability.timeSlots.map((slot) => ({
+                  type: slot.type,
                   startTime: slot.startTime,
                   endTime: slot.endTime,
                 })),
