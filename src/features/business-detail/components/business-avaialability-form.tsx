@@ -481,7 +481,7 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
     phone: business?.phone || "",
     website: business?.website || "",
     businessRegistrationNumber: business?.registrationNumber || "",
-    businessOwner: business?.businessOwner || "cmadr26aq0000msamhiabkpzu",
+    businessOwner: business?.businessOwner || "cmaf54tao0000mstgofhtes4y",
     status: business?.visibility || "PENDING",
     timeZone: timeZone || "UTC",
     address: [
@@ -620,20 +620,20 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
 
   // Reset form when business prop changes
   useEffect(() => {
-    console.log(
-      "Resetting form with default values:",
-      JSON.stringify(formDefaultValues, null, 2)
-    )
+    // console.log(
+    //   "Resetting form with default values:",
+    //   JSON.stringify(formDefaultValues, null, 2)
+    // )
     reset(formDefaultValues, { keepDefaultValues: false })
   }, [reset, JSON.stringify(formDefaultValues)])
 
   const isUpdateMode = !!business?.id
 
   const onSubmit = async (data: any) => {
-    console.log(
-      "Form data before transformation:",
-      JSON.stringify(data, null, 2)
-    )
+    // console.log(
+    //   "Form data before transformation:",
+    //   JSON.stringify(data, null, 2)
+    // )
 
     // Validate business details
     if (!business?.businessName) {

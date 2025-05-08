@@ -120,11 +120,11 @@ export const useBusinessStore = create<BusinessState>((set, get) => ({
     try {
       set({ loading: true, error: null })
       const response = await getBusinessById(businessId)
-
       console.log("useBusinessStore: fetchBusinessById: Response =", response)
       if (response) {
         set({
           selectedBusiness: response,
+          hasFetched: true, // Add this
           error: null,
         })
         toast.success("Business fetched successfully", {
@@ -134,6 +134,7 @@ export const useBusinessStore = create<BusinessState>((set, get) => ({
         const errorMessage = "Business not found"
         set({
           selectedBusiness: null,
+          hasFetched: true, // Add this
           error: errorMessage,
         })
         toast.error(errorMessage, { id: "fetch-business-by-id" })
@@ -144,6 +145,7 @@ export const useBusinessStore = create<BusinessState>((set, get) => ({
       console.error("useBusinessStore: fetchBusinessById: Error =", error)
       set({
         selectedBusiness: null,
+        hasFetched: true, // Add this
         error: errorMessage,
       })
       toast.error(errorMessage, { id: "fetch-business-by-id" })

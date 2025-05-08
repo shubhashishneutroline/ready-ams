@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { getServiceById } from "@/db/service"
 import { Service } from "@/app/(admin)/service/_types/service"
 import { serviceSchema } from "@/app/(admin)/service/_schemas/service"
+import { Prisma } from "@prisma/client"
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,8 +23,8 @@ export async function POST(req: NextRequest) {
             weekDay: availability.weekDay,
             timeSlots: {
               create: availability.timeSlots?.map((timeSlot) => ({
-                startTime: new Date(timeSlot.startTime), // Explicitly convert to Date
-                endTime: new Date(timeSlot.endTime), // Explicitly convert to Date
+                startTime: timeSlot.startTime, // Explicitly convert to Date
+                endTime: timeSlot.endTime, // Explicitly convert to Date
               })),
             },
           })),
@@ -48,11 +49,19 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      console.error("Validation error:", error)
+      // Handle the validation error specifically
+      return {
+        error: "Validation failed",
+        details: error, // or use error.stack for full stack trace
+      }
+    }
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
           message: "Validation failed!",
-          error: error.errors[0].message,
+          error: error,
           success: false,
         },
         { status: 400 }

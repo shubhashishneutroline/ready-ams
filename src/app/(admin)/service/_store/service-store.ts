@@ -7,9 +7,9 @@ import {
   deleteService as apiDeleteService,
 } from "@/features/service/api/api"
 import { Service } from "@prisma/client"
-import { toast } from "sonner"
 import { PostServiceData } from "@/features/service/api/api"
 import { ApiReturnType } from "../_types/service"
+import { toast } from "sonner"
 
 interface ServiceState {
   services: Service[]
@@ -48,37 +48,37 @@ export const useServiceStore = create<ServiceState>((set, get) => ({
     try {
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: true, error: null })
       const response: ApiReturnType<Service[]> = await getServices()
-      const { data, success } = response
-      console.log("fetchCustomers response:", response)
+      const { data, success, message } = response
+      console.log("fetchServices: Response =", response)
 
-      console.log(data, "data")
-      console.log(data)
       if (success && Array.isArray(data)) {
-        console.log("useServiceStore: fetchServices: Fetched services =", data)
+        console.log("fetchServices: Fetched services =", data)
         set({ services: data, hasFetched: true })
         if (isManualRefresh) {
           const latestService = data[0]
-          const message = data.length
+          const toastMessage = data.length
             ? `Fetched ${data.length} services.${
                 latestService
                   ? ` Latest: ${latestService.title} (${latestService.status})`
                   : ""
               }`
             : "No services found"
-          toast.success(message, { id: "fetch-services" })
+          toast.success(toastMessage, { id: "fetch-services" })
         }
       } else {
-        throw new Error("Invalid service data: expected an array")
+        set({ error: message || "Failed to fetch services", loading: false })
+        toast.error(message || "Failed to fetch services", {
+          id: "fetch-services",
+        })
       }
     } catch (error) {
-      console.error("useServiceStore: fetchServices: Error =", error)
+      console.error("fetchServices: Error =", error)
       set({ error: "Failed to load services", loading: false })
       toast.error("Failed to load services", { id: "fetch-services" })
     } finally {
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: false })
     }
   },
-
   fetchServiceById: async (id: string) => {
     try {
       const response: ApiReturnType<Service> = await getServiceById(id)

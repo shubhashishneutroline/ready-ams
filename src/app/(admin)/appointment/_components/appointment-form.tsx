@@ -127,7 +127,7 @@ export default function AppointmentForm() {
           const appointment = await storeGetAppointmentById(id)
           if (appointment && appointment.customerName) {
             const date = appointment.selectedDate
-            const time = isoToNormalTime(appointment.selectedTime)
+            const time = appointment.selectedTime
             const [firstName, ...lastNameParts] = appointment.customerName
               .trim()
               .split(" ")
@@ -165,12 +165,12 @@ export default function AppointmentForm() {
         phone: formData.phone,
         serviceId: formData.service,
         selectedDate: normalDateToIso(formData.date), // Converts Date to ISO string (e.g., "2025-05-06T00:00:00.000Z")
-        selectedTime: normalOrFormTimeToIso(formData.date, formData.time), // Converts time to ISO format
+        selectedTime: formData.time, // Converts time to ISO format
         message: formData.message,
-        userId: "cma6lpzwl0000ms1hows1zgi2", // TODO: Replace with dynamic user ID
+        userId: "cmaf54tao0000mstgofhtes4y", // TODO: Replace with dynamic user ID
         isForSelf: false,
-        bookedById: "cma6lpzwl0000ms1hows1zgi2", // TODO: Replace with dynamic bookedById
-        createdById: "cma6lpzwl0000ms1hows1zgi2", // TODO: Replace with dynamic createdById
+        bookedById: "cmaf54tao0000mstgofhtes4y", // TODO: Replace with dynamic bookedById
+        createdById: "cmaf54tao0000mstgofhtes4y", // TODO: Replace with dynamic createdById
         status: AppointmentStatus.SCHEDULED, // TODO: Add status dropdown
       }
 

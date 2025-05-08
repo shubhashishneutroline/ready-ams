@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
 
     // Validate the request body
     const parsedData: Appointment = appointmentSchema.parse(body)
+    console.log(parsedData, "parsedData")
 
     // Create a new appointment in prisma
     const newAppointment = await createAppointment({

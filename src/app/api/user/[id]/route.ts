@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { getUserById } from "@/db/user"
 import { ZodError } from "zod"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
+import * as bcrypt from "bcryptjs"
+import { z } from "zod"
 import { userSchema } from "@/app/(admin)/customer/_schema/customer"
 
 interface ParamsProps {
@@ -12,17 +15,28 @@ interface ParamsProps {
 export async function GET(req: NextRequest, { params }: ParamsProps) {
   try {
     const { id } = await params
-    const announcement = await getUserById(id)
+    const user = await getUserById(id)
 
-    if (!announcement) {
+    if (!user) {
       return NextResponse.json(
-        { error: "User with id not found" },
+        { message: "User with id not found!", success: false },
         { status: 404 }
       )
     }
-    return NextResponse.json(announcement, { status: 200 })
+
+    return NextResponse.json(
+      {
+        data: user,
+        success: true,
+        message: "User fetched successfully!",
+      },
+      { status: 200 }
+    )
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 })
+    return NextResponse.json(
+      { message: "Failed to fetch user!", success: false, error: error },
+      { status: 500 }
+    )
   }
 }
 
@@ -34,50 +48,66 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
 
     const parsedData = userSchema.parse(body)
 
+    const { password } = parsedData
+
     // Find the user by email (in a real scenario, use a unique identifier like userId)
     const existingUser = await getUserById(id)
 
     if (!existingUser) {
-      return NextResponse.json({ error: "User not found!" }, { status: 404 })
+      return NextResponse.json(
+        { message: "User not found!", success: false },
+        { status: 404 }
+      )
+    }
+
+    const updateData: Prisma.UserUpdateInput = {
+      email: parsedData.email,
+      name: parsedData.name,
+      phone: parsedData.phone,
+      address: parsedData.address && {
+        update: {
+          street: parsedData.address.street,
+          city: parsedData.address.city,
+          country: parsedData.address.country,
+          zipCode: parsedData.address.zipCode,
+        },
+      },
+      role: parsedData.role,
+    }
+
+    // Only hash and set password if a new one is provided
+    if (password && password.trim() !== "") {
+      const hashedPassword = await bcrypt.hash(password, 10)
+      updateData.password = hashedPassword
     }
 
     // Update the user in primsa
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: {
-        ...existingUser,
-        email: parsedData.email,
-        password: parsedData.password
-          ? parsedData.password
-          : existingUser.password,
-        name: parsedData.name,
-        phone: parsedData.phone,
-        address: parsedData.address && {
-          update: {
-            street: parsedData.address.street,
-            city: parsedData.address.city,
-            country: parsedData.address.country,
-            zipCode: parsedData.address.zipCode,
-          },
-        },
-        isActive: parsedData.isActive,
-        role: parsedData.role,
-      },
+      data: updateData,
     })
 
     return NextResponse.json(
-      { message: "User updated successfully!", user: updatedUser },
+      {
+        data: updatedUser,
+        success: true,
+        message: "User updated successfully!",
+      },
       { status: 200 }
     )
   } catch (error) {
-    if (error instanceof ZodError) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation failed", message: error },
+        {
+          message: "Validation failed!",
+          error: error.errors[0].message,
+          success: false,
+        },
         { status: 400 }
       )
     }
     return NextResponse.json(
-      { error: "Internal server error", message: error },
+      { message: "Failed to update user!", success: false, error: error },
       { status: 500 }
     )
   }
@@ -97,16 +127,12 @@ export async function DELETE(req: NextRequest, { params }: ParamsProps) {
       )
     }
 
-    const deletedUser = await prisma.user.delete({
+    await prisma.user.delete({
       where: { id },
     })
 
     return NextResponse.json(
-      {
-        data: deletedUser,
-        success: true,
-        message: "User deleted successfully!",
-      },
+      { message: "User deleted successfully!", success: false },
       { status: 200 }
     )
   } catch (error) {

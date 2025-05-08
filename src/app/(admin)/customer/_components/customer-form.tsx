@@ -11,13 +11,13 @@ import PhoneField from "@/components/custom-form-fields/phone-field"
 import ToggleSwitch from "@/components/custom-form-fields/toggle-switch"
 import { useParams, useRouter } from "next/navigation"
 import FormHeader from "@/components/admin/form-header"
-import { PostCustomerData } from "@/features/customer/api/api"
 import { Role } from "@/app/(admin)/customer/_types/customer"
 import { useCustomerStore } from "@/app/(admin)/customer/_store/customer-store"
 import {
   createSchema,
   updateSchema,
 } from "@/app/(admin)/customer/_schema/customer"
+import { PostCustomerData } from "../_api-call/customer-api-call"
 
 // Form data type
 type FormData = {

@@ -113,7 +113,7 @@ export const columns = (
     accessorKey: "time",
     header: "Time",
     cell: ({ row }) => {
-      const time = formatAppointmentTime(row.original.selectedTime)
+      const time = row.original.selectedTime
       return <div>{time}</div>
     },
   },

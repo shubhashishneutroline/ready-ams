@@ -1,6 +1,6 @@
 import { getBaseUrl } from "@/lib/baseUrl"
 // import { Appointment } from "@prisma/client"
-import axios, { AxiosError } from "axios"
+import axios, { AxiosError, AxiosResponse } from "axios"
 import { AppointmentStatus } from "../_types/appoinment"
 import { Appointment, AxioxResponseType } from "../_types/appoinment"
 
@@ -37,17 +37,23 @@ async function getAppointments(): Promise<{
     const {
       data: { data, success, error, message },
     } = (await api.get("/api/appointment")) as AxioxResponseType<Appointment[]>
+    console.log("getAppointments: Response data =", data)
     return { data, success, message, error }
-  } catch (error) {
-    console.error("Error fetching appointments:", error)
-    if (error instanceof AxiosError) {
-      return {
-        message: error?.response?.data.message,
-        success: false,
-        error: error.message,
-      }
+  } catch (error: any) {
+    const errorMsg =
+      error instanceof AxiosError && error.response?.data?.message
+        ? error.response.data.message
+        : "An unknown error occurred"
+    // console.error("getAppointments: Error fetching appointments:", {
+    //   message: errorMsg,
+    //   status: error.response?.status,
+    //   url: error.config?.url,
+    // })
+    return {
+      message: errorMsg,
+      success: false,
+      error: error.message,
     }
-    return { message: "Failed to fetch appointments", success: false }
   }
 }
 
