@@ -126,7 +126,7 @@ const BusinessPage = () => {
     useBusinessStore()
 
   useEffect(() => {
-    const id = "cmaexcd3f005omslzjbw6g51n" // Updated to match provided business data
+    const id = "cmaf21ts20001mslb8x0e7bt9" // Updated to match provided business data
     fetchBusinessById(id)
   }, [fetchBusinessById])
 
