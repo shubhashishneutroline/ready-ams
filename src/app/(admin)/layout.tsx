@@ -14,17 +14,19 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   // Auto load services after admin loads
   const { fetchServices } = useServiceStore()
   const { fetchAppointments } = useAppointmentStore()
-  const { fetchBusinesses, businesses } = useBusinessStore()
+  const { fetchBusinesses, fetchBusinessById } = useBusinessStore()
   const { fetchCustomers } = useCustomerStore()
   // Fetch services on app load
   useEffect(() => {
     console.log("App fully loaded, fetching appoinments, services, business...")
     // Fetch once after app loads
+    const id = "cmaf21ts20001mslb8x0e7bt9" // Updated to match provided business data
+    fetchBusinessById(id)
     fetchAppointments()
     fetchServices()
     fetchBusinesses("cmadr26aq0000msamhiabkpzu")
     fetchCustomers()
-  }, [fetchServices, fetchAppointments, fetchCustomers])
+  }, [fetchServices, fetchAppointments, fetchCustomers, fetchBusinessById])
 
   return (
     <div className="relative min-h-screen bg-stone-100 overflow-hidden">

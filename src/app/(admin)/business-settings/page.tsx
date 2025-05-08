@@ -122,13 +122,7 @@ const BusinessPage = () => {
   const [activeTab, setActiveTab] = useState("Business Detail")
   const [businessData, setBusinessData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const { selectedBusiness, loading, error, fetchBusinessById } =
-    useBusinessStore()
-
-  useEffect(() => {
-    const id = "cmaf21ts20001mslb8x0e7bt9" // Updated to match provided business data
-    fetchBusinessById(id)
-  }, [fetchBusinessById])
+  const { selectedBusiness, loading, error } = useBusinessStore()
 
   useEffect(() => {
     if (selectedBusiness) {
