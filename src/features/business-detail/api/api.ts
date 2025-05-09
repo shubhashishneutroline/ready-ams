@@ -23,10 +23,15 @@ export interface Business {
 async function getBusinesses() {
   try {
     const { data } = await api.get("/api/business-detail")
-    return data
+
+    return { data, success: true, message: "Business fetched successfully!" }
   } catch (error) {
     console.error("Error fetching businesses:", error)
-    return []
+    return {
+      success: false,
+      message: "Failed to fetch businesses",
+      error: error,
+    }
   }
 }
 

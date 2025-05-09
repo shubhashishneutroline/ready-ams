@@ -129,11 +129,10 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
   getCustomerById: async (id: string): Promise<User | null> => {
     try {
       const response: ApiReturnType<User> = await getCustomerById(id)
+      console.log("getCustomerById response:", response)
       if (response.success && response.data && !Array.isArray(response.data)) {
         return {
           ...response.data,
-          createdAt: new Date(response.data.createdAt),
-          updatedAt: new Date(response.data.updatedAt),
           isActive: response.data.isActive ?? true,
         }
       } else {

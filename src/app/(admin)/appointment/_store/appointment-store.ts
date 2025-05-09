@@ -79,7 +79,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     try {
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: true, error: null })
       const response: ApiCallReturnType = await getAppointments()
-      console.log("fetchAppointments response:", response)
+      console.log("fetchAppointments: Response =", response)
 
       if (response.success && Array.isArray(response.data)) {
         const normalizedData = response.data.map((appt: Appointment) => ({
@@ -88,6 +88,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
           selectedTime: appt.selectedTime,
           status: appt.status as AppointmentStatus,
         }))
+        console.log("fetchAppointments: Fetched appointments =", normalizedData)
         set({ appointments: normalizedData, hasFetched: true })
         if (isManualRefresh) {
           const latestAppointment = normalizedData[0]
@@ -105,7 +106,11 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
           response.message || response.error || "Failed to load appointments"
         set({ appointments: [], error: errorMessage })
         if (isManualRefresh) {
-          toast.error(errorMessage, { id: "fetch-appointments" })
+          toast.error(errorMessage, {
+            id: "fetch-appointments",
+            duration: 3000,
+            description: "Please check the server or try again later.",
+          })
         }
       }
     } catch (error) {
@@ -119,7 +124,6 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: false })
     }
   },
-
   createAppointment: async (postData: PostAppoinmentData) => {
     try {
       const response: ApiCallReturnType = await createAppointment(postData)

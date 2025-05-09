@@ -73,13 +73,23 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
     
 
     // Service Availability TimeSlot update logic
-    const deledtedService = await prisma.service.delete({
-      where: { id },
-    });
-    if (deledtedService) {
-      const updatedService = await prisma.service.create({
+    // const deledtedService = await prisma.service.delete({
+    //   where: { id },
+    // })
+    // if (deledtedService) {
+
+    const serviceAvailability = await prisma.serviceAvailability.deleteMany({
+      where: {
+        serviceId: id,
+      },
+    })
+
+    console.log("serviceAvailability----------", serviceAvailability)
+
+    if (serviceAvailability) {
+      const updatedService = await prisma.service.update({
+        where: { id },
         data: {
-          id: id,
           title: parsedData.title,
           description: parsedData.description,
           estimatedDuration: parsedData.estimatedDuration,

@@ -4,27 +4,29 @@ import SidebarDesktop from "@/components/admin/sidebar-desktop"
 import SidebarMobile from "@/components/admin/sidebar-mobile"
 // import { useBusinessStore } from "@/state/store"
 import { useEffect } from "react"
-import { Toaster } from "sonner"
 import { useAppointmentStore } from "./appointment/_store/appointment-store"
 import { useServiceStore } from "./service/_store/service-store"
 import { useCustomerStore } from "./customer/_store/customer-store"
 import { useBusinessStore } from "./business-settings/_store/business-store"
+import { Toaster } from "@/components/ui/sonner"
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   // Auto load services after admin loads
   const { fetchServices } = useServiceStore()
   const { fetchAppointments } = useAppointmentStore()
-  const { fetchBusinesses, businesses } = useBusinessStore()
+  const { fetchBusinesses, fetchBusinessById } = useBusinessStore()
   const { fetchCustomers } = useCustomerStore()
   // Fetch services on app load
   useEffect(() => {
     console.log("App fully loaded, fetching appoinments, services, business...")
     // Fetch once after app loads
+    const id = "cmaf5ax9p000nmstgxvsknuv2" // Updated to match provided business data
+    fetchBusinessById(id)
     fetchAppointments()
     fetchServices()
-    fetchBusinesses("cmadr26aq0000msamhiabkpzu")
+    // fetchBusinesses("cmaf5ax9p000nmstgxvsknuv2")
     fetchCustomers()
-  }, [fetchServices, fetchAppointments, fetchCustomers])
+  }, [fetchServices, fetchAppointments, fetchCustomers, fetchBusinessById])
 
   return (
     <div className="relative min-h-screen bg-stone-100 overflow-hidden">

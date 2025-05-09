@@ -88,7 +88,6 @@
 // }
 
 // export default BusinessPage
-
 "use client"
 import { useState, useEffect } from "react"
 import Heading from "@/components/admin/heading"
@@ -122,14 +121,8 @@ const weekdayMap: { [key: string]: string } = {
 const BusinessPage = () => {
   const [activeTab, setActiveTab] = useState("Business Detail")
   const [businessData, setBusinessData] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const { selectedBusiness, loading, error, fetchBusinessById } =
-    useBusinessStore()
-
-  useEffect(() => {
-    const id = "cmadx1e7l006rmsw31ohrrj72"
-    fetchBusinessById(id)
-  }, [fetchBusinessById])
+  const [isLoading, setIsLoading] = useState(false)
+  const { selectedBusiness, loading, error } = useBusinessStore()
 
   useEffect(() => {
     if (selectedBusiness) {
@@ -139,7 +132,7 @@ const BusinessPage = () => {
       console.log("Business transformed data:", businessData)
     } else if (error) {
       toast.error("Failed to fetch business data: " + error)
-      setIsLoading(false)
+      // setIsSubmitting(false)
     }
   }, [selectedBusiness, error])
 
@@ -178,58 +171,8 @@ const BusinessPage = () => {
           ? businessDays
           : ["Mon", "Tue", "Wed", "Thu", "Fri"],
       holidays,
-      businessHours: transformAvailabilityForForm(data.businessAvailability),
+      businessAvailability: data.businessAvailability, // Pass raw availability
     }
-  }
-
-  // Transform availability data for BusinessSettingsForm
-  const transformAvailabilityForForm = (availability: any[]) => {
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    const businessHours: any = {}
-
-    // Initialize all days with empty work and break arrays
-    days.forEach((day) => {
-      businessHours[day] = { work: [], break: [] }
-    })
-
-    // Map availability to businessHours
-    availability.forEach((avail) => {
-      const dayKey = weekdayMap[avail.weekDay] // e.g., "MONDAY" -> "Mon"
-      if (!dayKey || !businessHours[dayKey]) {
-        console.warn(`Invalid dayKey for weekDay: ${avail.weekDay}`)
-        return
-      }
-      avail.timeSlots.forEach((slot: any) => {
-        const startTime = formatTo12Hour(slot.startTime)
-        const endTime = formatTo12Hour(slot.endTime)
-        const slotPair = [startTime, endTime]
-        if (slot.type === "WORK") {
-          businessHours[dayKey].work.push(slotPair)
-        } else if (slot.type === "BREAK") {
-          businessHours[dayKey].break.push(slotPair)
-        }
-      })
-    })
-
-    // Log specifically for Wednesday to debug break time issue
-    console.log("Wednesday businessHours:", businessHours.Wed)
-    console.log("Transformed businessHours:", businessHours)
-    return businessHours
-  }
-
-  // Convert 24-hour time (HH:mm:ss) to 12-hour AM/PM
-  const formatTo12Hour = (time: string) => {
-    if (!time) {
-      console.warn("Invalid time input:", time)
-      return "00:00 AM"
-    }
-    const [hours, minutes] = time.split(":")
-    const hourNum = parseInt(hours, 10)
-    const period = hourNum >= 12 ? "PM" : "AM"
-    const adjustedHour = hourNum % 12 || 12
-    const formattedHour = adjustedHour.toString().padStart(2, "0")
-    const formattedMinutes = minutes.slice(0, 2)
-    return `${formattedHour}:${formattedMinutes} ${period}`
   }
 
   if (isLoading || loading) {

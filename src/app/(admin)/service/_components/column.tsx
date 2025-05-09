@@ -146,7 +146,7 @@ export const columns = (
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setIsDeleteDialogOpen(true)}
-                className="flex gap-2 items-center justify-start text-red-600"
+                className="flex gap-2 items-center justify-start "
               >
                 <Trash2 className="h-4 w-4 text-red-600" /> Delete
               </DropdownMenuItem>

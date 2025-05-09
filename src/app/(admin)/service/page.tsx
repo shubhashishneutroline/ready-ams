@@ -2,7 +2,6 @@
 
 import React, { useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { columns } from "@/features/service/components/admin/table/column"
 import { DataTable } from "@/components/table/data-table"
 import PageTabs from "@/components/table/page-tabs"
 import TablePageHeader from "@/components/table/table-header"
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import DataTableSkeleton from "@/components/table/skeleton-table"
 import { useServiceStore } from "./_store/service-store"
+import { columns } from "./_components/column"
 
 const pageOptions = ["Active", "Inactive", "All"]
 

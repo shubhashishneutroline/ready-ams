@@ -72,27 +72,22 @@ async function getCustomerById(id: string): Promise<ApiReturnType<User>> {
     const response: AxiosResponseType<User> = await api.get(`/api/user/${id}`)
     const { data: customer } = response.data // Direct User object
 
+    console.log("customer get by id response", response)
     if (customer) {
       const normalizedCustomer = {
         ...customer,
-        createdAt: customer.createdAt
-          ? new Date(customer.createdAt)
-          : new Date(),
-        updatedAt: customer.updatedAt
-          ? new Date(customer.updatedAt)
-          : new Date(),
       }
       return {
         success: true,
         data: normalizedCustomer,
         message: "Customer fetched successfully",
       }
-    }
-
-    return {
-      success: false,
-      message: "Customer not found",
-      error: "Customer not found",
+    } else {
+      return {
+        success: false,
+        message: "Customer not found",
+        error: "Customer not found",
+      }
     }
   } catch (error) {
     console.error(`Error fetching customer by ID (${id}):`, error)

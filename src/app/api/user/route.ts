@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
+
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { getUserByEmail, getUserById } from "@/db/user"
 import * as bcrypt from "bcryptjs"
 import { Prisma } from "@prisma/client"
-import { userSchema } from "@/app/(admin)/customer/_schema/customer"
 import { User } from "@/app/(admin)/customer/_types/customer"
+import { userSchema } from "@/app/(admin)/customer/_schema/customer"
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // hash password
-    const hashedPassword = await bcrypt.hash(password!, 10)
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     const newUser = await prisma.user.create({
       data: {
@@ -63,7 +64,6 @@ export async function GET() {
   try {
     // get all users
     const users = await prisma.user.findMany({
-      where: { role: "USER" },
       select: {
         id: true,
         email: true,

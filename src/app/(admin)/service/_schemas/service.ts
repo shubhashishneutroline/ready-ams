@@ -27,12 +27,8 @@ export const serviceSchema = z.object({
         timeSlots: z
           .array(
             z.object({
-              startTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
-                message: "Invalid start time format",
-              }),
-              endTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
-                message: "Invalid end time format",
-              }),
+              startTime: z.string(),
+              endTime: z.string(),
             })
           )
           .optional(),

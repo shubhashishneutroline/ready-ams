@@ -1,10 +1,11 @@
 import { getBaseUrl } from "@/lib/baseUrl"
-import axios, { AxiosError } from "axios"
+import axios, { AxiosError, AxiosResponse } from "axios"
 import {
   ApiReturnType,
   AxiosResponseType,
 } from "@/app/(admin)/service/_types/service"
 import { Service } from "@prisma/client"
+import { err } from "inngest/types"
 
 // Define the data structure for creating/updating services
 export interface ServiceAvailability {
@@ -34,33 +35,36 @@ const api = axios.create({
 })
 
 // --- CRUD Functions for Services ---
-
 async function getServices(): Promise<ApiReturnType<Service[]>> {
   try {
-    const response = (await api.get("/api/service")) as AxiosResponseType<
-      Service[]
+    const response = (await api.get("/api/service")) as AxiosResponse<
+      ApiReturnType<Service[]>
     >
     const { data, success, message, error } = response.data
-    console.log("service get response", data)
+    console.log("getServices: Response data =", data)
 
     if (success && Array.isArray(data)) {
       const normalizedData = data.map((service) => ({
         ...service,
       }))
       return { data: normalizedData, success, message }
-    }
-
-    return {
-      success: false,
-      message: message || "Failed to fetch services",
-      error: error || "Invalid response data",
+    } else {
+      return {
+        success: false,
+        message: message || "Failed to fetch services",
+        error: error || "Invalid response data",
+      }
     }
   } catch (error: any) {
-    console.error("Error fetching services:", error)
     const errorMsg =
       error instanceof AxiosError && error.response?.data?.message
         ? error.response.data.message
         : "An unknown error occurred"
+    // console.error("getServices: Error fetching services:", {
+    //   message: errorMsg,
+    //   status: error.response?.status,
+    //   url: error.config?.url,
+    // })
     return {
       success: false,
       message: errorMsg,
