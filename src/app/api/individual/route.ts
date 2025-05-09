@@ -4,7 +4,7 @@ import { individualSchema } from "@/features/individual/schemas/schema";
 import { ZodError } from "zod";
 
 export async function POST(req: NextRequest) {
-  const userId = "cma4n57ac0000vdwop0o78r1t"; //fetch userId from clerk authentication
+  const userId = "cmaemhw500006vdawrh8umbqp"; //fetch userId from clerk authentication
   if (!userId) return new Response("Unauthorized", { status: 401 });
 
   const data = await req.json();

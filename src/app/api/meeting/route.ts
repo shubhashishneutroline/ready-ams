@@ -143,10 +143,11 @@ async function createTeamsMeeting(
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Microsoft Graph API Error:", errorData);
-      throw new Error("Failed to create Teams meeting");
+  /*     throw new Error("Failed to create Teams meeting"); */
     }
 
     const data = await response.json();
+    console.log('data is',data);
     return data.onlineMeeting.joinUrl; // Teams meeting join URL
   } catch (error) {
     console.log("Error creating Teams meeting:", error);
@@ -190,7 +191,7 @@ export async function POST(req: NextRequest) {
     //  Fetch the individual's Zoom access token
     const individual = await prisma.individual.findUnique({
       where: { id: event.individualId },
-      select: { zoomAccessToken: true, googleRefreshToken: true },
+      select: { zoomAccessToken: true, googleRefreshToken: true ,microsoftAccessToken: true},
     });
 
     // Check availability (Ensure the time slot is available)
@@ -213,7 +214,7 @@ export async function POST(req: NextRequest) {
     const provider = (event.location || "").toUpperCase();
 
     let videoUrl;
-    let videoProvider: "ZOOM" | "GOOGLE_MEET" | "TEAMS" | null = null;
+    let videoProvider: "ZOOM" | "GOOGLE_MEET" | "MICROSOFT_TEAMS" | null = null;
 
     if (provider === "ZOOM") {
       if (!individual?.zoomAccessToken) {
@@ -254,7 +255,7 @@ export async function POST(req: NextRequest) {
         timeSlot: parsedData.timeSlot,
         bookedByEmail: parsedData.bookedByEmail,
       });
-      videoProvider = "TEAMS";
+      videoProvider = "MICROSOFT_TEAMS";
     } else {
       return NextResponse.json(
         { error: "Invalid or missing video provider" },

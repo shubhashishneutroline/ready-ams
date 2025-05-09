@@ -8,7 +8,7 @@ import { ZodError } from "zod";
 
 export async function POST(req: NextRequest) {
   try {
-    const individualId = "cma4ncl5q0001vdhk9uxbputi";
+    const individualId = "cmaemjcbp0008vdawnpwllyx1";
 
     const body = await req.json();
 
@@ -49,10 +49,11 @@ export async function POST(req: NextRequest) {
     else if (provider === "MICROSOFT_TEAMS") {
       if (!individual?.microsoftAccessToken) {
         needsAuth = true;
-        const clientId = process.env.MS_CLIENT_ID;
+       /*  const clientId = process.env.MS_CLIENT_ID;
         const redirectUri = encodeURIComponent("http://localhost:3000/api/microsoft/callback");
         const scope = encodeURIComponent("https://graph.microsoft.com/Calendars.ReadWrite https://graph.microsoft.com/OnlineMeetings.ReadWrite");
-        oauthUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&response_mode=query&scope=${scope}&state=${individualId}`;
+        oauthUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&response_mode=query&scope=${scope}&state=${individualId}`; */
+      
       }
     } else {
       return NextResponse.json(
@@ -62,8 +63,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (needsAuth) {
-      // Redirect to the appropriate OAuth flow
-      return NextResponse.redirect(oauthUrl);
+      // Redirect to the appropriate OAuth flow if authorization not made
+      return NextResponse.redirect(oauthUrl); 
     }
 
     // Create the event type with nested availability creation
