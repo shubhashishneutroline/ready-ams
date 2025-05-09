@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { CalendarDays, Hourglass, Plus, Trash2, Info } from "lucide-react"
 import { useMemo, useState } from "react"
-import { toast } from "sonner"
 
 // Helper functions
 import { timeOptions, toMin } from "@/lib/lib"
@@ -119,7 +118,7 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
   /* -------- Filter options to exclude break times, but allow boundaries -------- */
   const workTimeOptions = useMemo(() => {
     const breaks = businessBreaks[activeDay] ?? []
-    return timeOptions.filter((t) => {
+    return timeOptions().filter((t) => {
       const min = toMin(t)
       // Exclude times strictly inside a break (allow start/end boundaries)
       return !breaks.some(([s, e]) => {
@@ -138,7 +137,39 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
   ) => {
     if (!afterTime || !options.includes(afterTime)) return options
     const index = options.indexOf(afterTime)
+    // For end times, exclude start time and earlier
+    // For start times, include previous end time
     return isEnd ? options.slice(index + 1) : options.slice(index)
+  }
+
+  const isTimeDisabled = (
+    time: string,
+    breaks: Slot[],
+    isEnd: boolean,
+    referenceTime: string
+  ): boolean => {
+    // For end times, disable times before or equal to start time
+    // For start times, disable times before previous end time
+    if (
+      referenceTime &&
+      toMin(time) < (isEnd ? toMin(referenceTime) + 1 : toMin(referenceTime))
+    ) {
+      return true
+    }
+    // Disable break start times and times within break ranges for start time
+    // Disable break end times and times within break ranges for end time
+    return breaks.some(([bStart, bEnd]) => {
+      if (isEnd) {
+        return (
+          time === bEnd ||
+          (toMin(time) > toMin(bStart) && toMin(time) < toMin(bEnd))
+        )
+      }
+      return (
+        time === bStart ||
+        (toMin(time) > toMin(bStart) && toMin(time) < toMin(bEnd))
+      )
+    })
   }
 
   // Update the time slot
@@ -146,47 +177,7 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
     const updated = { ...serviceHours }
     const slots = [...(updated[activeDay] || [])]
     const slot = slots[idx] ? [...slots[idx]] : ["", ""]
-    const prevValue = slot[pos]
-
-    // Validate start time
-    if (pos === 0) {
-      const breaks = businessBreaks[activeDay] ?? []
-      const overlappingBreaks = overlapsBreak(val, breaks)
-      if (overlappingBreaks.length > 0) {
-        const [breakStart, breakEnd] = overlappingBreaks[0]
-        toast.error(
-          `Break starts at ${breakStart}, not available until ${breakEnd}.`,
-          {
-            description: "Please choose a start time outside break hours.",
-            duration: 5000,
-          }
-        )
-        return
-      }
-    }
-
-    // Update slot temporarily to validate
     slot[pos] = val
-
-    // Validate full slot if both start and end are set
-    const breaks = businessBreaks[activeDay] ?? []
-    if (slot[0] && slot[1]) {
-      const overlappingBreaks = overlapsBreak(slot as Slot, breaks)
-      if (overlappingBreaks.length > 0) {
-        const [breakStart, breakEnd] = overlappingBreaks[0]
-        const message =
-          pos === 0
-            ? `Break starts at ${breakStart}, not available until ${breakEnd}.`
-            : `Not available due to break from ${breakStart} to ${breakEnd}.`
-        toast.error(message, {
-          description: "Please choose a time outside break hours.",
-          duration: 5000,
-        })
-        slot[pos] = prevValue // Revert to previous value
-        return
-      }
-    }
-
     slots[idx] = slot as Slot
     updated[activeDay] = slots
     setValue(name, updated, { shouldDirty: true })
@@ -196,7 +187,7 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
   const addSlot = () => {
     const updated = { ...serviceHours }
     const prevSlots = updated[activeDay] || []
-    const prevEnd = prevSlots.at(-1)?.[1] ?? ""
+    const prevEnd = prevSlots.at(-1)?.[1] ?? workTimeOptions[0]
     const breaks = businessBreaks[activeDay] ?? []
     const nextStart = getNextValidStartTime(prevEnd, breaks, workTimeOptions)
     updated[activeDay] = [...prevSlots, [nextStart, ""]]
@@ -244,10 +235,15 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
       <div className="space-y-4 flex flex-col items-center">
         {(serviceHours[activeDay] || []).map((slot, idx) => {
           // Auto-heal blank start values
-          if (!slot[0] && idx > 0) slot[0] = serviceHours[activeDay][idx - 1][1]
+          if (!slot[0] && idx > 0) {
+            const prevEnd = serviceHours[activeDay][idx - 1][1]
+            const breaks = businessBreaks[activeDay] ?? []
+            slot[0] = getNextValidStartTime(prevEnd, breaks, workTimeOptions)
+          }
 
           const prevEnd = idx > 0 ? serviceHours[activeDay][idx - 1][1] : ""
-          const startList = getAvailableTimes(prevEnd, workTimeOptions)
+          const breaks = businessBreaks[activeDay] ?? []
+          const startList = getAvailableTimes(prevEnd, workTimeOptions, false)
           const endList = getAvailableTimes(slot[0], workTimeOptions, true)
 
           return (
@@ -261,8 +257,17 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
                   <SelectValue placeholder="Start" />
                 </SelectTrigger>
                 <SelectContent>
-                  {startList.map((t) => (
-                    <SelectItem key={t} value={t}>
+                  {timeOptions().map((t) => (
+                    <SelectItem
+                      key={t}
+                      value={t}
+                      disabled={isTimeDisabled(
+                        t,
+                        breaks,
+                        false,
+                        prevEnd || workTimeOptions[0]
+                      )}
+                    >
                       {t}
                     </SelectItem>
                   ))}
@@ -279,8 +284,12 @@ export default function ServiceHourSelector({ name, businessBreaks }: Props) {
                     <SelectValue placeholder="End" />
                   </SelectTrigger>
                   <SelectContent>
-                    {endList.map((t) => (
-                      <SelectItem key={t} value={t}>
+                    {timeOptions().map((t) => (
+                      <SelectItem
+                        key={t}
+                        value={t}
+                        disabled={isTimeDisabled(t, breaks, true, slot[0])}
+                      >
                         {t}
                       </SelectItem>
                     ))}

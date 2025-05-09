@@ -656,6 +656,7 @@ import {
 } from "lucide-react"
 import FileUploadField from "@/components/custom-form-fields/image-upload"
 import { toast } from "sonner"
+import { useEffect } from "react"
 
 export const transformBusinessData = (data: any) => {
   return {
@@ -728,6 +729,10 @@ const BusinessDetailForm = ({
   setBusinessData,
   businessData,
 }: BusinessDetailFormProps) => {
+  useEffect(() => {
+    console.log("Business data:", businessData)
+  }, [businessData])
+
   console.log("Business data:", businessData)
   const form = useForm({
     defaultValues: {
@@ -749,6 +754,34 @@ const BusinessDetailForm = ({
     },
     resolver: zodResolver(schema),
   })
+
+  // Reset form when businessData changes
+  useEffect(() => {
+    if (businessData) {
+      console.log(
+        "BusinessDetailForm: Resetting form with businessData:",
+        businessData
+      )
+      form.reset({
+        id: businessData.id || "",
+        businessName: businessData.businessName || "",
+        industry: businessData.industry || "",
+        email: businessData.email || "",
+        phone: businessData.phone || "",
+        website: businessData.website || "",
+        city: businessData.city || "",
+        street: businessData.street || "",
+        state: businessData.state || "",
+        zipCode: businessData.zipCode || "",
+        country: businessData.country || "",
+        googleMap: businessData.googleMap || "",
+        registrationNumber: businessData.registrationNumber || "",
+        taxId: businessData.taxId || null,
+        logo: businessData.logo || null,
+        visibility: businessData.visibility || "",
+      })
+    }
+  }, [businessData, form])
 
   const onSubmit = (data: any) => {
     const updatedData = transformBusinessData({

@@ -645,10 +645,6 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
     try {
       // Transform the combined data
       const formattedData = transformFormDataForApi(business, data)
-      console.log(
-        "Formatted data sent to API:",
-        JSON.stringify(formattedData, null, 2)
-      )
 
       // Make POST/PUT request to the API
       let response

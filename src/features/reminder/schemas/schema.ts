@@ -1,5 +1,8 @@
-import { z } from "zod";
-import { ReminderType, NotificationMethod } from "../types/types";
+import {
+  NotificationMethod,
+  ReminderType,
+} from "@/app/(admin)/appointment/_types/appoinment"
+import { z } from "zod"
 
 //appointmentreminder offset
 const AppointmentReminderOffsetSchema = z.object({
@@ -10,7 +13,7 @@ const AppointmentReminderOffsetSchema = z.object({
     message: "Scheduled date must be a valid ISO string",
   }),
   sent: z.boolean(),
-});
+})
 
 // Reminder Offset Schema
 const ReminderOffsetSchema = z.object({
@@ -18,7 +21,7 @@ const ReminderOffsetSchema = z.object({
   sendOffset: z.number().int().min(1, "Send offset must be greater than 0"),
   sendBefore: z.boolean(),
   appointmentOffsets: z.array(AppointmentReminderOffsetSchema).optional(),
-});
+})
 
 // Notification Schema
 const NotificationSchema = z.object({
@@ -28,7 +31,7 @@ const NotificationSchema = z.object({
     NotificationMethod.EMAIL,
     NotificationMethod.PUSH,
   ]), // Use z.enum for NotificationMethod
-});
+})
 
 // Reminder Schema
 export const ReminderSchema = z.object({
@@ -46,4 +49,4 @@ export const ReminderSchema = z.object({
   services: z.array(z.string()).min(1, "At least one service is required"), // List of service IDs
   notifications: z.array(NotificationSchema), // List of notifications
   reminderOffset: z.array(ReminderOffsetSchema), // List of reminder offsets
-});
+})
