@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     if (error instanceof Prisma.PrismaClientValidationError) {
-      console.error("Validation error:", error)
+      console.log("Validation error:", error)
       // Handle the validation error specifically
       return {
         error: "Validation failed",

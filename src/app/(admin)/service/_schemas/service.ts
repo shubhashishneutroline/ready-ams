@@ -1,6 +1,6 @@
 // src/features/service/schemas/schema.ts
-import { z } from "zod"
-import { Status, WeekDays } from "../_types/service"
+import { z } from "zod";
+import { Status, WeekDays } from "../_types/service";
 
 export const serviceSchema = z.object({
   id: z.string().optional(),
@@ -8,6 +8,8 @@ export const serviceSchema = z.object({
   description: z
     .string()
     .min(10, "Description must be at least 10 characters long"),
+  imageUrl: z.string().optional(),
+  imageFileId: z.string().optional(),
   estimatedDuration: z
     .number()
     .min(1, "Estimated duration must be a positive number"),
@@ -36,4 +38,4 @@ export const serviceSchema = z.object({
     )
     .optional(),
   businessDetailId: z.string().min(1, "Business ID is required"),
-})
+});

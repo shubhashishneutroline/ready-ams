@@ -111,6 +111,7 @@ const formSchema = z.object({
   serviceName: z.string().min(1, "Service name is required"),
   description: z.string().min(1, "Description is required"),
   image: z.any().optional(),
+  imageFileId: z.string().optional(),
   availabilityMode: z.enum(["default", "custom"]),
   serviceDays: z
     .array(z.enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]))
@@ -243,7 +244,8 @@ export default function ServiceForm({ serviceDetail }: Props) {
     defaultValues: {
       serviceName: isEditMode ? serviceDetail?.title || "" : "",
       description: isEditMode ? serviceDetail?.description || "" : "",
-      image: null,
+       image: isEditMode ? serviceDetail?.imageUrl || null : null,
+       imageFileId: isEditMode ? serviceDetail?.imageFileId || null : null,
       availabilityMode: "default",
       serviceDays: defaultServiceDays,
       serviceHours: defaultServiceHours,
@@ -259,7 +261,8 @@ export default function ServiceForm({ serviceDetail }: Props) {
     form.reset({
       serviceName: isEditMode ? serviceDetail?.title || "" : "",
       description: isEditMode ? serviceDetail?.description || "" : "",
-      image: null,
+       image: isEditMode ? serviceDetail?.imageUrl || null : null,
+       imageFileId: isEditMode ? serviceDetail?.imageFileId || null : null,
       availabilityMode: "default",
       serviceDays: defaultServiceDays,
       serviceHours: defaultServiceHours,
@@ -298,6 +301,8 @@ export default function ServiceForm({ serviceDetail }: Props) {
             ),
           })),
           businessDetailId: businessId,
+          imageUrl: data.image,               
+          imageFileId: data.imageFileId,
         }
 
         console.log("ServiceForm: onSubmit: serviceData =", serviceData)

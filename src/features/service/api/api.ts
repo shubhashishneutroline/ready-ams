@@ -24,6 +24,8 @@ export interface PostServiceData {
   businessDetailId?: string
   createdAt: string
   updatedAt: string
+   imageUrl?: string         
+  imageFileId?: string
 }
 
 // API instance

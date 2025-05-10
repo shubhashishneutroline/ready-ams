@@ -111,6 +111,7 @@ const formSchema = z.object({
   serviceName: z.string().min(1, "Service name is required"),
   description: z.string().min(1, "Description is required"),
   image: z.any().optional(),
+   imageFileId: z.string().optional(),
   availabilityMode: z.enum(["default", "custom"]),
   serviceDays: z
     .array(z.enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]))
@@ -151,7 +152,7 @@ export default function ServiceForm() {
         `ServiceForm: Triggering fetchBusinessById for ID: ${selectedBusiness?.id}`
       )
       setFetchAttempted(true)
-      // fetchBusinessById("cmaf21ts20001mslb8x0e7bt9")
+     fetchBusinessById("cmagf71qw0001vdfgtae1pij8")
     }
   }, [selectedBusiness, hasFetched, loading, fetchAttempted])
 
@@ -243,6 +244,8 @@ export default function ServiceForm() {
             ),
           })),
           businessDetailId: selectedBusiness?.id,
+          imageUrl: data.image,               
+          imageFileId: data.imageFileId,
         }
 
         console.log("ServiceForm: onSubmit: serviceData =", serviceData)

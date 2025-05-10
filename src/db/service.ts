@@ -13,7 +13,7 @@ async function getServiceById(id: string) {
           timeSlots: true,
         },
       },
-      businessDetail: {
+      BusinessDetail: {
         include: {
           businessAvailability: {
             include: {
