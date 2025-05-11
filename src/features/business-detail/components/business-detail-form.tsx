@@ -673,7 +673,9 @@ export const transformBusinessData = (data: any) => {
     googleMap: data.googleMap,
     registrationNumber: data.registrationNumber,
     taxId: data.taxId,
+    taxIdFileId:data.taxIdFileId,
     logo: data.logo,
+    logoFileId:data.logoFileId,
     visibility: data.visibility,
   }
 }
@@ -713,7 +715,9 @@ const schema = z.object({
     .string()
     .min(1, "Business registration number is required"),
   taxId: z.any().optional(),
+  taxIdFileId: z.string().optional(),
   logo: z.any().optional(),
+  logoFileId: z.string().optional(),
   visibility: z.string().min(1, "Visibility selection is required"),
 })
 
@@ -744,7 +748,9 @@ const BusinessDetailForm = ({
       googleMap: businessData?.googleMap || "",
       registrationNumber: businessData?.registrationNumber || "",
       taxId: businessData?.taxId || null,
+      taxIdFileId: businessData?.taxIdFileId || "",
       logo: businessData?.logo || null,
+      logoFileId: businessData?.logoFileId || "",
       visibility: businessData?.visibility || "",
     },
     resolver: zodResolver(schema),

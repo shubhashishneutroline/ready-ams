@@ -10,7 +10,7 @@ export interface Service {
   updatedAt: Date
   businessDetailId: string | null
    imageUrl?: string         
-  imageFileId?: string
+  imageUrlFileId?: string
 }
 
 export interface ServiceAvailability {

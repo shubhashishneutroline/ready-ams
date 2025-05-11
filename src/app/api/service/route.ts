@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         estimatedDuration: parsedData.estimatedDuration,
         status: parsedData.status || "ACTIVE", // Fallback to default if undefined
         imageUrl: parsedData.imageUrl, 
-        imageFileId: parsedData.imageFileId, 
+        imageUrlFileId: parsedData.imageUrlFileId, 
         serviceAvailability: {
           create: parsedData.serviceAvailability?.map((availability) => ({
             weekDay: availability.weekDay,

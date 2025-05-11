@@ -55,7 +55,14 @@ export async function POST(req: NextRequest) {
         oauthUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&response_mode=query&scope=${scope}&state=${individualId}`; */
       
       }
-    } else {
+    }
+    else if (provider === "WEBEX") {
+  if (!individual?.webexAccessToken) {
+    needsAuth = true;
+    oauthUrl = `https://webexapis.com/v1/authorize?client_id=${process.env.WEBEX_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent("http://localhost:3000/api/webex/callback")}&scope=spark:all&state=${individualId}`;
+  }
+} 
+    else {
       return NextResponse.json(
         { message: "Invalid or missing location/video provider" },
         { status: 400 }

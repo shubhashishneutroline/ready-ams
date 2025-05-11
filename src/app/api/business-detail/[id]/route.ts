@@ -1,66 +1,82 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getAnnouncementOrOfferById } from "@/db/announcement-offer"
-import { getAppointmentById } from "@/db/appointment"
-import { getBusinessDetailById } from "@/db/businessDetail"
-import { prisma } from "@/lib/prisma"
-import { ZodError } from "zod"
-import { businessDetailSchema } from "@/features/business-detail/schemas/schema"
-import { Prisma } from "@prisma/client"
+import { NextRequest, NextResponse } from "next/server";
+import { getAnnouncementOrOfferById } from "@/db/announcement-offer";
+import { getAppointmentById } from "@/db/appointment";
+import { getBusinessDetailById } from "@/db/businessDetail";
+import { prisma } from "@/lib/prisma";
+import { ZodError } from "zod";
+import { businessDetailSchema } from "@/features/business-detail/schemas/schema";
+import { Prisma } from "@prisma/client";
+import { deleteImageFromStorage } from "@/lib/image-management";
 
 interface ParamsProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(req: NextRequest, { params }: ParamsProps) {
   try {
-    const { id } = await params
-    const announcement = await getBusinessDetailById(id)
+    const { id } = await params;
+    const announcement = await getBusinessDetailById(id);
 
     if (!announcement) {
       return NextResponse.json(
         { error: "Business Detail with id not found" },
         { status: 404 }
-      )
+      );
     }
-    return NextResponse.json(announcement, { status: 200 })
+    return NextResponse.json(announcement, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch business-detail" },
       { status: 500 }
-    )
+    );
   }
 }
 
 // Update an existing business detail
 export async function PUT(req: NextRequest, { params }: ParamsProps) {
   try {
-    const { id } = await params // or Get the ID from the request body
-    const body = await req.json()
+    const { id } = await params; // or Get the ID from the request body
+    const body = await req.json();
 
     if (!id) {
       return NextResponse.json(
         { error: "Business ID is required" },
         { status: 400 }
-      )
+      );
     }
 
-    const parsedData = businessDetailSchema.parse(body)
+    const parsedData = businessDetailSchema.parse(body);
 
     // Log parsed data for debugging
-    console.log("Parsed Data:", JSON.stringify(parsedData, null, 2))
+    console.log("Parsed Data:", JSON.stringify(parsedData, null, 2));
 
-    const business = await getBusinessDetailById(id)
+    const business = await getBusinessDetailById(id);
 
     if (!business) {
       return NextResponse.json(
         { error: "Business Detail with id not found" },
         { status: 404 }
-      )
+      );
+    }
+
+    // Handle image replacement if needed
+    if (body.taxIdFileId && body.taxIdFileId !== business.taxIdFileId) {
+      // If there's a new image and an old one exists, delete the old one
+      if (business.taxIdFileId) {
+        await deleteImageFromStorage(business.taxIdFileId);
+      }
+    }
+
+    if (body.logoFileId && body.logoFileId !== business.logoFileId) {
+      // If there's a new image and an old one exists, delete the old one
+      if (business.logoFileId) {
+        await deleteImageFromStorage(business.logoFileId);
+      }
     }
 
     const deletedBusiness = await prisma.businessDetail.delete({
       where: { id },
-    })
+    });
     if (deletedBusiness) {
       const updatedBusiness = await prisma.businessDetail.create({
         data: {
@@ -72,6 +88,10 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
           website: parsedData.website,
           businessOwner: parsedData.businessOwner,
           businessRegistrationNumber: parsedData.businessRegistrationNumber,
+          taxId: parsedData.taxId,
+          taxIdFileId: parsedData.taxIdFileId,
+          logo: parsedData.logo,
+          logoFileId: parsedData.logoFileId,
           status: parsedData.status,
           timeZone: parsedData.timeZone,
 
@@ -118,75 +138,78 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
           },
           holiday: true,
         },
-      })
+      });
 
       if (updatedBusiness) {
         return NextResponse.json(
           { message: "Business updated successfully", data: updatedBusiness },
           { status: 200 }
-        )
+        );
       }
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientValidationError) {
-      console.error("Validation error:", error.message)
+      console.error("Validation error:", error.message);
       // Handle the validation error specifically
       return {
         error: "Validation failed",
         details: error, // or use error.stack for full stack trace
-      }
+      };
     }
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error },
         { status: 400 }
-      )
+      );
     }
-    console.error("Prisma Error:", error) // Log the full error for debugging
+    console.error("Prisma Error:", error); // Log the full error for debugging
     return NextResponse.json(
       { error: "Internal server error", detail: error },
       { status: 500 }
-    )
+    );
   }
 }
 
 // Delete a business detail
 export async function DELETE(req: NextRequest, { params }: ParamsProps) {
   try {
-    const { id } = await params
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         { error: "Business ID is required" },
         { status: 400 }
-      )
+      );
     }
 
-    const existingBusiness = await getBusinessDetailById(id)
+    const existingBusiness = await getBusinessDetailById(id);
 
     if (!existingBusiness) {
-      return NextResponse.json({ error: "Business not found" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Business not found" },
+        { status: 404 }
+      );
     }
 
     const deletedBusiness = await prisma.businessDetail.delete({
       where: { id },
-    })
+    });
 
     if (!deletedBusiness) {
       return NextResponse.json(
         { error: "Business couldn't be deleted" },
         { status: 404 }
-      )
+      );
     }
 
     return NextResponse.json(
       { message: "Business deleted successfully" },
       { status: 200 }
-    )
+    );
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to delete business", detail: error },
       { status: 500 }
-    )
+    );
   }
 }

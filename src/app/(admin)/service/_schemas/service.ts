@@ -9,7 +9,7 @@ export const serviceSchema = z.object({
     .string()
     .min(10, "Description must be at least 10 characters long"),
   imageUrl: z.string().optional(),
-  imageFileId: z.string().optional(),
+  imageUrlFileId: z.string().optional(),
   estimatedDuration: z
     .number()
     .min(1, "Estimated duration must be a positive number"),

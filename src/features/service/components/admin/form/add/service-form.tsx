@@ -110,8 +110,8 @@ const formatAvailabilityNote = (): string => {
 const formSchema = z.object({
   serviceName: z.string().min(1, "Service name is required"),
   description: z.string().min(1, "Description is required"),
-  image: z.any().optional(),
-   imageFileId: z.string().optional(),
+  imageUrl: z.any().optional(),
+   imageUrlFileId: z.string().optional(),
   availabilityMode: z.enum(["default", "custom"]),
   serviceDays: z
     .array(z.enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]))
@@ -152,7 +152,7 @@ export default function ServiceForm() {
         `ServiceForm: Triggering fetchBusinessById for ID: ${selectedBusiness?.id}`
       )
       setFetchAttempted(true)
-     fetchBusinessById("cmagf71qw0001vdfgtae1pij8")
+     fetchBusinessById("cmai9e7ui0001vdg00p1qib97")
     }
   }, [selectedBusiness, hasFetched, loading, fetchAttempted])
 
@@ -195,7 +195,7 @@ export default function ServiceForm() {
     defaultValues: {
       serviceName: "",
       description: "",
-      image: null,
+      imageUrl: "",
       availabilityMode: "default",
       serviceDays: defaultServiceDays,
       serviceHours: defaultServiceHours,
@@ -209,7 +209,7 @@ export default function ServiceForm() {
     form.reset({
       serviceName: "",
       description: "",
-      image: null,
+      imageUrl: "",
       availabilityMode: "default",
       serviceDays: defaultServiceDays,
       serviceHours: defaultServiceHours,
@@ -244,8 +244,8 @@ export default function ServiceForm() {
             ),
           })),
           businessDetailId: selectedBusiness?.id,
-          imageUrl: data.image,               
-          imageFileId: data.imageFileId,
+          imageUrl: data.imageUrl,               
+          imageUrlFileId: data.imageUrlFileId,
         }
 
         console.log("ServiceForm: onSubmit: serviceData =", serviceData)
@@ -314,7 +314,7 @@ export default function ServiceForm() {
             label="Description"
             icon={ScrollText}
           />
-          <ImageUploadField name="image" label="Cover Picture" icon={ImageUp} />
+          <ImageUploadField name="imageUrl" label="Cover Picture" icon={ImageUp} />
           <AvailabilityTabs name="availabilityMode" icon={CalendarClock} />
           <div className="flex items-start gap-2 rounded-md bg-muted/50 py-2 px-3 text-xs text-muted-foreground max-w-md">
             <Info className="size-4 mt-0.5 flex-shrink-0" />

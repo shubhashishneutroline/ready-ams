@@ -64,10 +64,10 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
     }
     
      // Handle image replacement if needed
-     if (body.imageFileId && body.imageFileId !== existingService.imageFileId) {
+     if (body.imageUrlFileId && body.imageUrlFileId !== existingService.imageUrlFileId) {
       // If there's a new image and an old one exists, delete the old one
-      if (existingService.imageFileId) {
-          await deleteImageFromStorage(existingService.imageFileId);
+      if (existingService.imageUrlFileId) {
+          await deleteImageFromStorage(existingService.imageUrlFileId);
         } 
       }
     
@@ -95,7 +95,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
           estimatedDuration: parsedData.estimatedDuration,
           status: parsedData.status,
           imageUrl: parsedData.imageUrl,
-          imageFileId: parsedData.imageFileId,
+          imageUrlFileId: parsedData.imageUrlFileId,
           businessDetailId: parsedData.businessDetailId,
           serviceAvailability: {
             create: parsedData.serviceAvailability?.map((availability) => ({
@@ -168,8 +168,8 @@ export async function DELETE(req: NextRequest, { params }: ParamsProps) {
       );
     }
 
-    if (existingService.imageFileId) {
-        await deleteImageFromStorage(existingService.imageFileId);
+    if (existingService.imageUrlFileId) {
+        await deleteImageFromStorage(existingService.imageUrlFileId);
     }
 
     const deletedService = await prisma.service.delete({

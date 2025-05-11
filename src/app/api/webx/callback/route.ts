@@ -1,53 +1,39 @@
-// For Pages Router: /pages/api/auth/callback/webex.js
-import { withIronSessionApiRoute } from 'iron-session/next';
-import axios from 'axios';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const sessionOptions = {
-  password: process.env.SESSION_PASSWORD,
-  cookieName: 'webex-auth-session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-  },
-};
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const code = searchParams.get("code");
+  const state = searchParams.get("state"); // use to identify the individual
 
-async function webexCallback(req, res) {
-  // Extract code and state from query parameters
-  const { code, state } = req.query;
-  
-  // Validate state parameter (should match what you stored previously)
-  if (state !== req.session.oauthState) {
-    return res.status(400).json({ error: 'Invalid state parameter' });
+  if (!code || !state) {
+    return NextResponse.json({ error: "Missing code or state" }, { status: 400 });
   }
-  
-  try {
-    // Exchange authorization code for tokens
-    const tokenResponse = await axios.post('https://webexapis.com/v1/access_token', 
-      new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: process.env.WEBEX_CLIENT_ID,
-        client_secret: process.env.WEBEX_CLIENT_SECRET,
-        code: code,
-        redirect_uri: process.env.WEBEX_REDIRECT_URI
-      }), 
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
-        }
-      }
-    );
-    
-    // Store tokens in session
-    req.session.accessToken = tokenResponse.data.access_token;
-    req.session.refreshToken = tokenResponse.data.refresh_token;
-    await req.session.save();
-    
-    // Redirect to a success page
-    res.redirect('/auth/success');
-  } catch (error) {
-    console.error('Error exchanging code for tokens:', error);
-    res.redirect('/auth/error');
+
+  // Exchange code for access token
+  const response = await fetch("https://webexapis.com/v1/access_token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      client_id: process.env.WEBEX_CLIENT_ID!,
+      client_secret: process.env.WEBEX_CLIENT_SECRET!,
+      code,
+      redirect_uri: "http://localhost:3000/api/webex/callback",
+    }),
+  });
+
+  const tokenData = await response.json();
+  if (!response.ok) {
+    return NextResponse.json({ error: "Failed to get Webex token", details: tokenData }, { status: 400 });
   }
+
+  // Save access token for the individual
+  await prisma.individual.update({
+    where: { id: state },
+    data: { webexAccessToken: tokenData.access_token },
+  });
+
+  // Redirect or return success
+  return NextResponse.redirect("/success"); // or your desired page
 }
-
-export default withIronSessionApiRoute(webexCallback, sessionOptions);

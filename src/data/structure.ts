@@ -349,6 +349,10 @@ export interface BusinessDetail {
   phone: string // Business phone number
   website?: string // Optional website link
   businessRegistrationNumber: string // Unique registration number
+  taxId?: string                    
+  taxIdFileId?: string              
+  logo?: string                    
+  logoFileId?: string                 
   status: BusinessStatus // Status of the business (Active, Pending, etc.)
   address: BusinessAddress[] // Addresses for the business branches
   businessAvailability: BusinessAvailability[] // General availability for the business

@@ -110,8 +110,8 @@ const formatAvailabilityNote = (): string => {
 const formSchema = z.object({
   serviceName: z.string().min(1, "Service name is required"),
   description: z.string().min(1, "Description is required"),
-  image: z.any().optional(),
-  imageFileId: z.string().optional(),
+  imageUrl: z.any().optional(),
+  imageUrlFileId: z.string().optional(),
   availabilityMode: z.enum(["default", "custom"]),
   serviceDays: z
     .array(z.enum(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]))
@@ -244,8 +244,8 @@ export default function ServiceForm({ serviceDetail }: Props) {
     defaultValues: {
       serviceName: isEditMode ? serviceDetail?.title || "" : "",
       description: isEditMode ? serviceDetail?.description || "" : "",
-       image: isEditMode ? serviceDetail?.imageUrl || null : null,
-       imageFileId: isEditMode ? serviceDetail?.imageFileId || null : null,
+       imageUrl: isEditMode ? serviceDetail?.imageUrl || null : null,
+       imageUrlFileId: isEditMode ? serviceDetail?.imageUrlFileId || null : null,
       availabilityMode: "default",
       serviceDays: defaultServiceDays,
       serviceHours: defaultServiceHours,
@@ -261,8 +261,8 @@ export default function ServiceForm({ serviceDetail }: Props) {
     form.reset({
       serviceName: isEditMode ? serviceDetail?.title || "" : "",
       description: isEditMode ? serviceDetail?.description || "" : "",
-       image: isEditMode ? serviceDetail?.imageUrl || null : null,
-       imageFileId: isEditMode ? serviceDetail?.imageFileId || null : null,
+       imageUrl: isEditMode ? serviceDetail?.imageUrl || null : null,
+       imageUrlFileId: isEditMode ? serviceDetail?.imageUrlFileId || null : null,
       availabilityMode: "default",
       serviceDays: defaultServiceDays,
       serviceHours: defaultServiceHours,
@@ -301,8 +301,8 @@ export default function ServiceForm({ serviceDetail }: Props) {
             ),
           })),
           businessDetailId: businessId,
-          imageUrl: data.image,               
-          imageFileId: data.imageFileId,
+          imageUrl: data.imageUrl,               
+          imageUrlFileId: data.imageUrlFileId,
         }
 
         console.log("ServiceForm: onSubmit: serviceData =", serviceData)
@@ -398,7 +398,7 @@ export default function ServiceForm({ serviceDetail }: Props) {
             label="Description"
             icon={ScrollText}
           />
-          <ImageUploadField name="image" label="Cover Picture" icon={ImageUp} />
+          <ImageUploadField name="imageUrl" label="Cover Picture" icon={ImageUp} />
           <AvailabilityTabs name="availabilityMode" icon={CalendarClock} />
           <div className="flex items-start gap-2 rounded-md bg-muted/50 py-2 px-3 text-xs text-muted-foreground max-w-md">
             <Info className="size-4 mt-0.5 flex-shrink-0" />

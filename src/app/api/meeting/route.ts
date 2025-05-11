@@ -14,7 +14,7 @@ async function createGoogleMeetEvent(
     process.env.GOOGLE_REDIRECT_URI
   );
 
-  const individualId = "cma4ncl5q0001vdhk9uxbputi"
+  const individualId = "cma4ncl5q0001vdhk9uxbputi";
   // Set credentials with the refresh token only
   oauth2Client.setCredentials({ refresh_token: googleRefreshToken });
 
@@ -24,8 +24,12 @@ async function createGoogleMeetEvent(
       await prisma.individual.update({
         where: { id: individualId },
         data: {
-          ...(tokens.refresh_token && { googleRefreshToken: tokens.refresh_token }),
-          ...(tokens.access_token && { googleAccessToken: tokens.access_token }),
+          ...(tokens.refresh_token && {
+            googleRefreshToken: tokens.refresh_token,
+          }),
+          ...(tokens.access_token && {
+            googleAccessToken: tokens.access_token,
+          }),
         },
       });
     }
@@ -37,19 +41,19 @@ async function createGoogleMeetEvent(
   const durationMinutes = meetingDetails.duration || 60; // fallback to 60 if not provided
   const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
 
- const event = {
-  summary: meetingDetails.title,
-  description: meetingDetails.description,
-  start: { dateTime: startTime.toISOString() },
-  end: { dateTime: endTime.toISOString() },
-  attendees: [{ email: meetingDetails.bookedByEmail }],
-  conferenceData: {
-    createRequest: {
-      requestId: Math.random().toString(36).substring(2),
-      conferenceSolutionKey: { type: "hangoutsMeet" }
-    }
-  }
-};
+  const event = {
+    summary: meetingDetails.title,
+    description: meetingDetails.description,
+    start: { dateTime: startTime.toISOString() },
+    end: { dateTime: endTime.toISOString() },
+    attendees: [{ email: meetingDetails.bookedByEmail }],
+    conferenceData: {
+      createRequest: {
+        requestId: Math.random().toString(36).substring(2),
+        conferenceSolutionKey: { type: "hangoutsMeet" },
+      },
+    },
+  };
 
   const response = await calendar.events.insert({
     calendarId: "primary",
@@ -143,16 +147,50 @@ async function createTeamsMeeting(
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Microsoft Graph API Error:", errorData);
-  /*     throw new Error("Failed to create Teams meeting"); */
+      /*     throw new Error("Failed to create Teams meeting"); */
     }
 
     const data = await response.json();
-    console.log('data is',data);
+    console.log("data is", data);
     return data.onlineMeeting.joinUrl; // Teams meeting join URL
   } catch (error) {
     console.log("Error creating Teams meeting:", error);
     throw new Error("Failed to create Teams meeting");
   }
+}
+
+//for webex
+async function createWebexMeeting(
+  webexAccessToken: string,
+  meetingDetails: any
+): Promise<string> {
+  const startTime = new Date(meetingDetails.timeSlot);
+  const durationMinutes = meetingDetails.duration || 60;
+  const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+
+  const response = await fetch("https://webexapis.com/v1/meetings", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${webexAccessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title: meetingDetails.title,
+      agenda: meetingDetails.description,
+      start: startTime.toISOString(),
+      end: endTime.toISOString(),
+      invitees: [{ email: meetingDetails.bookedByEmail }],
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    console.error("Webex API Error:", data);
+    throw new Error("Failed to create Webex meeting");
+  }
+
+  // The join link for attendees
+  return data.webLink; // or data.joinMeetingLink
 }
 
 // Function to format the Date to "HH:mm" format
@@ -191,7 +229,11 @@ export async function POST(req: NextRequest) {
     //  Fetch the individual's Zoom access token
     const individual = await prisma.individual.findUnique({
       where: { id: event.individualId },
-      select: { zoomAccessToken: true, googleRefreshToken: true ,microsoftAccessToken: true},
+      select: {
+        zoomAccessToken: true,
+        googleRefreshToken: true,
+        microsoftAccessToken: true,
+      },
     });
 
     // Check availability (Ensure the time slot is available)
@@ -214,7 +256,7 @@ export async function POST(req: NextRequest) {
     const provider = (event.location || "").toUpperCase();
 
     let videoUrl;
-    let videoProvider: "ZOOM" | "GOOGLE_MEET" | "MICROSOFT_TEAMS" | null = null;
+    let videoProvider: "ZOOM" | "GOOGLE_MEET" | "MICROSOFT_TEAMS" | "WEBEX" | null = null;
 
     if (provider === "ZOOM") {
       if (!individual?.zoomAccessToken) {
@@ -227,22 +269,20 @@ export async function POST(req: NextRequest) {
       videoUrl = await createZoomMeeting(individual.zoomAccessToken);
       videoProvider = "ZOOM";
     } else if (provider === "GOOGLE_MEET") {
-      
       if (!individual?.googleRefreshToken) {
         return NextResponse.json(
           { error: "Google refresh token not found for individual" },
           { status: 400 }
         );
       }
-      videoUrl = await createGoogleMeetEvent(individual.googleRefreshToken , {
+      videoUrl = await createGoogleMeetEvent(individual.googleRefreshToken, {
         title: event.title,
         description: event.description,
         timeSlot: parsedData.timeSlot,
         bookedByEmail: parsedData.bookedByEmail,
       });
       videoProvider = "GOOGLE_MEET";
-    }
-    else if (provider === "MICROSOFT_TEAMS") {
+    } else if (provider === "MICROSOFT_TEAMS") {
       if (!individual?.microsoftAccessToken) {
         return NextResponse.json(
           { error: "Microsoft access token not found for individual" },
@@ -256,6 +296,20 @@ export async function POST(req: NextRequest) {
         bookedByEmail: parsedData.bookedByEmail,
       });
       videoProvider = "MICROSOFT_TEAMS";
+    } else if (provider === "WEBEX") {
+      if (!individual?.webexAccessToken) {
+        return NextResponse.json(
+          { error: "Webex access token not found for individual" },
+          { status: 400 }
+        );
+      }
+      videoUrl = await createWebexMeeting(individual.webexAccessToken, {
+        title: event.title,
+        description: event.description,
+        timeSlot: parsedData.timeSlot,
+        bookedByEmail: parsedData.bookedByEmail,
+      });
+      videoProvider = "WEBEX";
     } else {
       return NextResponse.json(
         { error: "Invalid or missing video provider" },

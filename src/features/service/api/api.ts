@@ -25,7 +25,7 @@ export interface PostServiceData {
   createdAt: string
   updatedAt: string
    imageUrl?: string         
-  imageFileId?: string
+  imageUrlFileId?: string
 }
 
 // API instance

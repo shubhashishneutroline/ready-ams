@@ -320,26 +320,26 @@
 //     </div>
 //   )
 // }
-"use client"
+"use client";
 
-import { useForm, FormProvider, useFormContext } from "react-hook-form"
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+import { useForm, FormProvider, useFormContext } from "react-hook-form";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { CalendarDays, History, Hourglass, Loader2 } from "lucide-react"
-import BusinessHourSelector from "./business-hour-selector"
-import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs"
-import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field"
-import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field"
-import { toast } from "sonner"
-import { createBusiness, updateBusiness } from "../api/api"
+} from "@/components/ui/select";
+import { CalendarDays, History, Hourglass, Loader2 } from "lucide-react";
+import BusinessHourSelector from "./business-hour-selector";
+import AvailabilityTabs from "@/components/custom-form-fields/availability-tabs";
+import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field";
+import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field";
+import { toast } from "sonner";
+import { createBusiness, updateBusiness } from "../api/api";
 
 // Weekday mapping for form ↔ database conversion
 const weekdayMap: { [key: string]: string } = {
@@ -357,7 +357,7 @@ const weekdayMap: { [key: string]: string } = {
   SATURDAY: "Sat",
   Sun: "SUNDAY",
   SUNDAY: "Sun",
-}
+};
 
 // Time options matching BusinessHourSelector
 const timeOptions = [
@@ -374,7 +374,7 @@ const timeOptions = [
   "06:00 PM",
   "07:00 PM",
   "08:00 PM",
-]
+];
 
 // Default form values (used as fallback)
 const defaultValues = {
@@ -406,71 +406,73 @@ const defaultValues = {
     Sat: { work: [], break: [] },
     Sun: { work: [], break: [] },
   },
-}
+};
 
 // Transform availability data for form
 const transformAvailabilityForForm = (availability: any[]) => {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-  const businessHours: any = {}
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const businessHours: any = {};
 
   // Initialize all days with empty work and break arrays
   days.forEach((day) => {
-    businessHours[day] = { work: [], break: [] }
-  })
+    businessHours[day] = { work: [], break: [] };
+  });
 
   // Map availability to businessHours
   availability.forEach((avail) => {
-    const dayKey = weekdayMap[avail.weekDay]
+    const dayKey = weekdayMap[avail.weekDay];
     if (!dayKey || !businessHours[dayKey]) {
-      console.warn(`Invalid dayKey for weekDay: ${avail.weekDay}`)
-      return
+      console.warn(`Invalid dayKey for weekDay: ${avail.weekDay}`);
+      return;
     }
-    const workSlots: [string, string][] = []
-    const breakSlots: [string, string][] = []
+    const workSlots: [string, string][] = [];
+    const breakSlots: [string, string][] = [];
 
     // Process time slots
     avail.timeSlots.forEach((slot: any) => {
-      const startTime = slot.startTime
-      const endTime = slot.endTime
+      const startTime = slot.startTime;
+      const endTime = slot.endTime;
       // Validate times against timeOptions
       if (!timeOptions.includes(startTime) || !timeOptions.includes(endTime)) {
-        console.warn(`Invalid time slot for ${dayKey}: ${startTime}-${endTime}`)
-        return
+        console.warn(
+          `Invalid time slot for ${dayKey}: ${startTime}-${endTime}`
+        );
+        return;
       }
-      const slotPair: [string, string] = [startTime, endTime]
+      const slotPair: [string, string] = [startTime, endTime];
       if (slot.type === "BREAK") {
-        breakSlots.push(slotPair)
+        breakSlots.push(slotPair);
       } else if (slot.type === "WORK") {
-        workSlots.push(slotPair)
+        workSlots.push(slotPair);
       } else {
-        console.warn(`Unknown slot type for ${dayKey}: ${slot.type}`)
+        console.warn(`Unknown slot type for ${dayKey}: ${slot.type}`);
       }
-    })
+    });
 
     // Sort slots by startTime
     const sortByStartTime = (slots: [string, string][]) =>
       slots.sort((a, b) => {
-        const timeA = new Date(`1970-01-01 ${a[0]}`)
-        const timeB = new Date(`1970-01-01 ${b[0]}`)
-        return timeA.getTime() - timeB.getTime()
-      })
+        const timeA = new Date(`1970-01-01 ${a[0]}`);
+        const timeB = new Date(`1970-01-01 ${b[0]}`);
+        return timeA.getTime() - timeB.getTime();
+      });
 
-    businessHours[dayKey].work = sortByStartTime(workSlots)
-    businessHours[dayKey].break = sortByStartTime(breakSlots)
-  })
+    businessHours[dayKey].work = sortByStartTime(workSlots);
+    businessHours[dayKey].break = sortByStartTime(breakSlots);
+  });
 
   // console.log(
   //   "Transformed businessHours:",
   //   JSON.stringify(businessHours, null, 2)
   // )
-  return businessHours
-}
+  return businessHours;
+};
 
 // Transform form data to API-compatible format
 const transformFormDataForApi = (business: any, availabilityData: any) => {
-  console.log("availabilityData", availabilityData)
-  console.log("business", business)
-  const { businessDays, holidays, businessHours, timeZone } = availabilityData
+  console.log("availabilityData", availabilityData);
+  console.log("business", business);
+  const { businessDays, holidays, businessHours, timeZone } = availabilityData;
 
   // Transform business details
   const businessDetail = {
@@ -481,6 +483,10 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
     phone: business?.phone || "",
     website: business?.website || "",
     businessRegistrationNumber: business?.registrationNumber || "",
+    taxId: business?.taxId || "",
+    taxIdFileId: business?.taxIdFileId || "",
+    logo: business?.logo || "",
+    logoFileId: business?.logoFileId || "",
     businessOwner: business?.businessOwner || "cmaemhw500006vdawrh8umbqp",
     status: business?.visibility || "PENDING",
     timeZone: timeZone || "UTC",
@@ -493,11 +499,11 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
         googleMap: business?.googleMap || "",
       },
     ],
-  }
+  };
 
   // Transform business availability with 12-hour AM/PM times
   const businessAvailability = businessDays.flatMap((day: string) => {
-    const hours = businessHours[day] || { work: [], break: [] }
+    const hours = businessHours[day] || { work: [], break: [] };
     const slots = [
       ...hours.work.map((slot: [string, string]) => ({
         type: "WORK",
@@ -509,15 +515,15 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
         startTime: slot[0],
         endTime: slot[1],
       })),
-    ]
+    ];
 
     // Sort slots by startTime
     const sortByStartTime = (slots: any[]) =>
       slots.sort((a, b) => {
-        const timeA = new Date(`1970-01-01 ${a.startTime}`)
-        const timeB = new Date(`1970-01-01 ${b.startTime}`)
-        return timeA.getTime() - timeB.getTime()
-      })
+        const timeA = new Date(`1970-01-01 ${a.startTime}`);
+        const timeB = new Date(`1970-01-01 ${b.startTime}`);
+        return timeA.getTime() - timeB.getTime();
+      });
 
     return slots.length > 0
       ? [
@@ -527,30 +533,30 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
             timeSlots: sortByStartTime(slots),
           },
         ]
-      : []
-  })
+      : [];
+  });
 
   // Transform holidays with full weekday names
   const holiday = holidays.map((day: string) => ({
     holiday: weekdayMap[day] || day,
     type: "GENERAL",
     date: "",
-  }))
+  }));
 
   console.log(
     "API businessAvailability:",
     JSON.stringify(businessAvailability, null, 2)
-  )
+  );
   return {
     ...businessDetail,
     businessAvailability,
     holiday,
-  }
-}
+  };
+};
 
 export default function BusinessSettingsForm({ business }: { business?: any }) {
-  console.log("Incoming business details:", JSON.stringify(business, null, 2))
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  console.log("Incoming business details:", JSON.stringify(business, null, 2));
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Derive businessDays and holidays from business data
   const derivedBusinessDays = business?.businessAvailability
@@ -563,7 +569,7 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
             )
         )
       )
-    : defaultValues.businessDays
+    : defaultValues.businessDays;
 
   const derivedHolidays = business?.holiday
     ? business.holiday
@@ -571,7 +577,7 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
         .filter((day: string) =>
           ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].includes(day)
         )
-    : defaultValues.holidays
+    : defaultValues.holidays;
 
   // Dynamically set default values based on business prop
   const formDefaultValues = {
@@ -583,7 +589,7 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
     businessHours: business?.businessAvailability?.length
       ? transformAvailabilityForForm(business.businessAvailability)
       : defaultValues.businessHours,
-  }
+  };
 
   // console.log(
   //   "Form default values:",
@@ -592,9 +598,12 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
   const form = useForm({
     defaultValues: formDefaultValues,
     resolver: async (data) => {
-      const errors: any = {}
+      const errors: any = {};
       if (!data.timeZone) {
-        errors.timeZone = { type: "required", message: "Time zone is required" }
+        errors.timeZone = {
+          type: "required",
+          message: "Time zone is required",
+        };
       }
       // Validate that each business day has at least one work slot
       data.businessDays.forEach((day: string) => {
@@ -602,21 +611,21 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
           errors.businessHours = {
             type: "required",
             message: `At least one work slot is required for ${day}`,
-          }
+          };
         }
-      })
+      });
       return {
         values: Object.keys(errors).length ? {} : data,
         errors,
-      }
+      };
     },
-  })
+  });
 
   const {
     watch,
     reset,
     formState: { errors },
-  } = form
+  } = form;
 
   // Reset form when business prop changes
   useEffect(() => {
@@ -624,10 +633,10 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
     //   "Resetting form with default values:",
     //   JSON.stringify(formDefaultValues, null, 2)
     // )
-    reset(formDefaultValues, { keepDefaultValues: false })
-  }, [reset, JSON.stringify(formDefaultValues)])
+    reset(formDefaultValues, { keepDefaultValues: false });
+  }, [reset, JSON.stringify(formDefaultValues)]);
 
-  const isUpdateMode = !!business?.id
+  const isUpdateMode = !!business?.id;
 
   const onSubmit = async (data: any) => {
     // console.log(
@@ -637,32 +646,32 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
 
     // Validate business details
     if (!business?.businessName) {
-      toast.error("Please complete business details first.")
-      return
+      toast.error("Please complete business details first.");
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       // Transform the combined data
-      const formattedData = transformFormDataForApi(business, data)
+      const formattedData = transformFormDataForApi(business, data);
       console.log(
         "Formatted data sent to API:",
         JSON.stringify(formattedData, null, 2)
-      )
+      );
 
       // Make POST/PUT request to the API
-      let response
+      let response;
       if (isUpdateMode) {
-        console.log(`Calling updateBusiness with id: ${formattedData.id}`)
-        response = await updateBusiness(formattedData.id, formattedData)
+        console.log(`Calling updateBusiness with id: ${formattedData.id}`);
+        response = await updateBusiness(formattedData.id, formattedData);
       } else {
-        console.log("Calling createBusiness")
-        response = await createBusiness(formattedData)
+        console.log("Calling createBusiness");
+        response = await createBusiness(formattedData);
       }
-      console.log("API response:", JSON.stringify(response, null, 2))
+      console.log("API response:", JSON.stringify(response, null, 2));
 
       if (!response) {
-        throw new Error("API response is undefined")
+        throw new Error("API response is undefined");
       }
 
       if (response.data) {
@@ -670,27 +679,27 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
           isUpdateMode
             ? "Business updated successfully!"
             : "Business created successfully!"
-        )
-        reset(formDefaultValues)
+        );
+        reset(formDefaultValues);
       } else {
         throw new Error(
           response.message ||
             `Failed to ${isUpdateMode ? "update" : "create"} business`
-        )
+        );
       }
     } catch (error: any) {
-      const errorMessage = error.message || "An unexpected error occurred"
+      const errorMessage = error.message || "An unexpected error occurred";
       toast.error(
         `An error occurred while ${isUpdateMode ? "updating" : "submitting"} the form: ${errorMessage}`
-      )
+      );
       console.error(
         `Error ${isUpdateMode ? "updating" : "submitting"} form:`,
         error
-      )
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <FormProvider {...form}>
@@ -741,13 +750,13 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
         </div>
       </form>
     </FormProvider>
-  )
+  );
 }
 
 // Time Zone Selector
 const TimeZoneField = ({ name, error }: { name: string; error?: string }) => {
-  const { watch, setValue } = useFormContext()
-  const value = watch(name)
+  const { watch, setValue } = useFormContext();
+  const value = watch(name);
   return (
     <div className="space-y-1">
       <div className="flex gap-2 items-center">
@@ -777,5 +786,5 @@ const TimeZoneField = ({ name, error }: { name: string; error?: string }) => {
       </Select>
       {error && <p className="text-red-500 text-sm">{error}</p>}
     </div>
-  )
-}
+  );
+};
