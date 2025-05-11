@@ -628,7 +628,7 @@
 // }
 
 // export default BusinessDetailForm
-
+// BusinessDetailForm.tsx
 "use client"
 
 import { useForm, FormProvider } from "react-hook-form"
@@ -657,25 +657,26 @@ import {
 import FileUploadField from "@/components/custom-form-fields/image-upload"
 import { toast } from "sonner"
 import { useEffect } from "react"
+import { useBusinessStore } from "@/app/(admin)/business-settings/_store/business-store"
 
 export const transformBusinessData = (data: any) => {
   return {
-    id: data.id,
-    businessName: data.businessName,
-    industry: data.industry,
-    email: data.email,
-    phone: data.phone,
-    website: data.website,
-    city: data.city,
-    street: data.street,
-    state: data.state,
-    zipCode: data.zipCode,
-    country: data.country,
-    googleMap: data.googleMap,
-    registrationNumber: data.registrationNumber,
-    taxId: data.taxId,
-    logo: data.logo,
-    visibility: data.visibility,
+    id: data.id || "",
+    businessName: data.businessName || "",
+    industry: data.industry || "",
+    email: data.email || "",
+    phone: data.phone || "",
+    website: data.website || "",
+    city: data.city || "",
+    street: data.street || "",
+    state: data.state || "",
+    zipCode: data.zipCode || "",
+    country: data.country || "",
+    googleMap: data.googleMap || "",
+    registrationNumber: data.registrationNumber || "",
+    taxId: data.taxId || null,
+    logo: data.logo || null,
+    visibility: data.visibility || "",
   }
 }
 
@@ -719,78 +720,62 @@ const schema = z.object({
 })
 
 interface BusinessDetailFormProps {
-  setActiveTab: (tabName: string) => void
-  setBusinessData: (businessData: any) => void
   businessData?: any
 }
 
 const BusinessDetailForm = ({
-  setActiveTab,
-  setBusinessData,
-  businessData,
+  businessData: propBusinessData,
 }: BusinessDetailFormProps) => {
-  useEffect(() => {
-    console.log("Business data:", businessData)
-  }, [businessData])
+  const { businessData, setBusinessData, setActiveTab } = useBusinessStore()
+  const isUpdateMode = !!businessData?.id
 
-  console.log("Business data:", businessData)
   const form = useForm({
     defaultValues: {
-      businessName: businessData?.businessName || "",
-      industry: businessData?.industry || "",
-      email: businessData?.email || "",
-      phone: businessData?.phone || "",
-      website: businessData?.website || "",
-      city: businessData?.city || "",
-      street: businessData?.street || "",
-      state: businessData?.state || "",
-      zipCode: businessData?.zipCode || "",
-      country: businessData?.country || "",
-      googleMap: businessData?.googleMap || "",
-      registrationNumber: businessData?.registrationNumber || "",
-      taxId: businessData?.taxId || null,
-      logo: businessData?.logo || null,
-      visibility: businessData?.visibility || "",
+      id: "",
+      businessName: "",
+      industry: "",
+      email: "",
+      phone: "",
+      website: "",
+      city: "",
+      street: "",
+      state: "",
+      zipCode: "",
+      country: "",
+      googleMap: "",
+      registrationNumber: "",
+      taxId: null,
+      logo: null,
+      visibility: "",
     },
     resolver: zodResolver(schema),
   })
 
-  // Reset form when businessData changes
+  // Initialize form with businessData only on mount or when businessData.id changes
   useEffect(() => {
     if (businessData) {
-      console.log(
-        "BusinessDetailForm: Resetting form with businessData:",
-        businessData
-      )
-      form.reset({
-        id: businessData.id || "",
-        businessName: businessData.businessName || "",
-        industry: businessData.industry || "",
-        email: businessData.email || "",
-        phone: businessData.phone || "",
-        website: businessData.website || "",
-        city: businessData.city || "",
-        street: businessData.street || "",
-        state: businessData.state || "",
-        zipCode: businessData.zipCode || "",
-        country: businessData.country || "",
-        googleMap: businessData.googleMap || "",
-        registrationNumber: businessData.registrationNumber || "",
-        taxId: businessData.taxId || null,
-        logo: businessData.logo || null,
-        visibility: businessData.visibility || "",
+      form.reset(transformBusinessData(businessData), {
+        keepDefaultValues: false,
       })
     }
-  }, [businessData, form])
+  }, [businessData?.id, form])
+
+  // Sync form changes to businessData in store
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      setBusinessData({
+        ...businessData,
+        ...transformBusinessData(value),
+      })
+    })
+    return () => subscription.unsubscribe()
+  }, [form, businessData, setBusinessData])
 
   const onSubmit = (data: any) => {
-    const updatedData = transformBusinessData({
-      ...data,
-      timeZone: businessData?.timeZone,
-      businessDays: businessData?.businessDays,
-      holidays: businessData?.holidays,
-      businessHours: businessData?.businessHours,
-    })
+    const updatedData = {
+      ...businessData,
+      ...transformBusinessData(data),
+    }
     setBusinessData(updatedData)
     setActiveTab("Business hour & Availability")
     toast.success("Business details saved! Proceed to set availability.")
@@ -804,7 +789,6 @@ const BusinessDetailForm = ({
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
-          console.log("Form errors", errors)
           toast.error("Please fix the form errors before proceeding.")
         })}
         className="space-y-8"

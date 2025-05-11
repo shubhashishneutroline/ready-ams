@@ -340,6 +340,11 @@ import BusinessDaysField from "@/components/custom-form-fields/business-settings
 import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field"
 import { toast } from "sonner"
 import { createBusiness, updateBusiness } from "../api/api"
+import { timeOptions } from "@/lib/lib"
+import {
+  transformBusinessDataForForms,
+  useBusinessStore,
+} from "@/app/(admin)/business-settings/_store/business-store"
 
 // Weekday mapping for form ↔ database conversion
 const weekdayMap: { [key: string]: string } = {
@@ -358,23 +363,6 @@ const weekdayMap: { [key: string]: string } = {
   Sun: "SUNDAY",
   SUNDAY: "Sun",
 }
-
-// Time options matching BusinessHourSelector
-const timeOptions = [
-  "08:00 AM",
-  "09:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "01:00 PM",
-  "02:00 PM",
-  "03:00 PM",
-  "04:00 PM",
-  "05:00 PM",
-  "06:00 PM",
-  "07:00 PM",
-  "08:00 PM",
-]
 
 // Default form values (used as fallback)
 const defaultValues = {
@@ -412,13 +400,12 @@ const defaultValues = {
 const transformAvailabilityForForm = (availability: any[]) => {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
   const businessHours: any = {}
+  const validTimes = timeOptions()
 
-  // Initialize all days with empty work and break arrays
   days.forEach((day) => {
     businessHours[day] = { work: [], break: [] }
   })
 
-  // Map availability to businessHours
   availability.forEach((avail) => {
     const dayKey = weekdayMap[avail.weekDay]
     if (!dayKey || !businessHours[dayKey]) {
@@ -428,12 +415,10 @@ const transformAvailabilityForForm = (availability: any[]) => {
     const workSlots: [string, string][] = []
     const breakSlots: [string, string][] = []
 
-    // Process time slots
     avail.timeSlots.forEach((slot: any) => {
       const startTime = slot.startTime
       const endTime = slot.endTime
-      // Validate times against timeOptions
-      if (!timeOptions.includes(startTime) || !timeOptions.includes(endTime)) {
+      if (!validTimes.includes(startTime) || !validTimes.includes(endTime)) {
         console.warn(`Invalid time slot for ${dayKey}: ${startTime}-${endTime}`)
         return
       }
@@ -447,7 +432,6 @@ const transformAvailabilityForForm = (availability: any[]) => {
       }
     })
 
-    // Sort slots by startTime
     const sortByStartTime = (slots: [string, string][]) =>
       slots.sort((a, b) => {
         const timeA = new Date(`1970-01-01 ${a[0]}`)
@@ -459,20 +443,19 @@ const transformAvailabilityForForm = (availability: any[]) => {
     businessHours[dayKey].break = sortByStartTime(breakSlots)
   })
 
-  // console.log(
-  //   "Transformed businessHours:",
-  //   JSON.stringify(businessHours, null, 2)
-  // )
+  console.log(
+    "Transformed businessHours:",
+    JSON.stringify(businessHours, null, 2)
+  )
   return businessHours
 }
 
 // Transform form data to API-compatible format
 const transformFormDataForApi = (business: any, availabilityData: any) => {
-  console.log("availabilityData", availabilityData)
-  console.log("business", business)
+  console.log("availabilityData:", JSON.stringify(availabilityData, null, 2))
+  console.log("business:", JSON.stringify(business, null, 2))
   const { businessDays, holidays, businessHours, timeZone } = availabilityData
 
-  // Transform business details
   const businessDetail = {
     id: business?.id || undefined,
     name: business?.businessName || "",
@@ -488,6 +471,7 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
       {
         street: business?.street || "",
         city: business?.city || "",
+        state: business?.state || "",
         country: business?.country || "",
         zipCode: business?.zipCode || "",
         googleMap: business?.googleMap || "",
@@ -495,7 +479,6 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
     ],
   }
 
-  // Transform business availability with 12-hour AM/PM times
   const businessAvailability = businessDays.flatMap((day: string) => {
     const hours = businessHours[day] || { work: [], break: [] }
     const slots = [
@@ -511,7 +494,6 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
       })),
     ]
 
-    // Sort slots by startTime
     const sortByStartTime = (slots: any[]) =>
       slots.sort((a, b) => {
         const timeA = new Date(`1970-01-01 ${a.startTime}`)
@@ -530,7 +512,6 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
       : []
   })
 
-  // Transform holidays with full weekday names
   const holiday = holidays.map((day: string) => ({
     holiday: weekdayMap[day] || day,
     type: "GENERAL",
@@ -548,47 +529,39 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
   }
 }
 
-export default function BusinessSettingsForm({ business }: { business?: any }) {
-  console.log("Incoming business details:", JSON.stringify(business, null, 2))
+interface BusinessSettingsFormProps {
+  business?: any
+}
+
+export default function BusinessSettingsForm({
+  business: propBusiness,
+}: BusinessSettingsFormProps) {
+  const { businessData } = useBusinessStore()
+  const business = businessData || propBusiness
+  console.log(
+    "BusinessSettingsForm: Incoming business details:",
+    JSON.stringify(business, null, 2)
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { setBusinessData, updateSelectedBusiness } = useBusinessStore()
 
-  // Derive businessDays and holidays from business data
-  const derivedBusinessDays = business?.businessAvailability
-    ? Array.from(
-        new Set(
-          business.businessAvailability
-            .map((avail: any) => weekdayMap[avail.weekDay])
-            .filter((day: string) =>
-              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].includes(day)
-            )
-        )
-      )
-    : defaultValues.businessDays
-
-  const derivedHolidays = business?.holiday
-    ? business.holiday
-        .map((h: any) => weekdayMap[h.holiday])
-        .filter((day: string) =>
-          ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].includes(day)
-        )
-    : defaultValues.holidays
-
-  // Dynamically set default values based on business prop
   const formDefaultValues = {
     timeZone: business?.timeZone || defaultValues.timeZone,
-    businessDays: derivedBusinessDays,
-    holidays: derivedHolidays,
+    businessDays: business?.businessDays || defaultValues.businessDays,
+    holidays: business?.holidays || defaultValues.holidays,
     availabilityMode:
       business?.availabilityMode || defaultValues.availabilityMode,
-    businessHours: business?.businessAvailability?.length
-      ? transformAvailabilityForForm(business.businessAvailability)
-      : defaultValues.businessHours,
+    businessHours:
+      business?.businessHours ||
+      (business?.businessAvailability?.length
+        ? transformAvailabilityForForm(business.businessAvailability)
+        : defaultValues.businessHours),
   }
 
-  // console.log(
-  //   "Form default values:",
-  //   JSON.stringify(formDefaultValues, null, 2)
-  // )
+  console.log(
+    "BusinessSettingsForm: Form default values:",
+    JSON.stringify(formDefaultValues, null, 2)
+  )
   const form = useForm({
     defaultValues: formDefaultValues,
     resolver: async (data) => {
@@ -596,7 +569,6 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
       if (!data.timeZone) {
         errors.timeZone = { type: "required", message: "Time zone is required" }
       }
-      // Validate that each business day has at least one work slot
       data.businessDays.forEach((day: string) => {
         if (!data.businessHours[day]?.work?.length) {
           errors.businessHours = {
@@ -618,24 +590,44 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
     formState: { errors },
   } = form
 
-  // Reset form when business prop changes
+  // Initialize form only on mount or when business id changes
   useEffect(() => {
-    // console.log(
-    //   "Resetting form with default values:",
-    //   JSON.stringify(formDefaultValues, null, 2)
-    // )
+    console.log(
+      "BusinessSettingsForm: Resetting form with default values:",
+      JSON.stringify(formDefaultValues, null, 2)
+    )
     reset(formDefaultValues, { keepDefaultValues: false })
-  }, [reset, JSON.stringify(formDefaultValues)])
+  }, [reset, business?.id])
+
+  // Sync form changes to businessData in store
+  useEffect(() => {
+    const subscription = watch((value) => {
+      console.log(
+        "BusinessSettingsForm: Form changed:",
+        JSON.stringify(value, null, 2)
+      )
+      setBusinessData({
+        ...business,
+        timeZone: value.timeZone,
+        businessDays: value.businessDays,
+        holidays: value.holidays,
+        availabilityMode: value.availabilityMode,
+        businessAvailability: transformFormDataForApi(business, value)
+          .businessAvailability,
+        businessHours: value.businessHours,
+      })
+    })
+    return () => subscription.unsubscribe()
+  }, [watch, business, setBusinessData])
 
   const isUpdateMode = !!business?.id
 
   const onSubmit = async (data: any) => {
-    // console.log(
-    //   "Form data before transformation:",
-    //   JSON.stringify(data, null, 2)
-    // )
+    console.log(
+      "BusinessSettingsForm: Form data before transformation:",
+      JSON.stringify(data, null, 2)
+    )
 
-    // Validate business details
     if (!business?.businessName) {
       toast.error("Please complete business details first.")
       return
@@ -643,10 +635,7 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
 
     setIsSubmitting(true)
     try {
-      // Transform the combined data
       const formattedData = transformFormDataForApi(business, data)
-
-      // Make POST/PUT request to the API
       let response
       if (isUpdateMode) {
         console.log(`Calling updateBusiness with id: ${formattedData.id}`)
@@ -655,7 +644,10 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
         console.log("Calling createBusiness")
         response = await createBusiness(formattedData)
       }
-      console.log("API response:", JSON.stringify(response, null, 2))
+      console.log(
+        "BusinessSettingsForm: API response:",
+        JSON.stringify(response, null, 2)
+      )
 
       if (!response) {
         throw new Error("API response is undefined")
@@ -667,7 +659,29 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
             ? "Business updated successfully!"
             : "Business created successfully!"
         )
-        reset(formDefaultValues)
+        // Update selectedBusiness with API response
+        updateSelectedBusiness(response.data)
+        // Update businessData in store
+        setBusinessData({
+          ...business,
+          ...transformBusinessDataForForms(response.data),
+        })
+        console.log(
+          "BusinessSettingsForm: Created businessData:",
+          JSON.stringify(businessData, null, 2)
+        )
+        // Reset form with updated data
+        const newFormDefaultValues = {
+          ...businessData,
+          timeZone: data.timeZone,
+          businessDays: data.businessDays,
+          holidays: data.holidays,
+          availabilityMode: data.availabilityMode,
+          businessHours: transformAvailabilityForForm(
+            formattedData.businessAvailability
+          ),
+        }
+        reset(newFormDefaultValues)
       } else {
         throw new Error(
           response.message ||
@@ -691,22 +705,11 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
   return (
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Availability Mode */}
         <AvailabilityTabs name="availabilityMode" icon={CalendarDays} />
-
-        {/* Time Zone Field */}
         <TimeZoneField name="timeZone" error={errors.timeZone?.message} />
-
-        {/* Business Days */}
         <BusinessDaysField name="businessDays" holidayFieldName="holidays" />
-
-        {/* Business Hours */}
         <BusinessHourSelector name="businessHours" icon={Hourglass} />
-
-        {/* Holidays */}
         <HolidayField name="holidays" disableFieldName="businessDays" />
-
-        {/* Actions */}
         <div className="flex flex-col gap-4">
           <Button
             type="submit"
@@ -740,7 +743,6 @@ export default function BusinessSettingsForm({ business }: { business?: any }) {
   )
 }
 
-// Time Zone Selector
 const TimeZoneField = ({ name, error }: { name: string; error?: string }) => {
   const { watch, setValue } = useFormContext()
   const value = watch(name)
