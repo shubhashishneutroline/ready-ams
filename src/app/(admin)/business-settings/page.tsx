@@ -6,11 +6,10 @@ import { Settings } from "lucide-react"
 import Breadcrumbs from "@/components/shared/bread-crumb"
 import PageTabs from "@/features/business-detail/components/page-tabs"
 import { Card } from "@/components/ui/card"
-import BusinessDetailForm from "@/features/business-detail/components/business-detail-form"
 import { toast } from "sonner"
 import { useBusinessStore } from "./_store/business-store"
-import BusinessSettingsForm from "@/features/business-detail/components/business-avaialability-form"
-
+import BusinessDetailForm from "./_components/business-detail-form"
+import BusinessSettingsForm from "./_components/business-avaialability-form"
 const BusinessPage = () => {
   const {
     selectedBusiness,

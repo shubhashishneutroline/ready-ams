@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import {
   getBusinesses,
   getBusinessById,
-} from "@/features/business-detail/api/api"
+} from "@/app/(admin)/business-settings/_api-call/business-api-call"
 import { timeOptions } from "@/lib/lib"
 
 // Define interfaces

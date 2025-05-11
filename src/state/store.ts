@@ -42,7 +42,7 @@ export const useDeleteAlertStore = create<DeleteAlertState>((set) => ({
 }))
 
 // =========== Business Detail Store ========== //
-import { getBusinesses } from "@/features/business-detail/api/api"
+import { getBusinesses } from "@/app/(admin)/business-settings/_api-call/business-api-call"
 import { BusinessDetail } from "@/features/business-detail/types/types"
 import { transformBusinessAvailabilityData } from "@/features/service/action/action"
 import { BusinessAvailability } from "@/features/service/components/admin/form/add/service-form"
