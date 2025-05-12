@@ -345,10 +345,12 @@ model SupportBusinessDetail {
   supportGoogleMap    String? // Optional Google Maps link
   supportAvailability BusinessAvailability[] // Support hours
   supportHoliday      Holiday[] // Support holidays
-  supportAddress      BusinessAddress[] // Support addresses
+  // supportAddress      BusinessAddress[] // Support addresses
+  supportAddress      String // Support addresses
 
-  business   BusinessDetail @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  businessId String         @unique // Link to business
+  business        BusinessDetail    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId      String            @unique // Link to business
+  BusinessAddress BusinessAddress[]
 }
 
 //----- FAQ

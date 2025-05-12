@@ -60,26 +60,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
         supportEmail: parsedData.supportEmail,
         supportPhone: parsedData.supportPhone,
         // Handle addresses
-        supportAddress: {
-          upsert: parsedData.supportAddress.map((addr) => ({
-            where: { id: addr.id || "" }, // Use empty string as fallback if no ID
-            update: {
-              street: addr.street,
-              city: addr.city,
-              country: addr.country,
-              zipCode: addr.zipCode,
-              googleMap: addr.googleMap || "",
-            },
-            create: {
-              street: addr.street,
-              city: addr.city,
-              country: addr.country,
-              zipCode: addr.zipCode,
-              googleMap: addr.googleMap || "",
-            },
-          })),
-        },
-
+        supportAddress: parsedData.supportAddress,
         // Handle business availability
         supportAvailability: {
           upsert: parsedData.supportAvailability.map((availability) => ({
@@ -132,7 +113,6 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
         },
       },
       include: {
-        supportAddress: true,
         supportAvailability: {
           include: {
             timeSlots: true,

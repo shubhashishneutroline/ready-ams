@@ -88,15 +88,7 @@ export async function POST(req: NextRequest) {
         supportEmail: parsedData.supportEmail,
         supportPhone: parsedData.supportPhone,
         businessId: parsedData.businessId,
-        supportAddress: {
-          create: parsedData.supportAddress.map((address) => ({
-            street: address.street,
-            city: address.city,
-            country: address.country,
-            zipCode: address.zipCode,
-            googleMap: address.googleMap || "",
-          })),
-        },
+        supportAddress: parsedData.supportAddress,
         supportAvailability: {
           create: parsedData.supportAvailability.map((availability) => ({
             weekDay: availability.weekDay,
@@ -118,7 +110,6 @@ export async function POST(req: NextRequest) {
         },
       },
       include: {
-        supportAddress: true,
         supportAvailability: {
           include: {
             timeSlots: true,
@@ -155,7 +146,6 @@ export async function GET() {
   try {
     const supportDetails = await prisma.supportBusinessDetail.findMany({
       include: {
-        supportAddress: true,
         supportAvailability: {
           include: {
             timeSlots: true,
@@ -212,25 +202,7 @@ export async function PUT(req: NextRequest) {
         supportEmail: parsedData.supportEmail,
         supportPhone: parsedData.supportPhone,
         // Handle addresses
-        supportAddress: {
-          upsert: parsedData.supportAddress.map((addr) => ({
-            where: { id: addr.id || "" }, // Use empty string as fallback if no ID
-            update: {
-              street: addr.street,
-              city: addr.city,
-              country: addr.country,
-              zipCode: addr.zipCode,
-              googleMap: addr.googleMap || "",
-            },
-            create: {
-              street: addr.street,
-              city: addr.city,
-              country: addr.country,
-              zipCode: addr.zipCode,
-              googleMap: addr.googleMap || "",
-            },
-          })),
-        },
+        supportAddress: parsedData.supportAddress,
 
         // Handle business availability
         supportAvailability: {
@@ -284,7 +256,6 @@ export async function PUT(req: NextRequest) {
         },
       },
       include: {
-        supportAddress: true,
         supportAvailability: {
           include: {
             timeSlots: true,
