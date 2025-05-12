@@ -1,4 +1,4 @@
-import { SupportBusinessDetail } from "@/features/support-detail/types/types"
+import { SupportBusinessDetail } from "@/app/(admin)/support/_types/types"
 
 // Enum for Business Status
 export enum BusinessStatus {

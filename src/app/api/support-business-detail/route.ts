@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { SupportBusinessDetailSchema } from "@/features/support-detail/schemas/schema" // Adjust the path accordingly
 import { ZodError } from "zod"
-import { SupportBusinessDetail } from "@/features/support-detail/types/types"
 import {
   AvailabilityType,
   Holiday,
@@ -14,6 +12,8 @@ import {
   getSupportDetailByEmail,
   getSupportDetailById,
 } from "@/db/supportDetail"
+import { SupportBusinessDetailSchema } from "@/app/(admin)/support/_schemas/schema"
+import { Prisma } from "@prisma/client"
 
 // Dummy database for support business details
 // let supportDetails: SupportBusinessDetail[] = [
@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
             type: availability.type,
             timeSlots: {
               create: availability.timeSlots.map((timeSlot) => ({
+                type: timeSlot.type,
                 startTime: timeSlot.startTime,
                 endTime: timeSlot.endTime,
               })),
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
           create: parsedData.supportHoliday.map((holiday) => ({
             holiday: holiday.holiday as WeekDays,
             type: holiday.type,
-            date: holiday.date,
+            date: holiday.date || null,
           })),
         },
       },
@@ -127,6 +128,14 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      console.error("Validation error:", error.message)
+      // Handle the validation error specifically
+      return {
+        error: "Validation failed",
+        details: error, // or use error.stack for full stack trace
+      }
+    }
     console.log(error)
     if (error instanceof ZodError) {
       return NextResponse.json(

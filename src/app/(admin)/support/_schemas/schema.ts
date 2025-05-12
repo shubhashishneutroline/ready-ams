@@ -3,12 +3,9 @@ import { z } from "zod"
 // Time Slot Schema
 const TimeSlotSchema = z.object({
   id: z.string().optional(),
-  startTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Invalid ISO date format for startTime",
-  }),
-  endTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Invalid ISO date format for endTime",
-  }),
+  type: z.enum(["WORK", "BREAK"]),
+  startTime: z.string(),
+  endTime: z.string(),
 })
 
 // Support Availability Schema
@@ -34,9 +31,7 @@ const SupportHolidaySchema = z.object({
   id: z.string().optional(),
   holiday: z.string(),
   type: z.literal("SUPPORT"), // Only "SUPPORT" type allowed
-  date: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: "Invalid ISO date format for holiday date",
-  }),
+  date: z.string().optional(),
 })
 
 // Zod schema for BusinessAddress
