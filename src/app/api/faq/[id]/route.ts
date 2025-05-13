@@ -86,10 +86,9 @@ export async function DELETE(req: NextRequest, { params }: ParamsProps) {
       return NextResponse.json({ error: "FAQ Id required!" }, { status: 400 })
     }
 
-    const body = await req.json()
-
     // Find the FAQ by ID
     const existingFAQ = await getFAQSById(id)
+    console.log("Existing FAQ:", existingFAQ)
 
     if (!existingFAQ) {
       return NextResponse.json({ error: "FAQ not found!" }, { status: 404 })

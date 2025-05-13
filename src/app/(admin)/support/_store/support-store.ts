@@ -1,166 +1,13 @@
-// // store/supportTabsStore.ts
-// import { SupportBusinessDetail } from "@prisma/client"
-// import { create } from "zustand"
-// import { getSupportDetailByBusinessId } from "../_api-call/support-api-call"
-// import { useBusinessStore } from "../../business-settings/_store/business-store"
-// import { PostSupportBusinessDetail } from "../_types/types"
-
-// // Define the valid mobile tab names as a TypeScript type
-// // Ensures only specific keys ("Contact", "FAQs", "Issues", "Support") are used
-// export type TabMapKey = "Contact" | "FAQs" | "Issues" | "Support"
-
-// // Define the store's state and actions
-// interface SupportTabsState {
-//   // Current active tab (uses desktop tab names, e.g., "Contact Information")
-//   activeTab: string
-//   // Object mapping mobile tab names to desktop tab names
-//   tabMap: Record<TabMapKey, string>
-//   // Array of desktop tab names
-//   tabs: string[]
-//   // Array of mobile tab names
-//   mTabs: TabMapKey[]
-//   // Function to update activeTab (used for desktop tabs)
-//   setActiveTab: (tab: string) => void
-//   // Function to handle mobile tab changes (converts mobile to desktop tab name)
-//   handleMobileTabChange: (mobileTab: TabMapKey) => void
-
-//   // get support business details
-//   getSupportBusinessDetails: () => Promise<void>
-//   // get support business by Id
-//   getSupportBusinessDetailById: (businessId: string) => Promise<any>
-// }
-
-// // Create the Zustand store
-// export const useSupportTabsStore = create<SupportTabsState>((set) => ({
-//   // Initial active tab
-//   activeTab: "Contact Information",
-
-//   // Mapping of mobile to desktop tab names
-//   tabMap: {
-//     Contact: "Contact Information",
-//     FAQs: "Frequently Asked Questions (FAQs)",
-//     Issues: "Customer Support",
-//     Support: "Admin Support",
-//   },
-
-//   // Desktop tab names
-//   tabs: [
-//     "Contact Information",
-//     "Frequently Asked Questions (FAQs)",
-//     "Customer Support",
-//     "Admin Support",
-//   ],
-
-//   // Mobile tab names
-//   mTabs: ["Contact", "FAQs", "Issues", "Support"],
-
-//   // Function to set activeTab (used for desktop tabs)
-//   setActiveTab: (tab) => set({ activeTab: tab }),
-
-//   // Function to handle mobile tab clicks
-//   // Converts mobile tab name (e.g., "Contact") to desktop tab name (e.g., "Contact Information")
-//   handleMobileTabChange: (mobileTab) =>
-//     set((state) => {
-//       const mapped = state.tabMap[mobileTab] // Get desktop tab name
-//       return { activeTab: mapped || state.activeTab } // Update if valid, else keep current
-//     }),
-
-//   // Get support business details
-//   getSupportBusinessDetails: async () => {},
-
-//   // Get support business by Id
-//   getSupportBusinessDetailById: async (businessId: string) => {
-//     try {
-//       const res = await getSupportDetailByBusinessId(businessId)
-//       console.log(res, "inside Business details, store")
-
-//       //   set({ supportBusinessDetail: transformBusinessDataForSupport(res) })
-//       return { data: res, success: true }
-//     } catch (error) {
-//       console.error("Error fetching business:", error)
-//       return { error, success: false, message: "Failed to fetch business" }
-//     }
-//   },
-// }))
-
-// // Transform business data from useBusinessStore to SupportBusinessDetail format
-// // features/support-detail/action/action.ts
-
-// // Weekday mapping to match database convention
-// const weekdayMap: { [key: string]: string } = {
-//   Mon: "MONDAY",
-//   Tue: "TUESDAY",
-//   Wed: "WEDNESDAY",
-//   Thu: "THURSDAY",
-//   Fri: "FRIDAY",
-//   Sat: "SATURDAY",
-//   Sun: "SUNDAY",
-// }
-
-// // Transform form data to SupportBusinessDetail format
-// export const transformFormDataForSupportDetail = (
-//   formData: any
-// ): PostSupportBusinessDetail => {
-//   const {
-//     businessName,
-//     supportEmail,
-//     phone,
-//     address,
-//     googleMap,
-//     businessHours,
-//     businessDays,
-//     holidays,
-//     businessId,
-//   } = formData
-
-//   // Transform businessHours to supportAvailability
-//   const supportAvailability = businessDays.map((day: string) => {
-//     const hours = businessHours[day] || { work: [], break: [] }
-//     const timeSlots = [
-//       ...hours.work.map(([startTime, endTime]: [string, string]) => ({
-//         type: "WORK" as const,
-//         startTime,
-//         endTime,
-//       })),
-//       ...hours.break.map(([startTime, endTime]: [string, string]) => ({
-//         type: "BREAK" as const,
-//         startTime,
-//         endTime,
-//       })),
-//     ]
-
-//     return {
-//       weekDay: weekdayMap[day] || day,
-//       type: "SUPPORT" as const,
-//       timeSlots,
-//     }
-//   })
-
-//   // Transform holidays to supportHoliday
-//   const supportHoliday = holidays.map((day: string) => ({
-//     holiday: weekdayMap[day] || day,
-//     type: "SUPPORT" as const,
-//     date: "",
-//   }))
-
-//   // Return transformed data
-//   return {
-//     supportBusinessName: businessName,
-//     supportEmail,
-//     supportPhone: phone,
-//     supportAddress: address,
-//     supportGoogleMap: googleMap,
-//     supportAvailability,
-//     supportHoliday,
-//     businessId,
-//   }
-// }
-
-// app/(admin)/support/_store/support-store.ts
 import { create } from "zustand"
 import { toast } from "sonner"
 import { getSupportDetailByBusinessId } from "../_api-call/support-api-call"
 import { PostSupportBusinessDetail } from "../_types/types"
+import {
+  getFAQs,
+  createFAQ,
+  updateFAQ,
+  deleteFAQ,
+} from "@/features/faq/api/api"
 
 // Define valid mobile tab names
 export type TabMapKey = "Contact" | "FAQs" | "Issues" | "Support"
@@ -189,6 +36,16 @@ interface SupportBusinessDetail {
   businessId: string
 }
 
+interface FAQ {
+  id: string
+  question: string
+  answer: string
+  category: string
+  isActive: boolean
+  lastUpdatedById: string
+  createdById: string
+}
+
 interface SupportTabsState {
   activeTab: string
   tabMap: Record<TabMapKey, string>
@@ -201,6 +58,16 @@ interface SupportTabsState {
   error: string | null
   setSupportDetail: (detail: SupportBusinessDetail | null) => void
   getSupportBusinessDetailById: (businessId: string) => Promise<any>
+  faqs: FAQ[]
+  faqLoading: boolean
+  faqError: string | null
+  deletingFAQId: string | null
+  setFAQs: (faqs: FAQ[]) => void
+  getFAQs: () => Promise<void>
+  createFAQ: (faqData: Omit<FAQ, "id">) => Promise<void>
+  updateFAQ: (id: string, faqData: Omit<FAQ, "id">) => Promise<void>
+  deleteFAQ: (id: string) => Promise<void>
+  refreshFAQs: () => Promise<void>
 }
 
 // Weekday mapping for form ↔ database conversion
@@ -405,6 +272,121 @@ export const useSupportTabsStore = create<SupportTabsState>((set) => ({
         success: false,
         message: "Failed to fetch support details",
       }
+    }
+  },
+  faqs: [],
+  faqLoading: false,
+  faqError: null,
+  deletingFAQId: null,
+  setFAQs: (faqs) => set({ faqs, faqError: null }),
+  getFAQs: async () => {
+    set({ faqLoading: true, faqError: null })
+    try {
+      const fetchedFaqs = await getFAQs()
+      console.log("Fetched FAQs:", fetchedFaqs)
+      set({
+        faqs: Array.isArray(fetchedFaqs) ? fetchedFaqs : [],
+        faqLoading: false,
+        faqError: null,
+      })
+    } catch (error: any) {
+      set({
+        faqs: [],
+        faqError: error.message || "Failed to fetch FAQs",
+        faqLoading: false,
+      })
+      toast.error("Failed to fetch FAQs")
+    }
+  },
+  createFAQ: async (faqData) => {
+    set({ faqLoading: true, faqError: null })
+    try {
+      const createdFAQ = await createFAQ({ id: "", ...faqData })
+      console.log("Created FAQ:", createdFAQ)
+      set((state) => ({
+        faqs: [createdFAQ.faq, ...state.faqs],
+        faqLoading: false,
+        faqError: null,
+      }))
+      toast.success("FAQ created successfully!")
+    } catch (error: any) {
+      set({
+        faqError: error.message || "Failed to create FAQ",
+        faqLoading: false,
+      })
+      toast.error("Failed to create FAQ")
+    }
+  },
+  updateFAQ: async (id, faqData) => {
+    set({ faqLoading: true, faqError: null })
+    try {
+      const updatedFAQ = await updateFAQ(id, faqData)
+      console.log("Updated FAQ:", updatedFAQ)
+      set((state) => ({
+        faqs: state.faqs.map((faq) => (faq.id === id ? updatedFAQ.faq : faq)),
+        faqLoading: false,
+        faqError: null,
+      }))
+      toast.success("FAQ updated successfully!")
+    } catch (error: any) {
+      set({
+        faqError: error.message || "Failed to update FAQ",
+        faqLoading: false,
+      })
+      toast.error("Failed to update FAQ")
+    }
+  },
+  deleteFAQ: async (id) => {
+    if (id.startsWith("temp-")) {
+      set({
+        faqError: "Cannot delete FAQ: Still processing creation",
+        faqLoading: false,
+      })
+      toast.error("Cannot delete FAQ: Still processing creation")
+      return
+    }
+    set({ faqLoading: true, faqError: null, deletingFAQId: id })
+    let deletedFAQ: FAQ | undefined
+    set((state) => {
+      deletedFAQ = state.faqs.find((faq) => faq.id === id)
+      return {
+        faqs: state.faqs.filter((faq) => faq.id !== id),
+        faqLoading: true,
+        deletingFAQId: id,
+      }
+    })
+    try {
+      await deleteFAQ(id)
+      console.log("Deleted FAQ ID:", id)
+      set({ faqLoading: false, deletingFAQId: null })
+      toast.success("FAQ deleted successfully!")
+    } catch (error: any) {
+      set((state) => ({
+        faqs: deletedFAQ ? [deletedFAQ, ...state.faqs] : state.faqs,
+        faqError: error.message || "Failed to delete FAQ",
+        faqLoading: false,
+        deletingFAQId: null,
+      }))
+      toast.error("Failed to delete FAQ")
+    }
+  },
+  refreshFAQs: async () => {
+    set({ faqLoading: true, faqError: null })
+    try {
+      const fetchedFaqs = await getFAQs()
+      console.log("Refreshed FAQs:", fetchedFaqs)
+      set({
+        faqs: Array.isArray(fetchedFaqs) ? fetchedFaqs : [],
+        faqLoading: false,
+        faqError: null,
+      })
+    } catch (error: any) {
+      set({
+        faqs: [],
+        faqError: error.message || "Failed to refresh FAQs",
+        faqLoading: false,
+      })
+      toast.error("Failed to refresh FAQs")
     }
   },
 }))
