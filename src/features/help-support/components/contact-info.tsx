@@ -1,3 +1,5 @@
+
+
 // "use client"
 
 // import { useState, useEffect } from "react"
@@ -10,11 +12,13 @@
 // import InputField from "@/components/custom-form-fields/input-field"
 // import SelectField from "@/components/custom-form-fields/select-field"
 // import { CheckCircle, Building2, Mail, Phone, MapPin, Map } from "lucide-react"
-// import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field"
-// import { transformBusinessData } from "@/features/support-detail/action/action"
 // import BusinessHourSelector from "@/app/(admin)/business-settings/_components/business-hour-selector"
-// import { useSupportTabsStore } from "@/app/(admin)/support/_store/support-store"
+// import { transformBusinessData } from "@/features/support-detail/action/action"
+// import { transformFormDataForSupportDetail, useSupportTabsStore } from "@/app/(admin)/support/_store/support-store"
 // import { useBusinessStore } from "@/app/(admin)/business-settings/_store/business-store"
+// import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field"
+// import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field"
+// import { createSupportDetail } from "@/app/(admin)/support/_api-call/support-api-call"
 
 // // Define holiday date options (mocked for now)
 // const dateOptions = [
@@ -38,8 +42,6 @@
 //     .array(z.string())
 //     .min(1, "At least one business day is required"),
 //   holidays: z.array(z.string()).optional(),
-//   //   holidayStart: z.string().min(1, "Holiday start date is required"),
-//   //   holidayEnd: z.string().min(1, "Holiday end date is required"),
 // })
 
 // const ContactInformationForm = () => {
@@ -54,7 +56,6 @@
 //       getSupportBusinessDetailById(selectedBusiness.id)
 //     }
 //   }, [getSupportBusinessDetailById])
-//   // Empty dependency array to fetch data only once on mount
 
 //   const form = useForm({
 //     defaultValues: {
@@ -84,11 +85,11 @@
 //           work: [["09:00 AM", "04:00 PM"]],
 //           break: [["12:00 PM", "01:00 PM"]],
 //         },
+//         Sat: { work: [], break: [] },
+//         Sun: { work: [], break: [] },
 //       },
 //       businessDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-//       holidays: [],
-//       //   holidayStart: "",
-//       //   holidayEnd: "",
+//       holidays: ["Sat", "Sun"],
 //     },
 //     resolver: zodResolver(schema),
 //   })
@@ -105,30 +106,30 @@
 //       googleMap: "https://maps.google.com",
 //       businessHours: {
 //         Mon: {
-//           work: [["09:00 AM", "05:00 PM"]],
+//           work: [["09:00 AM", "04:00 PM"]],
 //           break: [["12:00 PM", "01:00 PM"]],
 //         },
 //         Tue: {
-//           work: [["09:00 AM", "05:00 PM"]],
+//           work: [["09:00 AM", "04:00 PM"]],
 //           break: [["12:00 PM", "01:00 PM"]],
 //         },
 //         Wed: {
-//           work: [["09:00 AM", "05:00 PM"]],
+//           work: [["09:00 AM", "04:00 PM"]],
 //           break: [["12:00 PM", "01:00 PM"]],
 //         },
 //         Thu: {
-//           work: [["09:00 AM", "05:00 PM"]],
+//           work: [["09:00 AM", "04:00 PM"]],
 //           break: [["12:00 PM", "01:00 PM"]],
 //         },
 //         Fri: {
-//           work: [["09:00 AM", "05:00 PM"]],
+//           work: [["09:00 AM", "04:00 PM"]],
 //           break: [["12:00 PM", "01:00 PM"]],
 //         },
+//         Sat: { work: [], break: [] },
+//         Sun: { work: [], break: [] },
 //       },
 //       businessDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
 //       holidays: ["Sat", "Sun"],
-//       //   holidayStart: "2025-12-25",
-//       //   holidayEnd: "2025-12-26",
 //     }
 //   }
 
@@ -144,12 +145,35 @@
 //     }
 //   }, [useBusinessInfo, reset])
 
-//   const onSubmit = (data: any) => {
-//     console.log("Contact Information submitted:", data)
-//     if (!useBusinessInfo) {
-//       console.log("Saving as new support details")
+//   // const onSubmit = (data: any) => {
+//   //   console.log("Contact Information submitted:", JSON.stringify(data, null, 2))
+
+//   //   if (!useBusinessInfo) {
+//   //     console.log("Saving as new support details")
+//   //   }
+//   // }
+//   // // In ContactInformationForm
+
+//   const onSubmit = async (data: any) => {
+//     console.log("Contact Information submitted:", data);
+//     try {
+//       const transformedData = transformFormDataForSupportDetail({...data, businessId: selectedBusiness?.id});
+      
+//       console.log("Transformed data:", JSON.stringify(transformedData, null, 2));
+//       let response;
+//       // Assuming you have a supportDetailId for updates; otherwise, create
+//       // if (supportDetailId) { // Replace with actual logic to check for existing support details
+//       //   response = await updateSupportDetail(supportDetailId, transformedData);
+//       // } else {
+//         // response = await createSupportDetail(transformedData);
+//       // }
+//       // console.log("Support details saved:", transformedData);
+//     } catch (error) {
+//       console.error("Error saving support details:", error);
 //     }
-//   }
+//   };
+
+
 
 //   const businessDays = watch("businessDays")
 
@@ -176,7 +200,7 @@
 //           </div>
 //           <p className="text-xs text-muted-foreground">
 //             📌 To let users know who to reach to for specific issues. Following
-//             details are taken from Business Settings &gt; Business Details.
+//             details are taken from Business Settings > Business Details.
 //           </p>
 //         </div>
 
@@ -198,26 +222,26 @@
 //             name="phone"
 //             label="Phone Number (if available)"
 //             type="tel"
-//             placeholder="Enter Support Email Address"
+//             placeholder="Enter Phone Number"
 //             icon={Phone}
 //           />
 //           <InputField
 //             name="address"
 //             label="Physical Address (if applicable)"
-//             placeholder="Enter Support Email Address"
+//             placeholder="Enter Physical Address"
 //             icon={MapPin}
 //           />
 //           <InputField
 //             name="googleMap"
 //             label="Google Map (if applicable)"
 //             type="url"
-//             placeholder="Enter Support Email Address"
+//             placeholder="Enter Google Map URL"
 //             icon={Map}
 //           />
 //         </div>
 
+//         <BusinessDaysField name="businessDays" holidayFieldName="holidays" />
 //         <BusinessHourSelector name="businessHours" />
-
 //         <HolidayField name="holidays" disableFieldName="businessDays" />
 
 //         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
@@ -231,7 +255,6 @@
 // export default ContactInformationForm
 
 
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -241,24 +264,15 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 import InputField from "@/components/custom-form-fields/input-field"
-import SelectField from "@/components/custom-form-fields/select-field"
 import { CheckCircle, Building2, Mail, Phone, MapPin, Map } from "lucide-react"
 import BusinessHourSelector from "@/app/(admin)/business-settings/_components/business-hour-selector"
-import { transformBusinessData } from "@/features/support-detail/action/action"
-import { transformFormDataForSupportDetail, useSupportTabsStore } from "@/app/(admin)/support/_store/support-store"
+import { transformSupportDetailForForm, transformBusinessDataForSupportDetail, transformFormDataForSupportDetail, useSupportTabsStore } from "@/app/(admin)/support/_store/support-store"
 import { useBusinessStore } from "@/app/(admin)/business-settings/_store/business-store"
 import BusinessDaysField from "@/components/custom-form-fields/business-settings/business-day-field"
 import HolidayField from "@/components/custom-form-fields/business-settings/business-holiday-field"
-import { createSupportDetail } from "@/app/(admin)/support/_api-call/support-api-call"
-
-// Define holiday date options (mocked for now)
-const dateOptions = [
-  { value: "2025-01-01", label: "Jan 1, 2025" },
-  { value: "2025-01-02", label: "Jan 2, 2025" },
-  { value: "2025-12-25", label: "Dec 25, 2025" },
-  { value: "2025-12-26", label: "Dec 26, 2025" },
-]
+import { createSupportDetail, updateSupportDetail } from "@/app/(admin)/support/_api-call/support-api-call"
 
 const schema = z.object({
   businessName: z.string().min(1, "Business name is required"),
@@ -269,7 +283,7 @@ const schema = z.object({
   phone: z.string().min(1, "Phone number is required"),
   address: z.string().min(1, "Physical address is required"),
   googleMap: z.string().min(1, "Google Map URL is required"),
-  businessHours: z.object({}).passthrough(), // BusinessHourSelector handles its own validation
+  businessHours: z.object({}).passthrough(),
   businessDays: z
     .array(z.string())
     .min(1, "At least one business day is required"),
@@ -277,17 +291,10 @@ const schema = z.object({
 })
 
 const ContactInformationForm = () => {
-  const [useBusinessInfo, setUseBusinessInfo] = useState(true)
-
-  const { getSupportBusinessDetailById } = useSupportTabsStore()
+  const { supportDetail, getSupportBusinessDetailById, setSupportDetail } = useSupportTabsStore()
   const { selectedBusiness } = useBusinessStore()
-
-  useEffect(() => {
-    if (selectedBusiness) {
-      console.log("Selected business changed:", selectedBusiness)
-      getSupportBusinessDetailById(selectedBusiness.id)
-    }
-  }, [getSupportBusinessDetailById])
+  const [useBusinessInfo, setUseBusinessInfo] = useState(!supportDetail)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm({
     defaultValues: {
@@ -297,26 +304,11 @@ const ContactInformationForm = () => {
       address: "",
       googleMap: "",
       businessHours: {
-        Mon: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
-        Tue: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
-        Wed: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
-        Thu: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
-        Fri: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
+        Mon: { work: [["09:00 AM", "04:00 PM"]], break: [["12:00 PM", "01:00 PM"]] },
+        Tue: { work: [["09:00 AM", "04:00 PM"]], break: [["12:00 PM", "01:00 PM"]] },
+        Wed: { work: [["09:00 AM", "04:00 PM"]], break: [["12:00 PM", "01:00 PM"]] },
+        Thu: { work: [["09:00 AM", "04:00 PM"]], break: [["12:00 PM", "01:00 PM"]] },
+        Fri: { work: [["09:00 AM", "04:00 PM"]], break: [["12:00 PM", "01:00 PM"]] },
         Sat: { work: [], break: [] },
         Sun: { work: [], break: [] },
       },
@@ -327,87 +319,63 @@ const ContactInformationForm = () => {
   })
 
   const { reset, watch } = form
-
-  // Mock fetching business details
-  const fetchBusinessDetails = () => {
-    return {
-      businessName: "My Business",
-      supportEmail: "support@mybusiness.com",
-      phone: "+1234567890",
-      address: "123 Main St, City, State, ZIP",
-      googleMap: "https://maps.google.com",
-      businessHours: {
-        Mon: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
-        Tue: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
-        Wed: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
-        Thu: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
-        Fri: {
-          work: [["09:00 AM", "04:00 PM"]],
-          break: [["12:00 PM", "01:00 PM"]],
-        },
-        Sat: { work: [], break: [] },
-        Sun: { work: [], break: [] },
-      },
-      businessDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-      holidays: ["Sat", "Sun"],
-    }
-  }
+  const businessDays = watch("businessDays")
 
   useEffect(() => {
-    const fetchData = () => {
-      transformBusinessData().then((businessDetails) => {
-        reset(businessDetails) // Update the form with fetched data
-      })
+    if (selectedBusiness?.id) {
+      console.log("Fetching support details for business ID:", selectedBusiness.id)
+      getSupportBusinessDetailById(selectedBusiness.id)
     }
+  }, [selectedBusiness?.id, getSupportBusinessDetailById])
 
-    if (useBusinessInfo) {
-      fetchData() // Fetch the business details and reset the form
+  useEffect(() => {
+    console.log("useBusinessInfo:", useBusinessInfo, "supportDetail:", supportDetail, "selectedBusiness:", selectedBusiness)
+    if (useBusinessInfo && selectedBusiness) {
+      console.log("Populating form with transformed business data:", selectedBusiness)
+      reset(transformBusinessDataForSupportDetail(selectedBusiness))
+    } else if (!useBusinessInfo && supportDetail) {
+      console.log("Populating form with support detail:", supportDetail)
+      reset(transformSupportDetailForForm(supportDetail))
     }
-  }, [useBusinessInfo, reset])
-
-  // const onSubmit = (data: any) => {
-  //   console.log("Contact Information submitted:", JSON.stringify(data, null, 2))
-
-  //   if (!useBusinessInfo) {
-  //     console.log("Saving as new support details")
-  //   }
-  // }
-  // // In ContactInformationForm
+  }, [useBusinessInfo, supportDetail, selectedBusiness, reset])
 
   const onSubmit = async (data: any) => {
-    console.log("Contact Information submitted:", data);
-    try {
-      const transformedData = transformFormDataForSupportDetail({...data, businessId: selectedBusiness?.id});
-      
-      console.log("Transformed data:", JSON.stringify(transformedData, null, 2));
-      let response;
-      // Assuming you have a supportDetailId for updates; otherwise, create
-      // if (supportDetailId) { // Replace with actual logic to check for existing support details
-      //   response = await updateSupportDetail(supportDetailId, transformedData);
-      // } else {
-        // response = await createSupportDetail(transformedData);
-      // }
-      // console.log("Support details saved:", transformedData);
-    } catch (error) {
-      console.error("Error saving support details:", error);
+    console.log("Contact Information submitted:", JSON.stringify(data, null, 2))
+    if (!selectedBusiness?.id) {
+      toast.error("No business selected")
+      return
     }
-  };
+    setIsSubmitting(true)
+    try {
+      const transformedData = transformFormDataForSupportDetail({
+        ...data,
+        businessId: selectedBusiness.id,
+      })
+      console.log("Transformed data:", JSON.stringify(transformedData, null, 2))
 
+      let response
+      if (supportDetail?.id) {
+        console.log("Updating support detail with ID:", supportDetail.id)
+        response = await updateSupportDetail(supportDetail.id, transformedData)
+        toast.success("Support details updated successfully!")
+      } else {
+        console.log("Creating new support detail")
+        response = await createSupportDetail(transformedData)
+        toast.success("Support details created successfully!")
+      }
 
-
-  const businessDays = watch("businessDays")
+      if (response.data) {
+        setSupportDetail(response.data)
+      } else {
+        throw new Error("Failed to save support details")
+      }
+    } catch (error: any) {
+      console.error("Error saving support details:", error)
+      toast.error(`Failed to save support details: ${error.message || "Unknown error"}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <FormProvider {...form}>
@@ -476,8 +444,18 @@ const ContactInformationForm = () => {
         <BusinessHourSelector name="businessHours" />
         <HolidayField name="holidays" disableFieldName="businessDays" />
 
-        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-          Save
+        <Button
+          type="submit"
+          className="w-full bg-blue-600 hover:bg-blue-700"
+          disabled={isSubmitting}
+        >
+          {isSubmitting
+            ? supportDetail?.id
+              ? "Updating..."
+              : "Creating..."
+            : supportDetail?.id
+            ? "Update"
+            : "Create"}
         </Button>
       </form>
     </FormProvider>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { ZodError } from "zod"
 import { WeekDays } from "@/features/business-detail/types/types"
 import { SupportBusinessDetailSchema } from "@/app/(admin)/support/_schemas/schema"
+import { Prisma } from "@prisma/client"
 
 interface ParamsProps {
   params: Promise<{ id: string }>
@@ -42,8 +43,10 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
     }
     const body = await req.json()
     const parsedData = SupportBusinessDetailSchema.parse(body)
+    console.log(parsedData, "parsedData")
 
     const existingSupportDetail = await getSupportDetailById(id)
+    console.log(existingSupportDetail, "existingSupportDetail")
 
     if (!existingSupportDetail) {
       return NextResponse.json(
@@ -52,84 +55,80 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
       )
     }
 
-    // update support details
-    const updatedSupportDetail = await prisma.supportBusinessDetail.update({
-      where: { id },
-      data: {
-        supportBusinessName: parsedData.supportBusinessName,
-        supportEmail: parsedData.supportEmail,
-        supportPhone: parsedData.supportPhone,
-        // Handle addresses
-        supportAddress: parsedData.supportAddress,
-        // Handle business availability
-        supportAvailability: {
-          upsert: parsedData.supportAvailability.map((availability) => ({
-            where: { id: availability.id || "" },
-            update: {
-              weekDay: availability.weekDay,
-              type: availability.type,
-              timeSlots: {
-                upsert: availability.timeSlots.map((slot) => ({
-                  where: { id: slot.id || "" },
-                  update: {
-                    startTime: slot.startTime,
-                    endTime: slot.endTime,
-                  },
-                  create: {
-                    startTime: slot.startTime,
-                    endTime: slot.endTime,
-                  },
-                })),
-              },
-            },
-            create: {
-              weekDay: availability.weekDay,
-              type: availability.type,
-              timeSlots: {
-                create: availability.timeSlots.map((slot) => ({
-                  startTime: slot.startTime,
-                  endTime: slot.endTime,
-                })),
-              },
-            },
-          })),
+    const deletedSupportAvailability =
+      await prisma.supportBusinessDetail.delete({
+        where: {
+          id,
         },
+      })
 
-        // Handle holidays
-        supportHoliday: {
-          upsert: parsedData.supportHoliday.map((holiday) => ({
-            where: { id: holiday.id || "" },
-            update: {
+    let updatedSupportDetail
+
+    // update support details
+    if (deletedSupportAvailability) {
+      updatedSupportDetail = await prisma.supportBusinessDetail.create({
+        data: {
+          id,
+          supportBusinessName: parsedData.supportBusinessName,
+          supportEmail: parsedData.supportEmail,
+          supportPhone: parsedData.supportPhone,
+          businessId: parsedData.businessId,
+          supportAddress: parsedData.supportAddress,
+          supportAvailability: {
+            create: parsedData.supportAvailability.map((availability) => ({
+              weekDay: availability.weekDay,
+              type: availability.type,
+              timeSlots: {
+                create: availability.timeSlots.map((timeSlot) => ({
+                  type: timeSlot.type,
+                  startTime: timeSlot.startTime,
+                  endTime: timeSlot.endTime,
+                })),
+              },
+            })),
+          },
+          supportHoliday: {
+            create: parsedData.supportHoliday.map((holiday) => ({
               holiday: holiday.holiday as WeekDays,
               type: holiday.type,
-              date: holiday.date,
-            },
-            create: {
-              holiday: holiday.holiday as WeekDays,
-              type: holiday.type,
-              date: holiday.date,
-            },
-          })),
-        },
-      },
-      include: {
-        supportAvailability: {
-          include: {
-            timeSlots: true,
+              date: holiday.date || null,
+            })),
           },
         },
-        supportHoliday: true,
-      },
-    })
-
+        include: {
+          supportAvailability: {
+            include: {
+              timeSlots: true,
+            },
+          },
+          supportHoliday: true,
+        },
+      })
+      return NextResponse.json(
+        {
+          message: "Support Business Detail updated successfully",
+          data: updatedSupportDetail,
+        },
+        { status: 200 }
+      )
+    }
     return NextResponse.json(
       {
-        message: "Support Business Detail updated successfully",
+        message: "Support Business Detail updated failed!",
         data: updatedSupportDetail,
       },
-      { status: 200 }
+      { status: 400 }
     )
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      console.error("Validation error:", error.message)
+      // Handle the validation error specifically
+      return {
+        error: "Validation failed",
+        details: error, // or use error.stack for full stack trace
+      }
+    }
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.errors },

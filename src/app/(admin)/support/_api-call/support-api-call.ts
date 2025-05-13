@@ -46,7 +46,7 @@ async function getSupportDetailById(
 // Fetch support detail by business ID
 async function getSupportDetailByBusinessId(
   businessId: string
-): Promise<SupportBusinessDetail | null> {
+): Promise<{ data: SupportBusinessDetail; success: boolean } | null> {
   try {
     console.log(businessId, "businessId")
     const res = await api.get("/api/support-business-detail")
@@ -62,7 +62,7 @@ async function getSupportDetailByBusinessId(
       (detail: SupportBusinessDetail) => detail.businessId === businessId
     )
     console.log(supportDetail, "supportDetail")
-    return supportDetail || null
+    return { data: supportDetail, success: true }
   } catch (error) {
     console.error("Error fetching support detail by business ID:", error)
     throw error
@@ -104,7 +104,7 @@ async function updateSupportDetail(
   supportData: PostSupportBusinessDetail
 ): Promise<SupportBusinessDetail> {
   try {
-    const { data } = await api.put(`/api/support-business/${id}`, {
+    const { data } = await api.put(`/api/support-business-detail/${id}`, {
       ...supportData,
       id,
     })
