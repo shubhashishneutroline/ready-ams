@@ -46,7 +46,7 @@ const SupportPage = () => {
           activeTab={activeTab} // Use desktop tab name (e.g., "Contact Information")
           onTabChange={setActiveTab} // Update activeTab when clicked
           customTabs={tabs} // Use desktop tab names
-          clasName="hidden md:block" // Hide on mobile, show on desktop
+          className="hidden md:block" // Hide on mobile, show on desktop
         />
 
         {/* Mobile Tabs: Shown only on small screens */}
@@ -62,7 +62,7 @@ const SupportPage = () => {
           }
           onTabChange={handleMobileTabChange} // Handle mobile tab clicks
           customTabs={mTabs} // Use mobile tab names
-          clasName="block md:hidden" // Show on mobile, hide on desktop
+          className="block md:hidden" // Show on mobile, hide on desktop
         />
 
         {/* Show content based on activeTab (uses desktop tab names) */}

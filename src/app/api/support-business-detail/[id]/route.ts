@@ -42,6 +42,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
       )
     }
     const body = await req.json()
+    console.log(body, "body")
     const parsedData = SupportBusinessDetailSchema.parse(body)
     console.log(parsedData, "parsedData")
 
@@ -74,6 +75,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
           supportPhone: parsedData.supportPhone,
           businessId: parsedData.businessId,
           supportAddress: parsedData.supportAddress,
+          supportGoogleMap: parsedData.supportGoogleMap,
           supportAvailability: {
             create: parsedData.supportAvailability.map((availability) => ({
               weekDay: availability.weekDay,

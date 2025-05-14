@@ -1,6 +1,7 @@
 "use client"
 
-import { TabMapKey } from "@/app/(admin)/support/page"
+import { TabMapKey } from "@/app/(admin)/support/_store/support-store"
+// import { TabMapKey } from "@/app/(admin)/support/page"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 
@@ -11,19 +12,19 @@ interface PageTabsProps {
   activeTab: string
   onTabChange: (tab: TabMapKey) => void // Use TabMapKey
   customTabs?: string[]
-  clasName?: string
+  className?: string
 }
 const PageTabs = ({
   isReminder,
   activeTab,
   onTabChange,
   customTabs,
-  clasName,
+  className,
 }: PageTabsProps) => {
   const tabs = customTabs || (isReminder ? reminderTabs : businessTabs)
 
   return (
-    <div className={cn("space-y-2", clasName)}>
+    <div className={cn("space-y-2", className)}>
       <ToggleGroup
         type="single"
         value={activeTab}

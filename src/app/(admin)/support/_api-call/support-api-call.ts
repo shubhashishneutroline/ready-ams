@@ -104,6 +104,7 @@ async function updateSupportDetail(
   supportData: PostSupportBusinessDetail
 ): Promise<SupportBusinessDetail> {
   try {
+    console.log(supportData, "supportData------")
     const { data } = await api.put(`/api/support-business-detail/${id}`, {
       ...supportData,
       id,

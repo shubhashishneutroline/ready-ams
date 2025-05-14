@@ -23,24 +23,6 @@ import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { capitalizeFirstChar, capitalizeOnlyFirstLetter } from "@/utils/utils"
 
-// Service cell component to handle async data fetching
-// const ServiceCell = ({ serviceId }: { serviceId: string }) => {
-//   const [serviceName, setServiceName] = useState<string>("Loading...");
-
-//   useEffect(() => {
-//     const fetchService = async () => {
-//       const services = await getServices();
-// const service = services?.find((s: any) => s.id === serviceId);
-// setServiceName(service?.title || "N/A");
-//     };
-//     fetchService();
-//   }, [serviceId]);
-
-//   return <div>{serviceName}</div>;
-// };
-
-// const serviceData = await getServices();
-
 // Define columns for the payment table
 export const ticketColumns = (
   handleEdit: (ticket: any) => void
