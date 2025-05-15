@@ -18,7 +18,12 @@ const AppointmentReminderOffsetSchema = z.object({
 // Reminder Offset Schema
 const ReminderOffsetSchema = z.object({
   id: z.string().optional(),
-  sendOffset: z.number().int().min(1, "Send offset must be greater than 0"),
+  sendOffset: z
+    .number()
+    .int()
+    .min(1, "Send offset must be greater than 0")
+    .optional(),
+  scheduledAt: z.string().optional(),
   sendBefore: z.boolean(),
   appointmentOffsets: z.array(AppointmentReminderOffsetSchema).optional(),
 })
