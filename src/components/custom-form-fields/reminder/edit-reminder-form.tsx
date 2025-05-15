@@ -10,7 +10,7 @@ import InputField from "@/components/custom-form-fields/input-field"
 import TextAreaField from "@/components/custom-form-fields/textarea-field"
 import ReminderSelectField from "./select-field"
 import CheckboxGroupField from "./checbox-group-field"
-import ScheduleField from "./schedule-field"
+import ScheduleField from "./modified-schedule-field"
 import RadioGroupField from "./radio-group-field"
 import {
   AudioWaveform,

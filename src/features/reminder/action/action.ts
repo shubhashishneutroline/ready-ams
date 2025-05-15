@@ -1,8 +1,8 @@
 import { getServices } from "@/features/service/api/api"
-import { ReminderType } from "../types/types"
 import { getReminder, getReminderById } from "../api/api"
 import { getAnnouncementOrOfferById } from "@/db/announcement-offer"
 import { getAnnouncementById } from "@/features/announcement-offer/api/api"
+import { ReminderType } from "@/app/(admin)/appointment/_types/appoinment"
 
 export const serviceOption = await getServices()
 export const reminderData = await getReminder()
