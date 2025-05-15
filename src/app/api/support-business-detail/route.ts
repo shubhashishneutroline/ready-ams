@@ -124,6 +124,7 @@ export async function POST(req: NextRequest) {
       {
         message: "Support Business Detail created successfully",
         data: newSupportDetail,
+        success: true,
       },
       { status: 201 }
     )
@@ -134,17 +135,18 @@ export async function POST(req: NextRequest) {
       return {
         error: "Validation failed",
         details: error, // or use error.stack for full stack trace
+        success: false,
       }
     }
     console.log(error)
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: "Validation failed", details: error.errors },
+        { error: "Validation failed", details: error.errors, success: false },
         { status: 400 }
       )
     }
     return NextResponse.json(
-      { error: "Internal server error", detail: error },
+      { error: "Internal server error", detail: error, success: false },
       { status: 500 }
     )
   }
