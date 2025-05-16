@@ -5,6 +5,7 @@ import { getReminder } from "@/features/reminder/api/api"
 import PageTabs from "@/components/table/page-tabs"
 import { useReminderStore } from "./_store/reminder-store"
 import { Announcement } from "@mui/icons-material"
+import AnnouncementTabPage from "@/features/reminder/components/reminder/announcement-page"
 
 const tabOptions = ["Reminder", "Announcement"]
 
@@ -18,7 +19,7 @@ const ReminderPage = () => {
         onTabChange={onActiveTab}
       />
       {activeTab === "Reminder" && <ReminderTabsPage />}
-      {/* {activeTab === "Announcement" && <AnnouncementPage />} */}
+      {activeTab === "Announcement" && <AnnouncementTabPage />}
     </>
   )
 }

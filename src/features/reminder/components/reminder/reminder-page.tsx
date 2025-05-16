@@ -14,13 +14,7 @@ import ReminderCard from "./reminder-card"
 import { reminderColumns } from "@/features/reminder/components/reminder/columns"
 import { useReminderStore } from "@/app/(admin)/reminders/_store/reminder-store"
 
-const pageOptions = [
-  "Reminder",
-  "Follow up",
-  "Cancellation",
-  "Missed",
-  "Custom",
-]
+const tabOptions = ["Reminder", "Follow up", "Cancellation", "Missed", "Custom"]
 
 const ReminderTabsPage = () => {
   const router = useRouter()
@@ -103,7 +97,7 @@ const ReminderTabsPage = () => {
             isReminder
             activeTab={reminderTab}
             onTabChange={onReminderTab}
-            customTabs={pageOptions}
+            customTabs={tabOptions}
           />
           <Button
             variant="outline"
