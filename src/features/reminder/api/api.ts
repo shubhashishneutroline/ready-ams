@@ -42,10 +42,10 @@ export interface ReminderOffset {
 async function getReminder() {
   try {
     const { data } = await api.get("/api/reminder")
-    return data
+    return { data, success: true }
   } catch (error) {
     console.error("Error fetching reminder:", error)
-    return []
+    return { success: false }
   }
 }
 

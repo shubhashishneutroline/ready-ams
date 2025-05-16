@@ -1,170 +1,190 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
-
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
+import { cn } from "@/utils/utils"
 import PageTabs from "@/features/business-detail/components/page-tabs"
-
 import TablePageHeader from "@/components/shared/table/table-page-header"
 import { DataTable } from "./data-table"
-
-import { getReminder } from "../../api/api"
-import { getAnnouncement } from "@/features/announcement-offer/api/api"
-import { reminderColumns } from "@/features/reminder/components/reminder/columns"
-import { announcementColumns } from "../announcment/columns"
-import dayjs from "dayjs"
-import { AnnouncementOrOffer, Reminder } from "@/data/structure"
-import TableFilterTabs from "./table-filter-tabs"
-import TableFilterTabs1 from "../announcment/table-filter-tabs"
-import { getAnnouncementStatus } from "../../lib/lib"
+import DataTableSkeleton from "@/components/table/skeleton-table"
 import ReminderCard from "./reminder-card"
-import AnnouncementCard from "../announcment/announcement-card"
+import { reminderColumns } from "@/features/reminder/components/reminder/columns"
+import { useReminderStore } from "@/app/(admin)/reminders/_store/reminder-store"
+
+const pageOptions = [
+  "Reminder",
+  "Follow up",
+  "Cancellation",
+  "Missed",
+  "Custom",
+]
 
 const ReminderTabsPage = () => {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState("Reminder")
+  const {
+    reminderTab,
+    onReminderTab,
+    getFilteredReminders,
+    fetchReminders,
+    reminders,
+    loading,
+    isRefreshing,
+    hasFetched,
+    error,
+  } = useReminderStore()
 
-  const [reminders, setReminders] = useState<Reminder[]>([])
-  const [announcements, setAnnouncements] = useState<AnnouncementOrOffer[]>([])
-  const [filterType, setFilterType] = useState("today")
-  const [filterType1, setFilterType1] = useState("sent")
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
+  const hasFetchedOnce = useRef(false)
 
-  const [filteredReminders, setFilteredReminders] = useState<Reminder[]>([])
-  const [filteredAnnouncements, setFilteredAnnouncements] = useState<
-    AnnouncementOrOffer[]
-  >([])
-
-  const getExpiryDuration = (expiry: string): number => {
-    switch (expiry) {
-      case "ONE_DAY":
-        return 1 * 24 * 60 * 60 * 1000
-      case "THREE_DAYS":
-        return 3 * 24 * 60 * 60 * 1000
-      case "SEVEN_DAYS":
-        return 7 * 24 * 60 * 60 * 1000
-      default:
-        return 0
-    }
-  }
+  // Initial fetch only if not fetched
   useEffect(() => {
-    const fetchData = async () => {
-      const reminderData = await getReminder()
-
-      const announcementData = await getAnnouncement()
-      setReminders(reminderData)
-      setAnnouncements(announcementData)
+    if (hasFetchedOnce.current || loading || isRefreshing || hasFetched) {
+      return
     }
-    fetchData()
+    console.log("Initial fetch triggered: no data fetched")
+    hasFetchedOnce.current = true
+    fetchReminders()
+  }, [loading, isRefreshing, hasFetched, fetchReminders])
+
+  // Auto-refresh every 5 minutes (silent)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log("Silent auto-refresh triggered")
+      fetchReminders(false)
+    }, 300000) // 5 minutes
+
+    return () => clearInterval(interval)
+  }, [fetchReminders])
+
+  const handleRefresh = useCallback(() => {
+    if (debounceTimeout.current) {
+      return
+    }
+    console.log("Manual refresh triggered")
+    debounceTimeout.current = setTimeout(() => {
+      fetchReminders(true)
+      debounceTimeout.current = null
+    }, 300)
+  }, [fetchReminders])
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current)
+      }
+    }
   }, [])
 
-  useEffect(() => {
-    const today = dayjs().startOf("day")
+  const filteredReminders = useMemo(() => {
+    const result = getFilteredReminders()
+    console.log("Rendered filtered reminders-------:", result)
+    return result
+  }, [reminderTab, reminders, getFilteredReminders])
 
-    const filterReminders = (items: Reminder[]) =>
-      items.filter((item) => {
-        switch (filterType) {
-          case "reminder":
-            return item.type === "REMINDER"
-          case "follow_up":
-            return item.type === "FOLLOW_UP"
-          case "cancellation":
-            return item.type === "CANCELLATION"
-          case "missed":
-            return item.type === "MISSED"
-          case "custom":
-            return item.type === "CUSTOM"
-          default:
-            return true
-        }
-      })
-
-    const filterAnnouncements = (items: AnnouncementOrOffer[]) =>
-      items.filter((item) => {
-        const now = new Date().getTime()
-        const scheduledTime = new Date(item.scheduledAt).getTime()
-        const expiryDuration = getExpiryDuration(item.expiredAt)
-        const expiryTime = scheduledTime + expiryDuration
-
-        switch (filterType1) {
-          case "sent":
-            return scheduledTime <= now && now <= expiryTime
-          case "scheduled":
-            return scheduledTime > now
-          case "expired":
-            return now > expiryTime
-          case "all":
-          default:
-            return true
-        }
-      })
-
-    setFilteredReminders(filterReminders(reminders))
-    setFilteredAnnouncements(filterAnnouncements(announcements))
-  }, [reminders, announcements, filterType, filterType1])
+  const memoizedColumns = useMemo(() => reminderColumns, [])
 
   return (
     <div className="flex flex-col gap-y-3 md:gap-y-6 overflow-x-auto max-w-screen">
-      <Card className="w-full p-4">
-        <PageTabs
-          isReminder
-          activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab)}
-        />
-
-        {activeTab === "Reminder" ? (
-          <TableFilterTabs onChange={setFilterType} />
-        ) : (
-          <TableFilterTabs1 onChange={setFilterType1} />
+      <div className="w-full p-4">
+        {error && (
+          <div className="text-red-500 text-sm text-center mb-4">{error}</div>
         )}
-
-        {activeTab === "Reminder" ? (
-          <div className="flex flex-col ">
+        {(loading || isRefreshing) && (
+          <div className="text-center text-muted-foreground mb-4">
+            Loading...
+          </div>
+        )}
+        <div className="flex justify-between items-center mb-4">
+          <PageTabs
+            isReminder
+            activeTab={reminderTab}
+            onTabChange={onReminderTab}
+            customTabs={pageOptions}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+            aria-label={
+              isRefreshing ? "Refreshing reminders" : "Refresh reminders"
+            }
+            aria-busy={isRefreshing}
+          >
+            <RefreshCw
+              className={cn("h-4 w-4", isRefreshing && "animate-spin")}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </Button>
+        </div>
+        {loading && !hasFetched ? (
+          <DataTableSkeleton />
+        ) : (
+          <div className="flex flex-col">
             <div className="hidden md:block space-y-3 md:space-y-6">
               <TablePageHeader
                 title="Reminder"
-                description="Manage and Customize your business"
+                description="Manage and Customize your reminder"
                 newButton="New Reminder"
                 handleClick={() => {
                   router.push("/reminders/create/")
                 }}
               />
-              <DataTable columns={reminderColumns} data={filteredReminders} />
+              {filteredReminders.length === 0 ? (
+                <div className="text-center py-8 text-sm text-muted-foreground italic">
+                  No reminders found for the selected tab ['{reminderTab}'].
+                  <Button
+                    variant="link"
+                    className="p-1 ml-1 text-blue-600 hover:underline"
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    aria-label="Retry fetching reminders"
+                  >
+                    Try refreshing
+                  </Button>
+                  or creating a new reminder.
+                </div>
+              ) : (
+                <DataTable
+                  columns={memoizedColumns}
+                  data={filteredReminders}
+                  searchFieldName="title"
+                />
+              )}
             </div>
             <div className="block md:hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredReminders?.map((reminder: any, index: number) => (
-                <ReminderCard
-                  key={index}
-                  reminder={reminder}
-                  filterType={filterType}
-                />
-              ))}
+              {filteredReminders.length === 0 ? (
+                <div className="text-center py-8 text-sm text-muted-foreground italic">
+                  No reminders found for the selected tab ['{reminderTab}'].
+                  <Button
+                    variant="link"
+                    className="p-1 ml-1 text-blue-600 hover:underline"
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    aria-label="Retry fetching reminders"
+                  >
+                    Try refreshing
+                  </Button>
+                  or creating a new reminder.
+                </div>
+              ) : (
+                filteredReminders.map((reminder: any, index: number) => (
+                  <ReminderCard
+                    key={index}
+                    reminder={reminder}
+                    filterType={reminderTab}
+                  />
+                ))
+              )}
             </div>
           </div>
-        ) : (
-          <>
-            <div className="hidden md:block space-y-3 md:space-y-6">
-              <TablePageHeader
-                title="Announcement"
-                description="Manage and Customize your business"
-                newButton="New Announcement"
-                handleClick={() => {
-                  router.push("/announcements/create/")
-                }}
-              />
-              <DataTable
-                columns={announcementColumns}
-                data={filteredAnnouncements}
-              />
-            </div>
-            <div className="block md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {filteredAnnouncements?.map((reminder: any, index: number) => (
-                <AnnouncementCard key={index} announcement={reminder} />
-              ))}
-            </div>
-          </>
         )}
-      </Card>
+      </div>
     </div>
   )
 }
