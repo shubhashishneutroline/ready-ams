@@ -4,14 +4,8 @@ import ReminderTabsPage from "@/features/reminder/components/reminder/reminder-p
 
 import { getReminder } from "@/features/reminder/api/api"
 
-
-
 const ReminderPage = async () => {
-  return (
-    <ReminderTabsPage
-
-    />
-  )
+  return <ReminderTabsPage />
 }
 
 export default ReminderPage

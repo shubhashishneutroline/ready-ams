@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
         },
         reminderOffset: {
           create: parsedData.reminderOffset.map((reminderOffset) => ({
-            customScheduleAt: reminderOffset.customScheduleAt,
+            customScheduleAt: reminderOffset.scheduledAt,
             sendOffset: reminderOffset.sendOffset
               ? reminderOffset.sendOffset
               : null,

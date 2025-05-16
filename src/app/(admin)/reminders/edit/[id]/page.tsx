@@ -11,6 +11,7 @@ import {
   reminderData,
 } from "@/features/reminder/action/action"
 import { getReminder } from "@/features/reminder/api/api"
+import ReminderForm from "@/components/custom-form-fields/reminder/reminder-form"
 
 const ReminderPage = () => {
   const params = useParams()
@@ -31,7 +32,7 @@ const ReminderPage = () => {
           onTabChange={(tab) => setActiveTab(tab)}
         />
         {activeTab === "Reminder" ? (
-          <EditReminderForm id={id} />
+          <ReminderForm />
         ) : (
           <EditAnnouncementForm id={id} />
         )}

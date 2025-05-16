@@ -73,9 +73,9 @@ async function createReminder(reminderData: Reminder) {
   }
 }
 
-async function updateReminder(id: string, reminderData: Omit<Reminder, "id">) {
+async function updateReminder(id: string, reminderData: any) {
   try {
-    const { data } = await api.put(`/api/reminder`, {
+    const { data } = await api.put(`/api/reminder/${id}`, {
       ...reminderData,
       id,
     })

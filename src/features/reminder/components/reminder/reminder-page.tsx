@@ -50,6 +50,7 @@ const ReminderTabsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       const reminderData = await getReminder()
+
       const announcementData = await getAnnouncement()
       setReminders(reminderData)
       setAnnouncements(announcementData)
