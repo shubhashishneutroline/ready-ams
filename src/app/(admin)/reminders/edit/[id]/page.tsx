@@ -12,22 +12,24 @@ import {
 } from "@/features/reminder/action/action"
 import { getReminder } from "@/features/reminder/api/api"
 import ReminderForm from "@/components/custom-form-fields/reminder/reminder-form"
-import { useReminderStore } from "../../_store/reminder-store"
+import { useNotificationStore } from "../../_store/reminder-store"
+import AnnouncementForm from "@/features/reminder/components/announcment/announcement-form"
 
 const ReminderPage = () => {
   const params = useParams()
   const id = params.id as string
 
-  const { activeTab, onActiveTab } = useReminderStore()
+  const { activeTab } = useNotificationStore()
 
   return (
     <div>
       <Card className="h-full overflow-y-auto p-4 md:p-6">
-        <PageTabs isReminder activeTab={activeTab} onTabChange={onActiveTab} />
+        {/* <PageTabs isReminder activeTab={activeTab} onTabChange={onActiveTab} /> */}
         {activeTab === "Reminder" ? (
           <ReminderForm />
         ) : (
-          <EditAnnouncementForm id={id} />
+          // <EditAnnouncementForm id={id} />
+          <AnnouncementForm />
         )}
       </Card>
     </div>

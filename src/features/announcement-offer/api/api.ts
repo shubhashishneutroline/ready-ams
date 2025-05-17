@@ -1,18 +1,18 @@
-import { getBaseUrl } from "@/lib/baseUrl";
+import { getBaseUrl } from "@/lib/baseUrl"
 
-import axios from "axios";
-import { ExpirationDuration, Showon, TargetAudience } from "../types/types";
+import axios from "axios"
+import { ExpirationDuration, Showon, TargetAudience } from "../types/types"
 
 export interface AnnouncementOrOffer {
-  id?: string;
-  title: string; // Required field for the title of the announcement or offer
-  description?: string; // Optional: Description of the announcement or offer
-  message?: string; // Optional: Custom message for the announcement or offer
-  audience: string; // Required: Target audience for the announcement
-  isImmediate: boolean; // Required: Indicates if the announcement or offer is immediate
-  scheduledAt: string; // Required: ISO string for the scheduled date and time
-  showOn: string; // Required: Where the announcement should show (e.g., banner, push notification, email)
-  expiredAt: string; // Required: Expiration duration or "never"
+  id?: string
+  title: string // Required field for the title of the announcement or offer
+  description?: string // Optional: Description of the announcement or offer
+  message?: string // Optional: Custom message for the announcement or offer
+  audience: string // Required: Target audience for the announcement
+  isImmediate: boolean // Required: Indicates if the announcement or offer is immediate
+  scheduledAt: string // Required: ISO string for the scheduled date and time
+  showOn: string // Required: Where the announcement should show (e.g., banner, push notification, email)
+  expiredAt: string // Required: Expiration duration or "never"
 }
 
 const api = axios.create({
@@ -20,16 +20,17 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-});
+})
 
 // Get all announcements
 async function getAnnouncement() {
   try {
-    const { data } = await api.get("/api/announcement-offer");
-    return data;
+    const { data } = await api.get("/api/announcement-offer")
+    console.log(data, "inside getAnnouncement apiu call")
+    return { data, success: true }
   } catch (error) {
-    console.error("Error fetching reminders:", error);
-    return [];
+    console.error("Error fetching reminders:", error)
+    return { data: [], success: false }
   }
 }
 
@@ -38,28 +39,26 @@ async function getAnnouncementById(id: string) {
   try {
     const { data } = await api.get("/api/announcement-offer", {
       params: { id },
-    });
+    })
     const announcement = data.find(
       (announcement: AnnouncementOrOffer) => announcement.id === id
-    );
-    return announcement;
+    )
+    return announcement
   } catch (error) {
-    console.error("Error fetching reminder by id:", error);
-    throw error;
+    console.error("Error fetching reminder by id:", error)
+    throw error
   }
 }
 
 // Create announcement
 async function createAnnouncement(announcementData: AnnouncementOrOffer) {
   try {
-    const { data } = await api.post(
-      "/api/announcement-offer",
-      announcementData
-    );
-    return data;
+    const { data } = await api.post("/api/announcement-offer", announcementData)
+    console.log(data, "inside Create func announcement")
+    return { data, success: true }
   } catch (error) {
-    console.error("Error creating announcement:", error);
-    throw error;
+    console.error("Error creating announcement:", error)
+    return { data: null, success: false }
   }
 }
 
@@ -72,12 +71,12 @@ async function updateAnnouncement(
     const { data } = await api.put("/api/announcement-offer", {
       ...announcementData,
       id,
-    });
-    console.log(data, "inside Update func");
-    return data;
+    })
+    console.log(data, "inside Update func")
+    return data
   } catch (error) {
-    console.error("Error updating announcement:", error);
-    throw error;
+    console.error("Error updating announcement:", error)
+    throw error
   }
 }
 
@@ -86,11 +85,11 @@ async function deleteAnnouncement(formData: any) {
   try {
     const { data } = await api.delete(`/api/announcement-offer`, {
       data: formData,
-    });
-    return data;
+    })
+    return data
   } catch (error) {
-    console.error("Error deleting announcement:", error);
-    throw error;
+    console.error("Error deleting announcement:", error)
+    throw error
   }
 }
 
@@ -101,4 +100,4 @@ export {
   createAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
-};
+}

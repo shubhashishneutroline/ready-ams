@@ -31,7 +31,7 @@ import TableSearch from "./table-search"
 
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  data: TData[] | any
   searchFieldName: string
 }
 

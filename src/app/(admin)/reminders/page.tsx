@@ -1,25 +1,19 @@
 "use client"
-import ReminderTabsPage from "@/features/reminder/components/reminder/reminder-page"
 
-import { getReminder } from "@/features/reminder/api/api"
+import React from "react"
+import ReminderTabsPage from "@/features/reminder/components/reminder/reminder-page"
+import NotificationTabsPage from "@/features/reminder/components/reminder/announcement-page"
 import PageTabs from "@/components/table/page-tabs"
-import { useReminderStore } from "./_store/reminder-store"
-import { Announcement } from "@mui/icons-material"
-import AnnouncementTabPage from "@/features/reminder/components/reminder/announcement-page"
+import { useNotificationStore } from "./_store/reminder-store"
 
 const tabOptions = ["Reminder", "Announcement"]
 
 const ReminderPage = () => {
-  const { activeTab, onActiveTab } = useReminderStore()
+  const { activeTab, onActiveTab } = useNotificationStore()
   return (
     <>
-      <PageTabs
-        customTabs={tabOptions}
-        activeTab={activeTab}
-        onTabChange={onActiveTab}
-      />
-      {activeTab === "Reminder" && <ReminderTabsPage />}
-      {activeTab === "Announcement" && <AnnouncementTabPage />}
+      {activeTab === tabOptions[0] && <ReminderTabsPage />}
+      {activeTab === tabOptions[1] && <NotificationTabsPage />}
     </>
   )
 }

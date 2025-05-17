@@ -7,25 +7,18 @@ import AnnouncementForm from "@/features/reminder/components/announcment/announc
 import { useState } from "react"
 
 import ReminderForm from "@/components/custom-form-fields/reminder/reminder-form"
-import { useReminderStore } from "../_store/reminder-store"
 import PageTabs from "@/components/table/page-tabs"
+import { useNotificationStore } from "../_store/reminder-store"
 
 const ReminderPage = () => {
-  const { activeTab, onActiveTab } = useReminderStore()
+  const { activeTab, onActiveTab } = useNotificationStore()
   console.log(activeTab, "activeTab")
   const isRemindetr =
     activeTab === "Reminder" || activeTab === "Announcement || Offer"
 
   return (
-    <div>
-      <Card className="h-full overflow-y-auto p-4 md:p-6">
-        <PageTabs
-          isReminder={isRemindetr}
-          activeTab={activeTab}
-          onTabChange={onActiveTab}
-        />
-        {activeTab === "Reminder" ? <ReminderForm /> : <AnnouncementForm />}
-      </Card>
+    <div className="h-full overflow-y-auto">
+      {activeTab === "Reminder" ? <ReminderForm /> : <AnnouncementForm />}
     </div>
   )
 }

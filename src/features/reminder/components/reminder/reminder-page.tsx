@@ -8,17 +8,24 @@ import { RefreshCw } from "lucide-react"
 import { cn } from "@/utils/utils"
 import PageTabs from "@/features/business-detail/components/page-tabs"
 import TablePageHeader from "@/components/shared/table/table-page-header"
-import { DataTable } from "./data-table"
 import DataTableSkeleton from "@/components/table/skeleton-table"
 import ReminderCard from "./reminder-card"
 import { reminderColumns } from "@/features/reminder/components/reminder/columns"
-import { useReminderStore } from "@/app/(admin)/reminders/_store/reminder-store"
+import { useNotificationStore } from "@/app/(admin)/reminders/_store/reminder-store"
+import { DataTable } from "@/components/table/data-table"
 
-const tabOptions = ["Reminder", "Follow up", "Cancellation", "Missed", "Custom"]
+const reminderTabs = [
+  "Reminder",
+  "Follow up",
+  "Cancellation",
+  "Missed",
+  "Custom",
+]
 
 const ReminderTabsPage = () => {
   const router = useRouter()
   const {
+    activeTab,
     reminderTab,
     onReminderTab,
     getFilteredReminders,
@@ -28,30 +35,38 @@ const ReminderTabsPage = () => {
     isRefreshing,
     hasFetched,
     error,
-  } = useReminderStore()
+  } = useNotificationStore()
 
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
   const hasFetchedOnce = useRef(false)
 
-  // Initial fetch only if not fetched
+  // Initial fetch only if not fetched and on Reminder tab
   useEffect(() => {
-    if (hasFetchedOnce.current || loading || isRefreshing || hasFetched) {
+    if (
+      hasFetchedOnce.current ||
+      loading ||
+      isRefreshing ||
+      hasFetched ||
+      activeTab !== "Reminder"
+    ) {
       return
     }
     console.log("Initial fetch triggered: no data fetched")
     hasFetchedOnce.current = true
     fetchReminders()
-  }, [loading, isRefreshing, hasFetched, fetchReminders])
+  }, [loading, isRefreshing, hasFetched, fetchReminders, activeTab])
 
   // Auto-refresh every 5 minutes (silent)
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log("Silent auto-refresh triggered")
-      fetchReminders(false)
+      if (activeTab === "Reminder") {
+        console.log("Silent auto-refresh triggered")
+        fetchReminders(false)
+      }
     }, 300000) // 5 minutes
 
     return () => clearInterval(interval)
-  }, [fetchReminders])
+  }, [fetchReminders, activeTab])
 
   const handleRefresh = useCallback(() => {
     if (debounceTimeout.current) {
@@ -87,17 +102,17 @@ const ReminderTabsPage = () => {
         {error && (
           <div className="text-red-500 text-sm text-center mb-4">{error}</div>
         )}
-        {(loading || isRefreshing) && (
+        {/* {(loading || isRefreshing) && (
           <div className="text-center text-muted-foreground mb-4">
             Loading...
           </div>
-        )}
+        )} */}
         <div className="flex justify-between items-center mb-4">
           <PageTabs
             isReminder
             activeTab={reminderTab}
             onTabChange={onReminderTab}
-            customTabs={tabOptions}
+            customTabs={reminderTabs}
           />
           <Button
             variant="outline"

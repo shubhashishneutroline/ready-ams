@@ -9,7 +9,7 @@ import { useServiceStore } from "./service/_store/service-store"
 import { useCustomerStore } from "./customer/_store/customer-store"
 import { useBusinessStore } from "./business-settings/_store/business-store"
 import { Toaster } from "@/components/ui/sonner"
-import { useReminderStore } from "./reminders/_store/reminder-store"
+import { useNotificationStore } from "./reminders/_store/reminder-store"
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   // Auto load services after admin loads
@@ -17,7 +17,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { fetchAppointments } = useAppointmentStore()
   const { fetchBusinessById } = useBusinessStore()
   const { fetchCustomers } = useCustomerStore()
-  const { fetchReminders } = useReminderStore()
+  const { fetchReminders, fetchAnnouncements } = useNotificationStore()
   // Fetch services on app load
   useEffect(() => {
     console.log("App fully loaded, fetching appoinments, services, business...")
@@ -29,6 +29,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     // fetchBusinesses("cmaf5ax9p000nmstgxvsknuv2")
     fetchCustomers()
     fetchReminders()
+    fetchAnnouncements()
   }, [fetchServices, fetchAppointments, fetchCustomers, fetchBusinessById])
 
   return (
