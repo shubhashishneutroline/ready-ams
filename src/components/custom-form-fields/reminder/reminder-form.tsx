@@ -28,6 +28,7 @@ import {
   updateReminder,
 } from "@/features/reminder/api/api"
 import dayjs from "dayjs"
+import { set } from "lodash"
 
 // Define reminder types for frontend
 const reminderTypes = [
@@ -335,6 +336,7 @@ const reverseTransformData = (
 }
 
 export default function ReminderForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { serviceOptions, services, fetchServices, loading, hasFetched } =
     useServiceStore()
   const [error, setError] = useState<string | null>(null)
@@ -451,6 +453,7 @@ export default function ReminderForm() {
     }
 
     try {
+      setIsSubmitting(true)
       const submittedData = transformData(data)
       let response
       if (reminderId) {
@@ -465,6 +468,8 @@ export default function ReminderForm() {
     } catch (err) {
       console.error("Failed to save reminder:", err)
       setError("Failed to save reminder. Please try again.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -623,8 +628,14 @@ export default function ReminderForm() {
                 placeholder="Enter message"
               />
 
-              <Button type="submit" className="w-full">
-                {reminderId ? "Update" : "Save"}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting
+                  ? reminderId
+                    ? "Updating..."
+                    : "Creating..."
+                  : reminderId
+                    ? "Update"
+                    : "Create"}
               </Button>
             </div>
           </form>
