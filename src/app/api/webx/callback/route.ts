@@ -4,11 +4,15 @@ import { prisma } from "@/lib/prisma";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
-  const state = searchParams.get("state"); // use to identify the individual
+   const individualId = searchParams.get('state'); 
 
-  if (!code || !state) {
-    return NextResponse.json({ error: "Missing code or state" }, { status: 400 });
+  if (!code ) {
+    return NextResponse.json({ error: "Missing code " }, { status: 400 });
   }
+
+   if (!individualId) {
+  return NextResponse.json({ error: "Missing  individualId" }, { status: 400 });
+}
 
   // Exchange code for access token
   const response = await fetch("https://webexapis.com/v1/access_token", {
@@ -19,21 +23,40 @@ export async function GET(req: NextRequest) {
       client_id: process.env.WEBEX_CLIENT_ID!,
       client_secret: process.env.WEBEX_CLIENT_SECRET!,
       code,
-      redirect_uri: "http://localhost:3000/api/webex/callback",
+      redirect_uri: "http://localhost:3000/api/webx/callback",
     }),
   });
 
-  const tokenData = await response.json();
+  const data = await response.json();
+ 
   if (!response.ok) {
-    return NextResponse.json({ error: "Failed to get Webex token", details: tokenData }, { status: 400 });
+    return NextResponse.json({ error: "Failed to get Webex token", details: data }, { status: 400 });
   }
 
-  // Save access token for the individual
-  await prisma.individual.update({
-    where: { id: state },
-    data: { webexAccessToken: tokenData.access_token },
-  });
+  // Store tokens and expiry in VideoIntegration table
+    await prisma.videoIntegration.upsert({
+      where: {
+        individualId_provider: {
+          individualId: individualId,
+          provider: "WEBEX",
+        }
+      },
+      create: {
+        individualId: individualId,
+        provider: "WEBEX",
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresAt: new Date(Date.now() + (data.expires_in * 1000)),
+      },
+      update: {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresAt: new Date(Date.now() + (data.expires_in * 1000)),
+      }
+    });
 
-  // Redirect or return success
-  return NextResponse.redirect("/success"); // or your desired page
+ return NextResponse.json({
+      message: " OAuth successful",
+      accessToken: data.access_token,
+    });
 }

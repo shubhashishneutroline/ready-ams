@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { SupportBusinessDetailSchema } from "@/features/support-detail/schemas/schema" // Adjust the path accordingly
 import { ZodError } from "zod"
 import {
+  AvailabilityType,
+  Holiday,
+  HolidayType,
   WeekDays,
 } from "@/features/business-detail/types/types"
 import { prisma } from "@/lib/prisma"
@@ -10,6 +12,8 @@ import {
   getSupportDetailByEmail,
   getSupportDetailById,
 } from "@/db/supportDetail"
+import { SupportBusinessDetailSchema } from "@/app/(admin)/support/_schemas/schema"
+import { Prisma } from "@prisma/client"
 
 
 // **CREATE SupportBusinessDetail**
@@ -50,21 +54,14 @@ export async function POST(req: NextRequest) {
         supportEmail: parsedData.supportEmail,
         supportPhone: parsedData.supportPhone,
         businessId: parsedData.businessId,
-        supportAddress: {
-          create: parsedData.supportAddress.map((address) => ({
-            street: address.street,
-            city: address.city,
-            country: address.country,
-            zipCode: address.zipCode,
-            googleMap: address.googleMap || "",
-          })),
-        },
+        supportAddress: parsedData.supportAddress,
         supportAvailability: {
           create: parsedData.supportAvailability.map((availability) => ({
             weekDay: availability.weekDay,
             type: availability.type,
             timeSlots: {
               create: availability.timeSlots.map((timeSlot) => ({
+                type: timeSlot.type,
                 startTime: timeSlot.startTime,
                 endTime: timeSlot.endTime,
               })),
@@ -75,12 +72,11 @@ export async function POST(req: NextRequest) {
           create: parsedData.supportHoliday.map((holiday) => ({
             holiday: holiday.holiday as WeekDays,
             type: holiday.type,
-            date: holiday.date,
+            date: holiday.date || null,
           })),
         },
       },
       include: {
-        supportAddress: true,
         supportAvailability: {
           include: {
             timeSlots: true,
@@ -98,6 +94,14 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      console.error("Validation error:", error.message)
+      // Handle the validation error specifically
+      return {
+        error: "Validation failed",
+        details: error, // or use error.stack for full stack trace
+      }
+    }
     console.log(error)
     if (error instanceof ZodError) {
       return NextResponse.json(
@@ -106,7 +110,7 @@ export async function POST(req: NextRequest) {
       )
     }
     return NextResponse.json(
-      { error: "Internal server error", details: error },
+      { error: "Internal server error", detail: error },
       { status: 500 }
     )
   }
@@ -117,7 +121,6 @@ export async function GET() {
   try {
     const supportDetails = await prisma.supportBusinessDetail.findMany({
       include: {
-        supportAddress: true,
         supportAvailability: {
           include: {
             timeSlots: true,
@@ -136,7 +139,7 @@ export async function GET() {
     return NextResponse.json(supportDetails, { status: 200 })
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch support details", details: error  },
+      { error: "Failed to fetch support details" },
       { status: 500 }
     )
   }
@@ -174,25 +177,7 @@ export async function PUT(req: NextRequest) {
         supportEmail: parsedData.supportEmail,
         supportPhone: parsedData.supportPhone,
         // Handle addresses
-        supportAddress: {
-          upsert: parsedData.supportAddress.map((addr) => ({
-            where: { id: addr.id || "" }, // Use empty string as fallback if no ID
-            update: {
-              street: addr.street,
-              city: addr.city,
-              country: addr.country,
-              zipCode: addr.zipCode,
-              googleMap: addr.googleMap || "",
-            },
-            create: {
-              street: addr.street,
-              city: addr.city,
-              country: addr.country,
-              zipCode: addr.zipCode,
-              googleMap: addr.googleMap || "",
-            },
-          })),
-        },
+        supportAddress: parsedData.supportAddress,
 
         // Handle business availability
         supportAvailability: {
@@ -246,7 +231,6 @@ export async function PUT(req: NextRequest) {
         },
       },
       include: {
-        supportAddress: true,
         supportAvailability: {
           include: {
             timeSlots: true,
@@ -271,7 +255,7 @@ export async function PUT(req: NextRequest) {
       )
     }
     return NextResponse.json(
-      { error: "Internal server error", details: error },
+      { error: "Internal server error" },
       { status: 500 }
     )
   }
@@ -318,7 +302,7 @@ export async function DELETE(req: NextRequest) {
     )
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to delete support detail", details: error },
+      { error: "Failed to delete support detail" },
       { status: 500 }
     )
   }

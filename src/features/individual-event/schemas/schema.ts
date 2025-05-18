@@ -21,6 +21,8 @@ export const meetingSchema = z.object({
     dayOfWeek: z.number().int().min(0).max(6),
     startTime: z.string().min(1, "Start time is required"), // can add time format validation
     endTime: z.string().min(1, "End time is required"),
+    startDate: z.string().optional(),
+   endDate: z.string().optional(),
     duration: z.number().int().positive(),
   })
   
@@ -29,9 +31,10 @@ export const meetingSchema = z.object({
     title: z.string().min(1, "Title is required"),
     description: z.string().optional(),
     location: z.string(),
+    timezone: z.string().optional(),
     slug: z.string().min(1, "Slug is required"),
     userId: z.string().min(1, "User ID is required"),
-    individualId: z.string().min(1, "Individual ID is required"),
+    /* individualId: z.string().min(1, "Individual ID is required"), */
     createdById: z.string().optional(),
     availability: z.array(availabilitySchema).optional(),
   })

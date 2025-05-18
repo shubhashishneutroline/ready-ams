@@ -2,133 +2,79 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { individualSchema } from "@/features/individual/schemas/schema";
 import { ZodError } from "zod";
+import { Individual } from "@/features/individual/types/types";
 
 export async function POST(req: NextRequest) {
   const userId = "cmaemhw500006vdawrh8umbqp"; //fetch userId from clerk authentication
-  if (!userId) return new Response("Unauthorized", { status: 401 });
+  if (!userId) {
+    return NextResponse.json(
+      { message: "User ID not found!", success: false },
+      { status: 404 }
+    );
+  }
 
   const data = await req.json();
   const parsedData = individualSchema.parse(data);
 
+   // Check if an Individual profile already exists for this user
+  const existing = await prisma.individual.findUnique({
+    where: { userId }
+  });
+
+  if (existing) {
+    return NextResponse.json(
+      {
+        message: "Profile already exists for this user!",
+        data: existing,
+        success: false,
+      },
+      { status: 400 } 
+    );
+  }
+
   try {
-    const individual = await prisma.individual.create({
+    const individual: Individual = await prisma.individual.create({
       data: {
         bio: parsedData.bio,
         position: parsedData.position,
         profileImage: parsedData.profileImage,
         country: parsedData.country,
+        timezone: parsedData.timezone,
         userId: userId, // Assign Clerk's user ID here
       },
     });
 
-    return NextResponse.json(individual, { status: 201 });
+    return NextResponse.json(
+      {
+        message: "Profile Created Successfully!",
+        data: individual,
+        success: true,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { message: "Something went wrong" ,details: error},
+      { message: "Failed to create profile!", error: error, success: false },
       { status: 500 }
     );
   }
 }
 
+//fetch all profile
 export async function GET() {
   const individuals = await prisma.individual.findMany({
     include: { user: true, events: true },
   });
 
-  return NextResponse.json(individuals);
+  return NextResponse.json(
+    {
+      data: individuals,
+      message: "Profile fetched successfully!",
+      success: true,
+    },
+    { status: 200 }
+  );
 }
 
 
-export async function PUT(req: NextRequest) {
-    try {
-      const body = await req.json()
-  
-      const { id } = body
-  
-      if (!id) {
-        return NextResponse.json({ error: "Individual ID is required!" }, { status: 400 })
-      }
-  
-      const parsedData = individualSchema.parse(body)
-  
-      // Fetch the existing individual to check if it exists
-      const existingIndividual = await prisma.individual.findUnique({
-        where: { id: id }
-      })
-  
-      if (!existingIndividual) {
-        return NextResponse.json({ error: "Individual not found" }, { status: 404 })
-      }
-  
-      // Update individual profile
-      const updatedIndividual = await prisma.individual.update({
-        where: { id: id },
-        data: {
-          bio: parsedData.bio,
-          position: parsedData.position,
-          profileImage: parsedData.profileImage,
-          country: parsedData.country,
-        },
-      })
-  
-      return NextResponse.json(
-        { message: "Individual profile updated successfully", individual: updatedIndividual },
-        { status: 200 }
-      )
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return NextResponse.json(
-          { error: "Validation failed", details: error.errors[0].message },
-          { status: 400 }
-        )
-      }
-      return NextResponse.json(
-        { error: "Internal server error", message: error },
-        { status: 500 }
-      )
-    }
-  }
-
- 
-export async function DELETE(req: NextRequest) {
-    try {
-      const { id } = await req.json()
-  
-      if (!id) {
-        return NextResponse.json({ error: "Individual ID is required!" }, { status: 400 })
-      }
-  
-      // Fetch the existing individual to check if it exists
-      const existingIndividual = await prisma.individual.findUnique({
-        where: { id: id },
-      })
-  
-      if (!existingIndividual) {
-        return NextResponse.json({ error: "Individual not found" }, { status: 404 })
-      }
-  
-      // Delete the individual profile
-      const deletedIndividual = await prisma.individual.delete({
-        where: { id: id },
-      })
-  
-      if (!deletedIndividual) {
-        return NextResponse.json(
-          { error: "Individual could not be deleted" },
-          { status: 404 }
-        )
-      }
-  
-      return NextResponse.json(
-        { message: "Individual profile deleted successfully" },
-        { status: 200 }
-      )
-    } catch (error) {
-      return NextResponse.json(
-        { error: "Failed to delete individual profile", message: error },
-        { status: 500 }
-      )
-    }
-  }
-  

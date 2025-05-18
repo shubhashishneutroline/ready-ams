@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_MEET_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_MEET_SECRET;
-const GOOGLE_REDIRECT_URI = "http://localhost:3000/api/google/callback";
+const GOOGLE_REDIRECT_URI = `${process.env.ORIGIN}/api/google/callback`;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -17,6 +17,14 @@ export async function GET(req: NextRequest) {
       { status: 400 }
     );
   }
+
+   if (!individualId) {
+    return NextResponse.json(
+      { error: "Missing individualId" },
+      { status: 400 }
+    );
+  }
+
 
   try {
     // Exchange code for tokens
@@ -39,21 +47,35 @@ export async function GET(req: NextRequest) {
     const data = await response.json();
     console.log('data',data);
 
-    if (!data.access_token) {
+      if (!data.access_token || !data.refresh_token) {
       return NextResponse.json(
-        { error: "Failed to get access token", details: data },
-        { status: 500 }
+        { error: "Failed to get tokens from Google", details: data },
+        { status: 400 }
       );
     }
 
-    // Store tokens in your DB (adjust field names as needed)
-    await prisma.individual.update({
-      where: { id: individualId! },
-      data: {
-        googleAccessToken: data.access_token,
-        googleRefreshToken: data.refresh_token,
+  // Store tokens and expiry in VideoIntegration table (upsert)
+    await prisma.videoIntegration.upsert({
+      where: {
+        individualId_provider: {
+          individualId: individualId,
+          provider: "GOOGLE_MEET",
+        }
       },
+      create: {
+        individualId: individualId,
+        provider: "GOOGLE_MEET",
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresAt: new Date(Date.now() + (data.expires_in * 1000)),
+      },
+      update: {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresAt: new Date(Date.now() + (data.expires_in * 1000)),
+      }
     });
+
 
     return NextResponse.json({
       message: "Google OAuth successful",

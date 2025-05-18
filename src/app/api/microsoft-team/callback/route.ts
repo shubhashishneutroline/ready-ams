@@ -2,8 +2,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-const MS_CLIENT_ID = process.env.MS_CLIENT_ID;
-const MS_CLIENT_SECRET = process.env.MS_CLIENT_SECRET;
+const MS_CLIENT_ID = process.env.MS_CLIENT_ID!;
+const MS_CLIENT_SECRET = process.env.MS_CLIENT_SECRET!;
 const MS_REDIRECT_URI = "http://localhost:3000/api/microsoft-team/callback";
 
 export async function GET(req: NextRequest) {
@@ -11,6 +11,11 @@ export async function GET(req: NextRequest) {
   const code = searchParams.get("code");
   const individualId = searchParams.get("state"); // Pass this when starting OAuth
   const error = searchParams.get("error");
+
+    if (!individualId) {
+  return NextResponse.json({ error: "Missing  individualId" }, { status: 400 });
+}
+
 
   // Handle errors from Microsoft
   if (error) {
@@ -114,14 +119,27 @@ export async function GET(req: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setSeconds(expiresAt.getSeconds() + (data.expires_in || 3600));
 
-    // Store tokens in your DB
-    await prisma.individual.update({
-      where: { id: individualId! },
-      data: {
-        microsoftAccessToken: data.access_token
-  /*       microsoftRefreshToken: data.refresh_token,
-        microsoftTokenExpiresAt: expiresAt, */
+  
+    // Store tokens and expiry in VideoIntegration table
+    await prisma.videoIntegration.upsert({
+      where: {
+        individualId_provider: {
+          individualId: individualId,
+          provider: "MICROSOFT_TEAMS",
+        }
       },
+      create: {
+        individualId: individualId,
+        provider: "MICROSOFT_TEAMS",
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresAt: new Date(Date.now() + (data.expires_in * 1000)),
+      },
+      update: {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresAt: new Date(Date.now() + (data.expires_in * 1000)),
+      }
     });
 
     // Return HTML that closes the popup and notifies the opener

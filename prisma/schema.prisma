@@ -286,7 +286,7 @@ model BusinessAddress {
   googleMap  String // Google Maps link
   business   BusinessDetail?        @relation(fields: [businessId], references: [id], onDelete: Cascade)
   businessId String? // Optional link to business
-  support    SupportBusinessDetail? @relation(fields: [supportId], references: [id], onDelete: Cascade)
+  // support    SupportBusinessDetail? @relation(fields: [supportId], references: [id], onDelete: Cascade)
   supportId  String? // Optional link to support
 }
 
@@ -353,7 +353,8 @@ model SupportBusinessDetail {
   supportGoogleMap    String? // Optional Google Maps link
   supportAvailability BusinessAvailability[] // Support hours
   supportHoliday      Holiday[] // Support holidays
-  supportAddress      BusinessAddress[] // Support addresses
+ // supportAddress      BusinessAddress[] // Support addresses
+  supportAddress      String // Support addresses
 
   business   BusinessDetail @relation(fields: [businessId], references: [id], onDelete: Cascade)
   businessId String         @unique // Link to business
@@ -440,15 +441,12 @@ model Individual {
   position       String     // e.g. "Product Designer", "Marketing Coach"
   profileImage   String?
   country        String 
-  zoomAccessToken String? 
-  googleAccessToken  String?
-  googleRefreshToken String? 
-  microsoftAccessToken String? 
-  webexAccessToken String?
+  timezone      String  @default("UTC")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   user           User     @relation(fields: [userId], references: [id])
   events        Event[]   
+  videoIntegrations VideoIntegration[]
 }
 
 
@@ -456,29 +454,22 @@ enum VideoProvider {
   ZOOM
   GOOGLE_MEET
   MICROSOFT_TEAMS
+  WEBEX
+  GOTO_MEETING
 }
 
-model Meeting {
-  id             String   @id @default(cuid())
-  eventId    String
-  timeSlot       DateTime
-  bookedByName   String
-  bookedByEmail  String
-  customAnswers  Json?
-  videoUrl       String?
-  videoProvider  VideoProvider?
-  slug           String? @unique
-  event          Event @relation(fields: [eventId], references: [id])
-}
-
-model Availability {
-  id          String   @id @default(cuid())
-  eventId String
-  dayOfWeek   Int
-  startTime   String
-  endTime     String
-  duration      Int
-  event       Event @relation(fields: [eventId], references: [id])
+model VideoIntegration {
+  id                  String        @id @default(cuid())
+  individualId        String
+  provider            VideoProvider
+  accessToken         String
+  refreshToken        String?
+  expiresAt           DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  individual          Individual    @relation(fields: [individualId], references: [id])
+  
+  @@unique([individualId, provider])
 }
 
 model Event {
@@ -486,6 +477,7 @@ model Event {
   title         String
   description   String?
   location      String       // e.g. Zoom, Google Meet
+  timezone      String?    // Can override individual's timezone for specific events
   slug          String   @unique
   userId        String
   user          User     @relation(fields: [userId], references: [id])
@@ -496,4 +488,29 @@ model Event {
   meetings      Meeting[]
 }
 
+model Availability {
+  id          String   @id @default(cuid())
+  eventId String
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
+  startDate   String? 
+  endDate     String? 
+  duration      Int
+  event       Event @relation(fields: [eventId], references: [id])
+}
 
+model Meeting {
+  id             String   @id @default(cuid())
+  eventId    String
+  startTime      DateTime @default(now()) // Default to current time
+  endTime DateTime @default(dbgenerated("NOW() + interval '1 hour'")) // When the meeting ends
+  bookedByName   String
+  bookedByEmail  String
+  bookerTimezone String?        // Store the timezone of the person booking
+  customAnswers  Json?
+  videoUrl       String?
+  videoProvider  VideoProvider?
+  slug           String? @unique
+  event          Event @relation(fields: [eventId], references: [id])
+}

@@ -193,6 +193,42 @@ async function createWebexMeeting(
   return data.webLink; // or data.joinMeetingLink
 }
 
+//GoTo Meeting function
+async function createGotoMeeting(
+  gotoAccessToken: string,
+  meetingDetails: any
+): Promise<string> {
+  const startTime = new Date(meetingDetails.timeSlot);
+  const durationMinutes = meetingDetails.duration || 60;
+  const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+
+  const response = await fetch("https://api.getgo.com/G2M/rest/meetings", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${gotoAccessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      subject: meetingDetails.title,
+      starttime: startTime.toISOString(),
+      endtime: endTime.toISOString(),
+      passwordrequired: false,
+      conferencecallinfo: "Hybrid",
+      timezonekey: "UTC",
+      meetingtype: "immediate", // or "scheduled" based on your needs
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    console.error("GoTo Meeting API Error:", data);
+    throw new Error("Failed to create GoTo Meeting");
+  }
+
+  // Return the join URL for attendees
+  return data.joinURL;
+}
+
 // Function to format the Date to "HH:mm" format
 function formatTime(date: Date): string {
   const hours = date.getHours().toString().padStart(2, "0");
@@ -233,6 +269,8 @@ export async function POST(req: NextRequest) {
         zoomAccessToken: true,
         googleRefreshToken: true,
         microsoftAccessToken: true,
+        webexAccessToken: true,
+        gotoAccessToken: true,
       },
     });
 
@@ -256,7 +294,13 @@ export async function POST(req: NextRequest) {
     const provider = (event.location || "").toUpperCase();
 
     let videoUrl;
-    let videoProvider: "ZOOM" | "GOOGLE_MEET" | "MICROSOFT_TEAMS" | "WEBEX" | null = null;
+    let videoProvider:
+      | "ZOOM"
+      | "GOOGLE_MEET"
+      | "MICROSOFT_TEAMS"
+      | "WEBEX"
+      | "GOTO_MEETING"
+      | null = null;
 
     if (provider === "ZOOM") {
       if (!individual?.zoomAccessToken) {
@@ -310,6 +354,20 @@ export async function POST(req: NextRequest) {
         bookedByEmail: parsedData.bookedByEmail,
       });
       videoProvider = "WEBEX";
+    } else if (provider === "GOTO_MEETING") {
+      if (!individual?.gotoAccessToken) {
+        return NextResponse.json(
+          { error: "GoTo Meeting access token not found for individual" },
+          { status: 400 }
+        );
+      }
+      videoUrl = await createGotoMeeting(individual.gotoAccessToken, {
+        title: event.title,
+        description: event.description,
+        timeSlot: parsedData.timeSlot,
+        bookedByEmail: parsedData.bookedByEmail,
+      });
+      videoProvider = "GOTO_MEETING";
     } else {
       return NextResponse.json(
         { error: "Invalid or missing video provider" },
