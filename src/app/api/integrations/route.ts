@@ -87,3 +87,14 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ authUrl });
 }
+
+export async function GET(req: NextRequest) {
+  const userId = "cmaemhw500006vdawrh8umbqp";
+  const individual = await prisma.individual.findUnique({
+    where: { userId },
+    include: { videoIntegrations: true },
+  });
+
+  const providers = individual?.videoIntegrations.map(v => v.provider) || [];
+  return NextResponse.json({ providers });
+}

@@ -6,7 +6,7 @@ export const videoProviderEnum =  z.nativeEnum(VideoProvider);
 export const meetingSchema = z.object({
     eventId: z.string().min(1, "Event ID is required"),
     timeSlot: z.coerce.date(),
-    bookedByName: z.string().min(1, "Name is required"),
+    bookedByName: z.string().optional(),/* .min(1, "Name is required"), */
     bookedByEmail: z.string().email("Invalid email"),
     customAnswers: z.any().optional(),
   
@@ -18,6 +18,7 @@ export const meetingSchema = z.object({
 
   export const availabilitySchema = z.object({
 /*     eventId: z.string().min(1, "Event ID is required"), */
+  id: z.string().optional(),
     dayOfWeek: z.number().int().min(0).max(6),
     startTime: z.string().min(1, "Start time is required"), // can add time format validation
     endTime: z.string().min(1, "End time is required"),

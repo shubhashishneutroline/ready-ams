@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { google } from "googleapis";
+import { refreshZoomToken } from "@/lib/zoom";
+import { refreshGoogleToken } from "@/lib/google-meet";
+import { refreshWebexToken } from "@/lib/webex";
 
 async function createGoogleMeetEvent(
   googleRefreshToken: string,
@@ -14,12 +17,11 @@ async function createGoogleMeetEvent(
     process.env.GOOGLE_REDIRECT_URI
   );
 
-  const individualId = "cma4ncl5q0001vdhk9uxbputi";
   // Set credentials with the refresh token only
-  oauth2Client.setCredentials({ refresh_token: googleRefreshToken });
+    oauth2Client.setCredentials({ refresh_token: googleRefreshToken });
 
   // Optionally listen for new tokens (for storing updated tokens)
-  oauth2Client.on("tokens", async (tokens) => {
+  /*  oauth2Client.on("tokens", async (tokens) => {
     if (tokens.refresh_token || tokens.access_token) {
       await prisma.individual.update({
         where: { id: individualId },
@@ -33,7 +35,7 @@ async function createGoogleMeetEvent(
         },
       });
     }
-  });
+  }); */
 
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
@@ -262,20 +264,126 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    //  Fetch the individual's Zoom access token
+    // Now fetch the individual
     const individual = await prisma.individual.findUnique({
       where: { id: event.individualId },
-      select: {
-        zoomAccessToken: true,
-        googleRefreshToken: true,
-        microsoftAccessToken: true,
-        webexAccessToken: true,
-        gotoAccessToken: true,
-      },
+      include: { videoIntegrations: true }, // Assuming this relation exists
     });
 
+    if (!individual) {
+      return NextResponse.json(
+        { error: "Individual not found" },
+        { status: 404 }
+      );
+    }
+
+     // Decide provider (from  event)
+    const provider = (event.location || "").toUpperCase();
+    // Check if the individual has the required video integration
+    const videoIntegration = individual.videoIntegrations.find(
+      (integration) => integration.provider === provider
+    );
+
+    if (!videoIntegration || !videoIntegration.refreshToken) {
+      return NextResponse.json(
+        { error: ` integration not found for individual` },
+        { status: 400 }
+      );
+    }
+
+    const individualId = individual.id;
+
+    let needsAuth = false;
+    let oauthUrl = "";
+
+    if (event.location === "ZOOM" && videoIntegration) {
+      console.log("hello");
+      // Check if token is expired
+      if (
+        videoIntegration.expiresAt &&
+        videoIntegration.expiresAt < new Date()
+      ) {
+        if (videoIntegration.refreshToken) {
+          try {
+            // Attempt to refresh the token
+            const newAccessToken = await refreshZoomToken(videoIntegration);
+            return NextResponse.json({
+              accessToken: newAccessToken.accessToken,
+              expiresAt: newAccessToken.expiresAt,
+            });
+          } catch (err) {
+            // If Zoom rejects the refresh (token expired/invalid), handle it here:
+            needsAuth = true;
+            oauthUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${process.env.ZOOM_CLIENT_ID}&redirect_uri=http://localhost:3000/api/zoom/callback&state=${individualId}`;
+          }
+        } else {
+          // No refresh token, require re-authentication
+          needsAuth = true;
+          oauthUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${process.env.ZOOM_CLIENT_ID}&redirect_uri=http://localhost:3000/api/zoom/callback&state=${individualId}`;
+        }
+      }
+    }
+
+    // ---- GOOGLE MEET ----
+    if (event.location === "GOOGLE_MEET" && videoIntegration) {
+      console.log("helloss");
+      if (
+        videoIntegration.expiresAt &&
+        videoIntegration.expiresAt < new Date()
+      ) {
+        if (videoIntegration.refreshToken) {
+          try {
+            const newAccessToken = await refreshGoogleToken(videoIntegration);
+            videoIntegration.accessToken = newAccessToken.accessToken;
+            videoIntegration.expiresAt = newAccessToken.expiresAt;
+          } catch (err) {
+            console.log("test");
+            needsAuth = true;
+            oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_MEET_CLIENT_ID}&redirect_uri=${encodeURIComponent(`${process.env.ORIGIN}/api/google/callback`)}&response_type=code&scope=${encodeURIComponent("https://www.googleapis.com/auth/calendar")}&access_type=offline&prompt=consent&state=${individualId}`;
+          }
+        } else {
+          needsAuth = true;
+          oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_MEET_CLIENT_ID}&redirect_uri=${encodeURIComponent(`${process.env.ORIGIN}/api/google/callback`)}&response_type=code&scope=${encodeURIComponent("https://www.googleapis.com/auth/calendar")}&access_type=offline&prompt=consent&state=${individualId}`;
+        }
+      }
+    }
+
+    //--WEBEX--
+    if (event.location === "WEBEX" && videoIntegration) {
+      if (
+        videoIntegration.expiresAt &&
+        videoIntegration.expiresAt < new Date()
+      ) {
+        if (videoIntegration.refreshToken) {
+          try {
+            const newAccessToken = await refreshWebexToken(videoIntegration);
+            videoIntegration.accessToken = newAccessToken.accessToken;
+            videoIntegration.expiresAt = newAccessToken.expiresAt;
+          } catch (err) {
+            needsAuth = true;
+            oauthUrl = `https://webexapis.com/v1/authorize?client_id=${process.env.WEBEX_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(`${process.env.ORIGIN}/api/webex/callback`)}&scope=${encodeURIComponent("spark:kms meeting:schedules_read meeting:participants_read meeting:participants_write meeting:schedules_write")}&state=${individualId}`;
+          }
+        } else {
+          needsAuth = true;
+          oauthUrl = `https://webexapis.com/v1/authorize?client_id=${process.env.WEBEX_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(`${process.env.ORIGIN}/api/webex/callback`)}&scope=${encodeURIComponent("spark:kms meeting:schedules_read meeting:participants_read meeting:participants_write meeting:schedules_write")}&state=${individualId}`;
+        }
+      }
+    }
+
+    if (needsAuth) {
+      return NextResponse.json(
+        {
+          message: "Authentication required!",
+          authUrl: oauthUrl,
+          needsAuth: true,
+          success: false,
+        },
+        { status: 200 }
+      );
+    }
+
     // Check availability (Ensure the time slot is available)
-    /*   const availability = await prisma.availability.findFirst({
+    const availability = await prisma.availability.findFirst({
       where: {
         eventId: parsedData.eventId,
         dayOfWeek: new Date(parsedData.timeSlot).getDay(),
@@ -288,10 +396,9 @@ export async function POST(req: NextRequest) {
         { error: "The selected time slot is unavailable" },
         { status: 400 }
       );
-    } */
+    }
 
-    // Decide provider (from  event)
-    const provider = (event.location || "").toUpperCase();
+   
 
     let videoUrl;
     let videoProvider:
@@ -303,23 +410,17 @@ export async function POST(req: NextRequest) {
       | null = null;
 
     if (provider === "ZOOM") {
-      if (!individual?.zoomAccessToken) {
-        return NextResponse.json(
-          { error: "Zoom access token not found for individual" },
-          { status: 400 }
-        );
-      }
       // Create Zoom meeting and get the link
-      videoUrl = await createZoomMeeting(individual.zoomAccessToken);
+      videoUrl = await createZoomMeeting(videoIntegration.accessToken);
       videoProvider = "ZOOM";
     } else if (provider === "GOOGLE_MEET") {
-      if (!individual?.googleRefreshToken) {
+      if (!videoIntegration.accessToken) {
         return NextResponse.json(
-          { error: "Google refresh token not found for individual" },
+          { error: "Google token not found for individual" },
           { status: 400 }
         );
       }
-      videoUrl = await createGoogleMeetEvent(individual.googleRefreshToken, {
+      videoUrl = await createGoogleMeetEvent(videoIntegration.refreshToken, {
         title: event.title,
         description: event.description,
         timeSlot: parsedData.timeSlot,
@@ -327,13 +428,13 @@ export async function POST(req: NextRequest) {
       });
       videoProvider = "GOOGLE_MEET";
     } else if (provider === "MICROSOFT_TEAMS") {
-      if (!individual?.microsoftAccessToken) {
+      if (!videoIntegration.accessToken) {
         return NextResponse.json(
           { error: "Microsoft access token not found for individual" },
           { status: 400 }
         );
       }
-      videoUrl = await createTeamsMeeting(individual.microsoftAccessToken, {
+      videoUrl = await createTeamsMeeting(videoIntegration.accessToken, {
         title: event.title,
         description: event.description,
         timeSlot: parsedData.timeSlot,
@@ -341,13 +442,13 @@ export async function POST(req: NextRequest) {
       });
       videoProvider = "MICROSOFT_TEAMS";
     } else if (provider === "WEBEX") {
-      if (!individual?.webexAccessToken) {
+      if (!videoIntegration.accessToken) {
         return NextResponse.json(
           { error: "Webex access token not found for individual" },
           { status: 400 }
         );
       }
-      videoUrl = await createWebexMeeting(individual.webexAccessToken, {
+      videoUrl = await createWebexMeeting(videoIntegration.accessToken, {
         title: event.title,
         description: event.description,
         timeSlot: parsedData.timeSlot,
@@ -355,13 +456,13 @@ export async function POST(req: NextRequest) {
       });
       videoProvider = "WEBEX";
     } else if (provider === "GOTO_MEETING") {
-      if (!individual?.gotoAccessToken) {
+      if (!videoIntegration.accessToken) {
         return NextResponse.json(
           { error: "GoTo Meeting access token not found for individual" },
           { status: 400 }
         );
       }
-      videoUrl = await createGotoMeeting(individual.gotoAccessToken, {
+      videoUrl = await createGotoMeeting(videoIntegration.accessToken, {
         title: event.title,
         description: event.description,
         timeSlot: parsedData.timeSlot,
@@ -374,13 +475,17 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    const startTime = new Date(parsedData.timeSlot); // Make sure this is a valid date
+    const durationMinutes = availability.duration || 60; // Use the slot's duration, fallback to 60 if not present
+    const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
 
     // Create a meeting record
     const meeting = await prisma.meeting.create({
       data: {
         eventId: parsedData.eventId,
-        timeSlot: parsedData.timeSlot, // Use the correct time here
-        bookedByName: parsedData.bookedByName,
+        startTime, 
+        endTime,
+        bookedByName: parsedData.bookedByName ?? "",
         bookedByEmail: parsedData.bookedByEmail,
         videoUrl,
         videoProvider,

@@ -1,3 +1,6 @@
+import { Individual } from "@/features/individual/types/types";
+import { User } from "@/features/user/types/types";
+
 // Video provider types
 export enum VideoProvider {
   ZOOM = "ZOOM",
@@ -35,13 +38,13 @@ export interface Meeting {
 
 // Availability model
 export interface Availability {
-  id: string;
+  id?: string;
   eventId: string;
   dayOfWeek: number; // 0-6 (Sunday - Saturday)
   startTime: string; // format: "HH:mm"
   endTime: string; // format: "HH:mm"
-  startDate?: string;
-  endDate?: string;
+  startDate?: string | null;
+  endDate?: string | null;
   duration: number;
   event?: Event;
 }
@@ -55,7 +58,9 @@ export interface Event {
   timezone?: string | null; 
   slug: string;
   userId: string;
+  individual: Individual;
   individualId: string;
+  user: User;
   createdAt: Date; // ISO Date string
   availability: Availability[];
   meeting?: Meeting[];

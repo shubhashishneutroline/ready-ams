@@ -107,6 +107,7 @@ export async function POST(req: NextRequest) {
           videoIntegration.accessToken = newAccessToken.accessToken;
           videoIntegration.expiresAt = newAccessToken.expiresAt;
         } catch (err) {
+          console.log('test')
           needsAuth = true;
           oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_MEET_CLIENT_ID}&redirect_uri=${encodeURIComponent(`${process.env.ORIGIN}/api/google/callback`)}&response_type=code&scope=${encodeURIComponent("https://www.googleapis.com/auth/calendar")}&access_type=offline&prompt=consent&state=${individualId}`;
         }
@@ -153,7 +154,7 @@ if (provider === "WEBEX" && videoIntegration) {
     }
 
     // Create the event type with nested availability creation
-    const event: Event = await prisma.event.create({
+    const event/* : Event  */= await prisma.event.create({
       data: {
         title: parsedData.title,
         description: parsedData.description,
@@ -191,5 +192,26 @@ if (provider === "WEBEX" && videoIntegration) {
       { message: "Failed to create event!", error: error, success: false },
       { status: 500 }
     );
+  }
+}
+
+
+//get request
+export async function GET(req: NextRequest) {
+  // Replace with your auth system
+  const userId = "cmaemhw500006vdawrh8umbqp";
+  if (!userId) {
+    return NextResponse.json({ message: "Unauthorized", success: false }, { status: 401 });
+  }
+
+  try {
+    const events = await prisma.event.findMany({
+      where: { userId },
+      include: { availability: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json({ data: events, success: true });
+  } catch (error) {
+    return NextResponse.json({ message: "Failed to fetch events", error, success: false }, { status: 500 });
   }
 }

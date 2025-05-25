@@ -2,7 +2,7 @@ import { prisma } from "./prisma";
 
 export async function refreshGoogleToken(videoIntegration: any) {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_MEET_CLIENT_ID!;
-  const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_MEET_CLIENT_SECRET!;
+  const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_MEET_SECRET!;
 
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
@@ -18,6 +18,7 @@ export async function refreshGoogleToken(videoIntegration: any) {
   });
 
   const data = await response.json();
+  console.log('data is',data)
 
   if (data.access_token) {
     // Update DB with new tokens and expiry

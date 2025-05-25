@@ -61,6 +61,8 @@ const ProfileForm = () => {
     }
   }
 
+
+  
   return (
     <div className="max-w-md mx-auto mt-10 bg-white rounded-lg shadow p-8">
       <h2 className="text-2xl font-bold mb-6">Create Your Profile</h2>
