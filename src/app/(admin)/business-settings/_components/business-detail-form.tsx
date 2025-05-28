@@ -628,7 +628,7 @@
 // }
 
 // export default BusinessDetailForm
-
+// BusinessDetailForm.tsx
 "use client"
 
 import { useForm, FormProvider } from "react-hook-form"
@@ -656,9 +656,12 @@ import {
 } from "lucide-react"
 import FileUploadField from "@/components/custom-form-fields/image-upload"
 import { toast } from "sonner"
+import { useEffect } from "react"
+import { useBusinessStore } from "@/app/(admin)/business-settings/_store/business-store"
 
 export const transformBusinessData = (data: any) => {
   return {
+<<<<<<< HEAD:src/features/business-detail/components/business-detail-form.tsx
     id: data.id,
     businessName: data.businessName,
     industry: data.industry,
@@ -677,6 +680,24 @@ export const transformBusinessData = (data: any) => {
     logo: data.logo,
     logoFileId:data.logoFileId,
     visibility: data.visibility,
+=======
+    id: data.id || "",
+    businessName: data.businessName || "",
+    industry: data.industry || "",
+    email: data.email || "",
+    phone: data.phone || "",
+    website: data.website || "",
+    city: data.city || "",
+    street: data.street || "",
+    state: data.state || "",
+    zipCode: data.zipCode || "",
+    country: data.country || "",
+    googleMap: data.googleMap || "",
+    registrationNumber: data.registrationNumber || "",
+    taxId: data.taxId || null,
+    logo: data.logo || null,
+    visibility: data.visibility || "",
+>>>>>>> 4a11b972d424497fb108a438637b992faf35f7c5:src/app/(admin)/business-settings/_components/business-detail-form.tsx
   }
 }
 
@@ -722,19 +743,18 @@ const schema = z.object({
 })
 
 interface BusinessDetailFormProps {
-  setActiveTab: (tabName: string) => void
-  setBusinessData: (businessData: any) => void
   businessData?: any
 }
 
 const BusinessDetailForm = ({
-  setActiveTab,
-  setBusinessData,
-  businessData,
+  businessData: propBusinessData,
 }: BusinessDetailFormProps) => {
-  console.log("Business data:", businessData)
+  const { businessData, setBusinessData, setActiveTab } = useBusinessStore()
+  const isUpdateMode = !!businessData?.id
+
   const form = useForm({
     defaultValues: {
+<<<<<<< HEAD:src/features/business-detail/components/business-detail-form.tsx
       businessName: businessData?.businessName || "",
       industry: businessData?.industry || "",
       email: businessData?.email || "",
@@ -752,18 +772,53 @@ const BusinessDetailForm = ({
       logo: businessData?.logo || null,
       logoFileId: businessData?.logoFileId || "",
       visibility: businessData?.visibility || "",
+=======
+      id: "",
+      businessName: "",
+      industry: "",
+      email: "",
+      phone: "",
+      website: "",
+      city: "",
+      street: "",
+      state: "",
+      zipCode: "",
+      country: "",
+      googleMap: "",
+      registrationNumber: "",
+      taxId: null,
+      logo: null,
+      visibility: "",
+>>>>>>> 4a11b972d424497fb108a438637b992faf35f7c5:src/app/(admin)/business-settings/_components/business-detail-form.tsx
     },
     resolver: zodResolver(schema),
   })
 
-  const onSubmit = (data: any) => {
-    const updatedData = transformBusinessData({
-      ...data,
-      timeZone: businessData?.timeZone,
-      businessDays: businessData?.businessDays,
-      holidays: businessData?.holidays,
-      businessHours: businessData?.businessHours,
+  // Initialize form with businessData only on mount or when businessData.id changes
+  useEffect(() => {
+    if (businessData) {
+      form.reset(transformBusinessData(businessData), {
+        keepDefaultValues: false,
+      })
+    }
+  }, [businessData?.id, form])
+
+  // Sync form changes to businessData in store
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      setBusinessData({
+        ...businessData,
+        ...transformBusinessData(value),
+      })
     })
+    return () => subscription.unsubscribe()
+  }, [form, businessData, setBusinessData])
+
+  const onSubmit = (data: any) => {
+    const updatedData = {
+      ...businessData,
+      ...transformBusinessData(data),
+    }
     setBusinessData(updatedData)
     setActiveTab("Business hour & Availability")
     toast.success("Business details saved! Proceed to set availability.")
@@ -777,7 +832,6 @@ const BusinessDetailForm = ({
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
-          console.log("Form errors", errors)
           toast.error("Please fix the form errors before proceeding.")
         })}
         className="space-y-8"

@@ -167,7 +167,7 @@ export const reminderColumns: ColumnDef<Reminder>[] = [
 
   {
     id: "actions",
-
+    header: "Actions",
     cell: ({ row }) => {
       const payment = row.original
       const router = useRouter()

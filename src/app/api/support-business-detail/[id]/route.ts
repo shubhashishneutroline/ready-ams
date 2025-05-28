@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSupportDetailById } from "@/db/supportDetail"
 import { prisma } from "@/lib/prisma"
 import { ZodError } from "zod"
-import { SupportBusinessDetailSchema } from "@/features/support-detail/schemas/schema"
 import { WeekDays } from "@/features/business-detail/types/types"
+import { SupportBusinessDetailSchema } from "@/app/(admin)/support/_schemas/schema"
 import { Prisma } from "@prisma/client"
 
 interface ParamsProps {
@@ -42,9 +42,12 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
       )
     }
     const body = await req.json()
+    console.log(body, "body")
     const parsedData = SupportBusinessDetailSchema.parse(body)
+    console.log(parsedData, "parsedData")
 
     const existingSupportDetail = await getSupportDetailById(id)
+    console.log(existingSupportDetail, "existingSupportDetail")
 
     if (!existingSupportDetail) {
       return NextResponse.json(
@@ -54,7 +57,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
     }
 
     const deletedSupportAvailability =
-      await prisma.supportBusinessDetail.findMany({
+      await prisma.supportBusinessDetail.delete({
         where: {
           id,
         },
@@ -72,6 +75,7 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
           supportPhone: parsedData.supportPhone,
           businessId: parsedData.businessId,
           supportAddress: parsedData.supportAddress,
+          supportGoogleMap: parsedData.supportGoogleMap,
           supportAvailability: {
             create: parsedData.supportAvailability.map((availability) => ({
               weekDay: availability.weekDay,

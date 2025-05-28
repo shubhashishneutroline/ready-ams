@@ -38,6 +38,7 @@ export async function GET(req: NextRequest, { params }: ParamsProps) {
   }
 }
 
+// Update an existing reminder
 export async function PUT(req: NextRequest, { params }: ParamsProps) {
   try {
     const { id } = await params;
@@ -96,8 +97,12 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
         },
         reminderOffset: {
           create: parsedData.reminderOffset.map((offset) => ({
-            sendOffset: offset.sendOffset,
-            sendBefore: offset.sendBefore,
+           customScheduleAt: reminderOffset.scheduledAt,
+              sendOffset: reminderOffset.sendOffset
+                ? reminderOffset.sendOffset
+                : null,
+                  // scheduledAt: new Date(reminderOffset.scheduledAt),
+              sendBefore: reminderOffset.sendBefore,
           })),
         },
       },

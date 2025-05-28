@@ -108,7 +108,7 @@ export async function DELETE(req: NextRequest, { params }: ParamsProps) {
       );
     }
 
-    const body = await req.json();
+   
 
     // Find the FAQ by ID
     const existingFAQ = await getFAQSById(id);

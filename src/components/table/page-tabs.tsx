@@ -4,7 +4,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 
 const businessTabs = ["Business Detail", "Business hour & Availability"]
-const reminderTabs = ["Reminder", "Announcement || Offer"]
+const reminderTabs = ["Reminder", "Announcement"]
 
 interface PageTabsProps {
   isReminder?: boolean

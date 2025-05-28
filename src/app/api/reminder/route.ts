@@ -8,8 +8,8 @@ import { syncNewReminderOffset } from "@/lib/appointment";
 // Create a new reminder
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const parsedData = ReminderSchema.parse(body);
+    const body = await req.json()
+    const parsedData = ReminderSchema.parse(body)
 
     const newReminder = await prisma.reminder.create({
       data: {
@@ -27,7 +27,11 @@ export async function POST(req: NextRequest) {
         },
         reminderOffset: {
           create: parsedData.reminderOffset.map((reminderOffset) => ({
-            sendOffset: reminderOffset.sendOffset,
+            customScheduleAt: reminderOffset.scheduledAt,
+            sendOffset: reminderOffset.sendOffset
+              ? reminderOffset.sendOffset
+              : null,
+            // scheduledAt: new Date(reminderOffset.scheduledAt),
             sendBefore: reminderOffset.sendBefore,
           })),
         },
@@ -51,9 +55,9 @@ export async function POST(req: NextRequest) {
         message: "Reminder created successfully!",
       },
       { status: 201 }
-    );
+    )
   } catch (error) {
-    console.error("Error in POST /api/reminder:", error);
+    console.error("Error in POST /api/reminder:", error)
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
@@ -62,12 +66,12 @@ export async function POST(req: NextRequest) {
           success: false,
         },
         { status: 400 }
-      );
+      )
     }
     return NextResponse.json(
       { message: "Failed to create reminder!", success: false, error: error },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -80,7 +84,7 @@ export async function GET() {
         notifications: true,
         reminderOffset: true,
       },
-    });
+    })
 
     if (reminders.length === 0) {
       return NextResponse.json(
@@ -95,12 +99,12 @@ export async function GET() {
         message: "Reminder fetched successfully!",
       },
       { status: 200 }
-    );
+    )
   } catch (error) {
     return NextResponse.json(
       { message: "Failed to fetch reminders!", success: false, error: error},
       { status: 500 }
-    );
+    )
   }
 }
 

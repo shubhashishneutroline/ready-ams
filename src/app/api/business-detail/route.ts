@@ -39,15 +39,7 @@ export async function POST(req: NextRequest) {
         businessOwner: parsedData.businessOwner,
         timeZone: parsedData.timeZone,
         status: parsedData.status,
-        address: {
-          create: parsedData.address.map((address) => ({
-            street: address.street,
-            city: address.city,
-            country: address.country,
-            zipCode: address.zipCode,
-            googleMap: address.googleMap || "",
-          })),
-        },
+
         businessAvailability: {
           create: parsedData.businessAvailability.map((availability) => ({
             weekDay: availability.weekDay,

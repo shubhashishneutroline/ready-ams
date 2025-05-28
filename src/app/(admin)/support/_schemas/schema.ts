@@ -50,6 +50,7 @@ export const SupportBusinessDetailSchema = z.object({
   supportEmail: z.string().email("Invalid email format"),
   supportPhone: z.string().min(10, "Invalid phone number"),
   supportAddress: z.string(),
+  supportGoogleMap: z.string(),
   supportAvailability: z.array(SupportAvailabilitySchema),
   supportHoliday: z.array(SupportHolidaySchema),
   businessId: z.string(),

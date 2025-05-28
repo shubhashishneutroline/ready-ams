@@ -77,6 +77,7 @@ export default function AppointmentForm() {
     fetchServices,
     loading: isLoadingServices,
     hasFetched: hasFetchedServices,
+    serviceOptions: options,
   } = useServiceStore()
 
   const [isLoadingAppointment, setIsLoadingAppointment] = useState(isEditMode)
@@ -97,26 +98,30 @@ export default function AppointmentForm() {
     },
   })
 
-  // Fetch services if not already fetched
-  useEffect(() => {
-    if (!isLoadingServices && !hasFetchedServices) {
-      fetchServices()
-    }
-  }, [fetchServices, hasFetchedServices, isLoadingServices])
+  // // Fetch services if not already fetched
+  // useEffect(() => {
+  //   if (!isLoadingServices && !hasFetchedServices) {
+  //     fetchServices()
+  //   }
+  // }, [fetchServices, hasFetchedServices, isLoadingServices])
 
-  // Transform services into select options
-  const serviceOptions = useMemo<ServiceOption[]>(() => {
-    if (!Array.isArray(services)) {
-      console.warn("Services is not an array:", services)
-      return []
-    }
-    return services
-      .filter((service) => service.status === "ACTIVE")
-      .map((service) => ({
-        label: service.title,
-        value: service.id,
-      }))
-  }, [services])
+  // // Transform services into select options
+  // const serviceOptions = useMemo<ServiceOption[]>(() => {
+  //   if (!Array.isArray(services)) {
+  //     console.warn("Services is not an array:", services)
+  //     return []
+  //   }
+  //   return services
+  //     .filter((service) => service.status === "ACTIVE")
+  //     .map((service) => ({
+  //       label: service.title,
+  //       value: service.id,
+  //     }))
+  // }, [services])
+
+  // Fetch services if not already fetched
+
+  let serviceOptions = useMemo(() => options(), [options, services])
 
   // Fetch appointment data for edit mode
   useEffect(() => {

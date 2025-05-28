@@ -1,3 +1,4 @@
+"use client"
 import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ import { DataTableColumnHeader } from "@/components/shared/table/data-table-colu
 import { Badge } from "@/components/ui/badge"
 import { deleteAnnouncement } from "@/features/announcement-offer/api/api"
 import { capitalizeOnlyFirstLetter } from "@/utils/utils"
+import { toast } from "sonner"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -274,6 +276,7 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
   {
     id: "actions",
 
+    header: "Actions",
     cell: ({ row }) => {
       const payment = row.original
       const router = useRouter()
@@ -302,8 +305,19 @@ export const announcementColumns: ColumnDef<AnnouncementOrOffer>[] = [
               <FilePenLine className="h-4 w-4 text-green-600" /> Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => {
-                deleteAnnouncement(row.original)
+              onClick={async () => {
+                try {
+                  await deleteAnnouncement(row.original)
+                  // await deleteReminder(row.original) // wait for delete to complete
+
+                  toast.success("Reminder deleted successfully.") // ✅ success toast
+
+                  setTimeout(() => {
+                    window.location.reload() // 🔄 reload after short delay
+                  }, 1000) // 1 second delay to let user see the toast
+                } catch (error) {
+                  toast.error("Failed to delete reminder.") // ❌ error toast
+                }
               }}
               className="flex gap-2 items-center justify-start"
             >

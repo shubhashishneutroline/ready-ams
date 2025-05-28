@@ -1,35 +1,35 @@
 "use client"
 
+import { TabMapKey } from "@/app/(admin)/support/_store/support-store"
+// import { TabMapKey } from "@/app/(admin)/support/page"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 
 const businessTabs = ["Business Detail", "Business hour & Availability"]
 const reminderTabs = ["Reminder", "Announcement || Offer"]
-
 interface PageTabsProps {
   isReminder?: boolean
   activeTab: string
-  onTabChange: (tab: string) => void
+  onTabChange: (tab: TabMapKey) => void // Use TabMapKey
   customTabs?: string[]
-  clasName?: string
+  className?: string
 }
-
 const PageTabs = ({
   isReminder,
   activeTab,
   onTabChange,
   customTabs,
-  clasName,
+  className,
 }: PageTabsProps) => {
   const tabs = customTabs || (isReminder ? reminderTabs : businessTabs)
 
   return (
-    <div className={cn("space-y-2", clasName)}>
+    <div className={cn("space-y-2", className)}>
       <ToggleGroup
         type="single"
         value={activeTab}
         className="gap-2 flex flex-wrap"
-        onValueChange={(value) => {
+        onValueChange={(value: TabMapKey) => {
           if (value) onTabChange(value)
         }}
       >

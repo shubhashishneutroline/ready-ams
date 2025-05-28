@@ -138,7 +138,8 @@ model Reminder {
 
 model ReminderOffset {
   id                 String                      @id @default(cuid()) // Unique ID
-  sendOffset         Int // Offset in minutes (e.g., 2880 for 48 hours)
+  sendOffset         Int? // Offset in minutes (e.g., 2880 for 48 hours)
+  customScheduleAt   String?
   sendBefore         Boolean // True if before appointment, false if after
   reminder           Reminder                    @relation(fields: [reminderId], references: [id], onDelete: Cascade)
   reminderId         String // Foreign key
@@ -356,8 +357,9 @@ model SupportBusinessDetail {
  // supportAddress      BusinessAddress[] // Support addresses
   supportAddress      String // Support addresses
 
-  business   BusinessDetail @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  businessId String         @unique // Link to business
+  business        BusinessDetail    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId      String            @unique // Link to business
+  BusinessAddress BusinessAddress[]
 }
 
 //----- FAQ

@@ -8,8 +8,13 @@ import {
 } from "@/features/service/api/api"
 import { Service } from "@prisma/client"
 import { PostServiceData } from "@/features/service/api/api"
-import { ApiReturnType } from "../_types/service"
 import { toast } from "sonner"
+import { ApiReturnType } from "../_types/service"
+
+interface ServiceOption {
+  label: string
+  value: string
+}
 
 interface ServiceState {
   services: Service[]
@@ -26,6 +31,7 @@ interface ServiceState {
   updateService: (id: string, data: PostServiceData) => Promise<void>
   deleteService: (id: string) => Promise<void>
   onActiveTab: (tab: string) => void
+  serviceOptions: () => ServiceOption[] // Define as array, computed via getter
 }
 
 export const useServiceStore = create<ServiceState>((set, get) => ({
@@ -79,6 +85,7 @@ export const useServiceStore = create<ServiceState>((set, get) => ({
       set({ [isManualRefresh ? "isRefreshing" : "loading"]: false })
     }
   },
+
   fetchServiceById: async (id: string) => {
     try {
       const response: ApiReturnType<Service> = await getServiceById(id)
@@ -209,4 +216,13 @@ export const useServiceStore = create<ServiceState>((set, get) => ({
   },
 
   onActiveTab: (tab) => set({ activeTab: tab.toLowerCase() }),
+
+  // Define serviceOptions as a getter
+  serviceOptions: () => {
+    const { services } = get()
+    return services.map((service) => ({
+      label: service.title,
+      value: service.id,
+    })) as ServiceOption[]
+  },
 }))
