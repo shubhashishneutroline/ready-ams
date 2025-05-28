@@ -142,7 +142,7 @@ const transformFormDataForApi = (business: any, availabilityData: any) => {
     phone: business?.phone || "",
     website: business?.website || "",
     businessRegistrationNumber: business?.registrationNumber || "",
-    businessOwner: business?.businessOwner || "cmaf54tao0000mstgofhtes4y",
+    businessOwner: business?.businessOwner || "cmb81ffs10000ms8gaso3czus",
     status: business?.visibility || "PENDING",
     timeZone: timeZone || "UTC",
     address: [
