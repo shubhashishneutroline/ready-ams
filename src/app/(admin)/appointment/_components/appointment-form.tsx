@@ -162,6 +162,7 @@ export default function AppointmentForm() {
 
   // Handle form submission
   const onSubmit = async (formData: FormData) => {
+    console.log("Form data:", formData)
     setIsSubmitting(true)
     try {
       // Transform form data to match PostAppoinmentData
@@ -171,7 +172,7 @@ export default function AppointmentForm() {
         email: formData.email,
         phone: formData.phone,
         serviceId: formData.service,
-        selectedDate: normalDateToIso(formData.date), // Converts Date to ISO string (e.g., "2025-05-06T00:00:00.000Z")
+        selectedDate: formData.date, // Converts Date to ISO string (e.g., "2025-05-06T00:00:00.000Z")
         selectedTime: formData.time, // Converts time to ISO format
         message: formData.message,
         userId: "cmaemhw500006vdawrh8umbqp", // TODO: Replace with dynamic user ID
