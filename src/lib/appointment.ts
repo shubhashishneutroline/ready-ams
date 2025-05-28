@@ -1,58 +1,79 @@
 // Create appointment
 // src/lib/createAppointment.js
 // Import Prisma client for database operations
-import { prisma } from "@/lib/prisma"
-import { Appointment } from "@/features/appointment/types/types"
+import { prisma } from "@/lib/prisma";
+import { Appointment } from "@/app/(admin)/appointment/_types/appoinment";
+import { DateTime } from "luxon";
 
 // Function to create an appointment and set up its reminders
 export async function createAppointment(appointmentData: Appointment) {
-  
   // Remove reminderOffsets from the data passed to create
-  const { reminderOffsets, ...appointmentDataWithoutReminders } = appointmentData;
-  
+  const { reminderOffsets, ...appointmentDataWithoutReminders } =
+    appointmentData;
+
   // Create the appointment record
-  const appointment = await prisma.appointment.create({ 
-    data: appointmentDataWithoutReminders 
+  const appointment = await prisma.appointment.create({
+    data: appointmentDataWithoutReminders,
   });
 
   // Fetch all reminders associated with the appointment’s service
   const reminders = await prisma.reminder.findMany({
     where: { services: { some: { id: appointment.serviceId } } },
     include: { reminderOffset: true }, // Include offset details
-  })
-  console.log('reminder is',reminders);
+  });
+  console.log("reminder is", reminders);
+
+  // Extract just the date part (yyyy-MM-dd)
+  const dateOnly = appointment.selectedDate.toISOString().slice(0, 10);
+
+  // Combine date and time in a format Luxon can parse
+  const dateTimeString = `${dateOnly} ${appointment.selectedTime}`;
+
+  // Combine selectedDate and selectedTime in Kathmandu timezone for now ,later we will replace with dynamic timezone from user
+  // Parse using Luxon fromFormat
+  const date = DateTime.fromFormat(dateTimeString, "yyyy-MM-dd hh:mm a", {
+    zone: "Asia/Kathmandu",
+  });
+  console.log("date is", date);
 
   // Create AppointmentReminderOffset for each reminder offset
   for (const reminder of reminders) {
     for (const offset of reminder.reminderOffset) {
+      // Skip if sendOffset is null
+      if (offset.sendOffset === null) continue;
+
       // Calculate when this reminder should fire
-      const scheduledAt = new Date(
-        appointment.selectedDate.getTime() +
-          (offset.sendBefore ? -offset.sendOffset : offset.sendOffset) *
-            60 *
-            1000
-      )
+      const scheduledTime = offset.sendBefore
+        ? date.minus({ minutes: offset.sendOffset })
+        : date.plus({ minutes: offset.sendOffset });
+
+      // Convert to UTC
+      const scheduledAtUTC = scheduledTime.toUTC().toJSDate();
+
       // Create a record linking this appointment to the offset
       await prisma.appointmentReminderOffset.create({
         data: {
           appointmentId: appointment.id, // Link to this appointment
           reminderOffsetId: offset.id, // Link to the generic offset
-          scheduledAt, // Specific time for this reminder
-          status: 'PENDING', // Initially not sent
+          scheduledAt: scheduledAtUTC, // Specific time for this reminder
+          status: "PENDING", // Initially not sent
         },
-      })
+      });
     }
   }
 
   // Return the created appointment
-  return appointment
+  return appointment;
 }
 
-
 // Function to update and appointment reminder offset
-export async function updateAppointment(id: string, appointmentData: Appointment) {
+export async function updateAppointment(
+  id: string,
+  appointmentData: Appointment
+) {
   // Remove reminderOffsets from the data passed to update
-  const { reminderOffsets, ...appointmentDataWithoutReminders } = appointmentData;
+  const { reminderOffsets, ...appointmentDataWithoutReminders } =
+    appointmentData;
 
   //  Update the appointment
   const updatedAppointment = await prisma.appointment.update({
@@ -71,19 +92,38 @@ export async function updateAppointment(id: string, appointmentData: Appointment
     include: { reminderOffset: true },
   });
 
+  // Extract just the date part (yyyy-MM-dd)
+  const dateOnly = updatedAppointment.selectedDate.toISOString().slice(0, 10);
+
+  // Combine date and time in a format Luxon can parse
+  const dateTimeString = `${dateOnly} ${updatedAppointment.selectedTime}`;
+
+  // Combine selectedDate and selectedTime in Kathmandu timezone for now ,later we will replace with dynamic timezone from user
+  // Parse using Luxon fromFormat
+  const date = DateTime.fromFormat(dateTimeString, "yyyy-MM-dd hh:mm a", {
+    zone: "Asia/Kathmandu",
+  });
+
   // Recreate offsets based on the new state
   for (const reminder of reminders) {
     for (const offset of reminder.reminderOffset) {
-      const scheduledAt = new Date(
-        updatedAppointment.selectedDate.getTime() +
-          (offset.sendBefore ? -offset.sendOffset : offset.sendOffset) * 60 * 1000
-      );
+      // Skip if sendOffset is null
+      if (offset.sendOffset === null) continue;
+
+      // Calculate when this reminder should fire
+      const scheduledTime = offset.sendBefore
+        ? date.minus({ minutes: offset.sendOffset })
+        : date.plus({ minutes: offset.sendOffset });
+
+      // Convert to UTC
+      const scheduledAtUTC = scheduledTime.toUTC().toJSDate();
+
       await prisma.appointmentReminderOffset.create({
         data: {
           appointmentId: updatedAppointment.id,
           reminderOffsetId: offset.id,
-          scheduledAt,
-          status: 'PENDING',
+          scheduledAt: scheduledAtUTC,
+          status: "PENDING",
         },
       });
     }
@@ -91,8 +131,6 @@ export async function updateAppointment(id: string, appointmentData: Appointment
 
   return updatedAppointment;
 }
-
-
 
 // function to create schedule at a specific time in reminder/followup/missed/cancellation
 export async function syncNewReminderOffset(reminderOffsetId: string) {
@@ -106,7 +144,9 @@ export async function syncNewReminderOffset(reminderOffsetId: string) {
     throw new Error("Reminder offset not found or invalid reminder");
   }
 
-  const serviceIds = reminderOffset.reminder.services.map((service) => service.id);
+  const serviceIds = reminderOffset.reminder.services.map(
+    (service) => service.id
+  );
   if (!serviceIds.length) return;
 
   const now = new Date();
@@ -123,16 +163,13 @@ export async function syncNewReminderOffset(reminderOffsetId: string) {
   if (reminderType === "REMINDER") {
     appointmentWhere.selectedDate = { gt: now };
     appointmentWhere.status = "SCHEDULED";
-  } 
-  else if (reminderType === "FOLLOW_UP") {
+  } else if (reminderType === "FOLLOW_UP") {
     appointmentWhere.selectedDate = { lte: now, gte: oneWeekAgo };
     appointmentWhere.status = "COMPLETED";
-  }
-  else if (reminderType === "MISSED") {
+  } else if (reminderType === "MISSED") {
     appointmentWhere.selectedDate = { lte: now, gte: oneWeekAgo };
     appointmentWhere.status = "MISSED";
-  }
-  else if (reminderType === "CANCELLATION") {
+  } else if (reminderType === "CANCELLATION") {
     appointmentWhere.cancelledDate = { gte: oneWeekAgo, lte: now };
     appointmentWhere.status = "CANCELLED";
   }
@@ -141,26 +178,41 @@ export async function syncNewReminderOffset(reminderOffsetId: string) {
   const appointments = await prisma.appointment.findMany({
     where: appointmentWhere,
   });
-  console.log('appointment',appointments);
+  console.log("appointment", appointments);
+
   for (const appointment of appointments) {
-    const scheduledAt = new Date(
-      appointment.selectedDate.getTime() +
-        (reminderOffset.sendBefore ? -reminderOffset.sendOffset : reminderOffset.sendOffset) * 60 * 1000
-    );
+    // Extract just the date part (yyyy-MM-dd)
+    const dateOnly = appointment.selectedDate.toISOString().slice(0, 10);
+
+    // Combine date and time in a format Luxon can parse
+    const dateTimeString = `${dateOnly} ${appointment.selectedTime}`;
+
+    // Combine selectedDate and selectedTime in Kathmandu timezone for now ,later we will replace with dynamic timezone from user
+    // Parse using Luxon fromFormat
+    const date = DateTime.fromFormat(dateTimeString, "yyyy-MM-dd hh:mm a", {
+      zone: "Asia/Kathmandu",
+    });
+    // Skip if sendOffset is null
+    if (reminderOffset.sendOffset === null) continue;
+
+    // Calculate when this reminder should fire
+    const scheduledTime = reminderOffset.sendBefore
+      ? date.minus({ minutes: reminderOffset.sendOffset })
+      : date.plus({ minutes: reminderOffset.sendOffset });
+
+    // Convert to UTC
+    const scheduledAtUTC = scheduledTime.toUTC().toJSDate();
 
     // Only create appointmentReminderOffset if scheduledAt is still in future
-    if (scheduledAt > now) {
+    if (scheduledAtUTC > now) {
       await prisma.appointmentReminderOffset.create({
         data: {
           appointmentId: appointment.id,
           reminderOffsetId: reminderOffset.id,
-          scheduledAt,
-          status: 'PENDING',
+          scheduledAt: scheduledAtUTC,
+          status: "PENDING",
         },
       });
     }
   }
 }
-
-
-

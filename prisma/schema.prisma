@@ -287,9 +287,10 @@ model BusinessAddress {
   googleMap  String // Google Maps link
   business   BusinessDetail?        @relation(fields: [businessId], references: [id], onDelete: Cascade)
   businessId String? // Optional link to business
-  // support    SupportBusinessDetail? @relation(fields: [supportId], references: [id], onDelete: Cascade)
+  support    SupportBusinessDetail? @relation(fields: [supportId], references: [id], onDelete: Cascade)
   supportId  String? // Optional link to support
 }
+
 
 model BusinessAvailability {
   id                      String                 @id @default(cuid()) // Unique ID
@@ -346,6 +347,9 @@ enum BusinessStatus {
 
 // ------- Support and Help
 
+
+// ------- Support and Help
+
 model SupportBusinessDetail {
   id                  String                 @id @default(cuid()) // Unique ID
   supportBusinessName String // Support team name
@@ -354,13 +358,14 @@ model SupportBusinessDetail {
   supportGoogleMap    String? // Optional Google Maps link
   supportAvailability BusinessAvailability[] // Support hours
   supportHoliday      Holiday[] // Support holidays
- // supportAddress      BusinessAddress[] // Support addresses
+  // supportAddress      BusinessAddress[] // Support addresses
   supportAddress      String // Support addresses
 
   business        BusinessDetail    @relation(fields: [businessId], references: [id], onDelete: Cascade)
   businessId      String            @unique // Link to business
   BusinessAddress BusinessAddress[]
 }
+
 
 //----- FAQ
 

@@ -56,6 +56,8 @@ const availableTimeSlots = [
   "03:00 PM",
   "04:00 PM",
   "05:00 PM",
+  "08:55 PM",
+  "10:10 PM"
 ]
 
 export default function AppointmentForm() {
@@ -172,10 +174,10 @@ export default function AppointmentForm() {
         selectedDate: normalDateToIso(formData.date), // Converts Date to ISO string (e.g., "2025-05-06T00:00:00.000Z")
         selectedTime: formData.time, // Converts time to ISO format
         message: formData.message,
-        userId: "cmaf54tao0000mstgofhtes4y", // TODO: Replace with dynamic user ID
+        userId: "cmaemhw500006vdawrh8umbqp", // TODO: Replace with dynamic user ID
         isForSelf: false,
-        bookedById: "cmaf54tao0000mstgofhtes4y", // TODO: Replace with dynamic bookedById
-        createdById: "cmaf54tao0000mstgofhtes4y", // TODO: Replace with dynamic createdById
+        bookedById: "cmaemhw500006vdawrh8umbqp", // TODO: Replace with dynamic bookedById
+        createdById: "cmaemhw500006vdawrh8umbqp", // TODO: Replace with dynamic createdById
         status: AppointmentStatus.SCHEDULED, // TODO: Add status dropdown
       }
 

@@ -12,8 +12,8 @@ export const appointmentReminder = inngestClient.createFunction(
     name: "Send Appointment Reminders", // Human-readable name
   },
   {
-    cron: "*/15 * * * *", // Run every 15 minutes
-    // cron: "* * * * *",
+    // cron: "*/15 * * * *", // Run every 15 minutes
+    cron: "* * * * *",
   },
   async ({ step }) => {
     // Step 1: Fetch relevant appointments
@@ -105,6 +105,7 @@ export async function processReminder(
 
     // Different logic for cron job vs triggered event
     const isTriggerEvent = event?.name === "reminder/send"; // Check if this is a triggered event
+    console.log('isTriggerEvent',isTriggerEvent)
 
     // For cron job (regular 15-min check)
     if (!isTriggerEvent) {
@@ -262,7 +263,7 @@ export async function processReminder(
           switch (notification.method) {
             case "EMAIL":
               console.log("Sending Email to:", email);
-              await sendReminderEmail(email, name, message, reminder.type);
+           /*    await sendReminderEmail(email, name, message, reminder.type); */
               break;
             case "SMS":
               console.log("Would send SMS to:", email); // You can replace 'email' with phone later

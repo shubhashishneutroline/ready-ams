@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAnnouncementOrOfferById } from "@/db/announcement-offer";
-import { getAppointmentById } from "@/db/appointment";
 import { getReminderById } from "@/db/reminder";
 import { ReminderSchema } from "@/features/reminder/schemas/schema";
 import { prisma } from "@/lib/prisma";
@@ -97,12 +95,12 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
         },
         reminderOffset: {
           create: parsedData.reminderOffset.map((offset) => ({
-           customScheduleAt: reminderOffset.scheduledAt,
-              sendOffset: reminderOffset.sendOffset
-                ? reminderOffset.sendOffset
+           customScheduleAt: offset.scheduledAt,
+              sendOffset: offset.sendOffset
+                ? offset.sendOffset
                 : null,
                   // scheduledAt: new Date(reminderOffset.scheduledAt),
-              sendBefore: reminderOffset.sendBefore,
+              sendBefore: offset.sendBefore,
           })),
         },
       },
