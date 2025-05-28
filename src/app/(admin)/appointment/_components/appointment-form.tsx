@@ -170,7 +170,7 @@ export default function AppointmentForm() {
         email: formData.email,
         phone: formData.phone,
         serviceId: formData.service,
-        selectedDate: normalDateToIso(formData.date), // Converts Date to ISO string (e.g., "2025-05-06T00:00:00.000Z")
+        selectedDate: formData.date, // Converts Date to ISO string (e.g., "2025-05-06T00:00:00.000Z")
         selectedTime: formData.time, // Converts time to ISO format
         message: formData.message,
         userId: "cmb81ffs10000ms8gaso3czus", // TODO: Replace with dynamic user ID
@@ -190,7 +190,7 @@ export default function AppointmentForm() {
         router.push(appointmentRouter) // Redirect to appointments list
       }
     } finally {
-      setIsSubmitting(false)
+      // setIsSubmitting(false)
     }
   }
 

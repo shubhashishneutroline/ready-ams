@@ -153,12 +153,12 @@ export function normalDateToIso(date: Date): string {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
       throw new Error("Invalid date input")
     }
-    const resultDate = new Date(date)
-    resultDate.setHours(0)
-    resultDate.setMinutes(0)
-    resultDate.setSeconds(0)
-    resultDate.setMilliseconds(0)
-    return resultDate.toISOString()
+    // Create a new Date at midnight UTC for the same year, month, and day
+    const resultDate = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    )
+    console.log(resultDate, "resultDate")
+    return resultDate.toISOString() // Outputs "2025-05-28T00:00:00.000Z"
   } catch (error) {
     console.error("Error converting normal date to ISO:", error)
     return ""

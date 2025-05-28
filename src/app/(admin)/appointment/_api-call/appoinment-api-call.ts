@@ -17,7 +17,7 @@ export interface PostAppoinmentData {
   email: string
   phone: string
   serviceId: string
-  selectedDate: string
+  selectedDate: Date
   selectedTime: string
   message?: string
   userId?: string
