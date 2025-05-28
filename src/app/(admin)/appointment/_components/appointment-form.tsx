@@ -190,7 +190,7 @@ export default function AppointmentForm() {
         router.push(appointmentRouter) // Redirect to appointments list
       }
     } finally {
-      // setIsSubmitting(false)
+      setIsSubmitting(false)
     }
   }
 
