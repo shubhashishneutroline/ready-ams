@@ -1,7 +1,9 @@
 import { z } from 'zod'
-import { VideoProvider } from '../types/types';
+import { EventType, VideoProvider } from '../types/types';
 
 export const videoProviderEnum =  z.nativeEnum(VideoProvider);
+
+export const eventTypeEnum = z.nativeEnum(EventType);
 
 export const meetingSchema = z.object({
     eventId: z.string().min(1, "Event ID is required"),
@@ -38,4 +40,5 @@ export const meetingSchema = z.object({
     /* individualId: z.string().min(1, "Individual ID is required"), */
     createdById: z.string().optional(),
     availability: z.array(availabilitySchema).optional(),
+    type: eventTypeEnum,
   })

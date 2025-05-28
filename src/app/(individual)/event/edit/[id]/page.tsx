@@ -15,7 +15,18 @@ const VIDEO_PROVIDERS = [
 ];
 
 const DAYS_OF_WEEK = [
-  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+const EVENT_TYPES = [
+  { label: "One-to-One Meeting", value: "ONE_TO_ONE" },
+  { label: "General Meeting", value: "GENERAL" },
 ];
 
 function slugify(title: string) {
@@ -35,6 +46,7 @@ export default function EventEditPage() {
     location: "",
     timezone: "",
     slug: "",
+    type: "",
     availability: [{ dayOfWeek: "", startTime: "", endTime: "", duration: "" }],
   });
   const [loading, setLoading] = useState(true);
@@ -51,11 +63,13 @@ export default function EventEditPage() {
         const data = await res.json();
         if (data?.data) {
           // Convert numeric dayOfWeek back to name for UI
-          const availability = (data.data.availability || []).map((slot: any) => ({
-            ...slot,
-            dayOfWeek: DAYS_OF_WEEK[slot.dayOfWeek] || "",
-            duration: slot.duration?.toString() || "",
-          }));
+          const availability = (data.data.availability || []).map(
+            (slot: any) => ({
+              ...slot,
+              dayOfWeek: DAYS_OF_WEEK[slot.dayOfWeek] || "",
+              duration: slot.duration?.toString() || "",
+            })
+          );
           setForm({ ...data.data, availability });
         } else {
           setError("Event not found");
@@ -69,7 +83,11 @@ export default function EventEditPage() {
     fetchEvent();
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
     let updatedForm = { ...form, [name]: value };
     if (name === "title") {
@@ -78,7 +96,11 @@ export default function EventEditPage() {
     setForm(updatedForm);
   };
 
-  const handleAvailabilityChange = (idx: number, field: "dayOfWeek" | "startTime" | "endTime" | "duration", value: string) => {
+  const handleAvailabilityChange = (
+    idx: number,
+    field: "dayOfWeek" | "startTime" | "endTime" | "duration",
+    value: string
+  ) => {
     const updated = [...form.availability];
     updated[idx][field] = value;
     setForm({ ...form, availability: updated });
@@ -134,8 +156,6 @@ export default function EventEditPage() {
       const data = await res.json();
       if (data.success) {
         setSuccess(true);
-        
-     
       } else {
         setError(data.message || "Failed to update event");
       }
@@ -153,135 +173,159 @@ export default function EventEditPage() {
     <div className="max-w-2xl mx-auto mt-10 bg-white rounded-lg shadow p-8">
       <h2 className="text-2xl font-bold mb-6">Edit Event</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium mb-1">
-                  Title
-                </label>
-                <Input
-                  id="title"
-                  name="title"
-                  placeholder="Event title"
-                  value={form.title}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-      
-              <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Description
-                </label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  placeholder="Event description"
-                  value={form.description}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-      
-              <div>
-                <label htmlFor="location" className="block text-sm font-medium mb-1">
-                  Video Provider
-                </label>
-                <select
-                  id="location"
-                  name="location"
-                  value={form.location}
-                  onChange={handleChange}
-                  required
-                  className="block w-full border rounded px-3 py-2"
-                >
-                  <option value="">Select provider</option>
-                  {VIDEO_PROVIDERS.map((provider) => (
-                    <option key={provider.value} value={provider.value}>
-                      {provider.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-      
-              <div>
-                <label htmlFor="timezone" className="block text-sm font-medium mb-1">
-                  Timezone
-                </label>
-                <Input
-                  id="timezone"
-                  name="timezone"
-                  placeholder="e.g. UTC"
-                  value={form.timezone}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Availability</label>
-                {form.availability.map((slot, idx) => (
-                  <div key={idx} className="flex gap-2 items-end mb-2">
-                    <select
-                      name="dayOfWeek"
-                      value={slot.dayOfWeek}
-                      onChange={(e) =>
-                        handleAvailabilityChange(idx, "dayOfWeek", e.target.value)
-                      }
-                      className="border rounded px-2 py-1"
-                      required
-                    >
-                      <option value="">Day</option>
-                      {DAYS_OF_WEEK.map((day) => (
-                        <option key={day} value={day}>
-                          {day}
-                        </option>
-                      ))}
-                    </select>
-                    <Input
-                      type="time"
-                      name="startTime"
-                      value={slot.startTime}
-                      onChange={(e) =>
-                        handleAvailabilityChange(idx, "startTime", e.target.value)
-                      }
-                      required
-                    />
-                    <Input
-                      type="time"
-                      name="endTime"
-                      value={slot.endTime}
-                      onChange={(e) =>
-                        handleAvailabilityChange(idx, "endTime", e.target.value)
-                      }
-                      required
-                    />
-                    <Input
-                      type="number"
-                      name="duration"
-                      placeholder="Duration (min)"
-                      value={slot.duration}
-                      onChange={(e) =>
-                        handleAvailabilityChange(idx, "duration", e.target.value)
-                      }
-                      required
-                      min={1}
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => removeAvailability(idx)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium mb-1">
+            Title
+          </label>
+          <Input
+            id="title"
+            name="title"
+            placeholder="Event title"
+            value={form.title}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium mb-1"
+          >
+            Description
+          </label>
+          <Textarea
+            id="description"
+            name="description"
+            placeholder="Event description"
+            value={form.description}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="location" className="block text-sm font-medium mb-1">
+            Video Provider
+          </label>
+          <select
+            id="location"
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+            required
+            className="block w-full border rounded px-3 py-2"
+          >
+            <option value="">Select provider</option>
+            {VIDEO_PROVIDERS.map((provider) => (
+              <option key={provider.value} value={provider.value}>
+                {provider.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="type" className="block text-sm font-medium mb-1">
+            Event Type
+          </label>
+          <select
+            id="type"
+            name="type"
+            value={form.type}
+            onChange={handleChange}
+            required
+            className="block w-full border rounded px-3 py-2"
+          >
+            <option value="">Select event type</option>
+            {EVENT_TYPES.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="timezone" className="block text-sm font-medium mb-1">
+            Timezone
+          </label>
+          <Input
+            id="timezone"
+            name="timezone"
+            placeholder="e.g. UTC"
+            value={form.timezone}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Availability</label>
+          {form.availability.map((slot, idx) => (
+            <div key={idx} className="flex gap-2 items-end mb-2">
+              <select
+                name="dayOfWeek"
+                value={slot.dayOfWeek}
+                onChange={(e) =>
+                  handleAvailabilityChange(idx, "dayOfWeek", e.target.value)
+                }
+                className="border rounded px-2 py-1"
+                required
+              >
+                <option value="">Day</option>
+                {DAYS_OF_WEEK.map((day) => (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
                 ))}
-                <Button type="button" variant="outline" onClick={addAvailability}>
-                  Add Availability
-                </Button>
-              </div>
+              </select>
+              <Input
+                type="time"
+                name="startTime"
+                value={slot.startTime}
+                onChange={(e) =>
+                  handleAvailabilityChange(idx, "startTime", e.target.value)
+                }
+                required
+              />
+              <Input
+                type="time"
+                name="endTime"
+                value={slot.endTime}
+                onChange={(e) =>
+                  handleAvailabilityChange(idx, "endTime", e.target.value)
+                }
+                required
+              />
+              <Input
+                type="number"
+                name="duration"
+                placeholder="Duration (min)"
+                value={slot.duration}
+                onChange={(e) =>
+                  handleAvailabilityChange(idx, "duration", e.target.value)
+                }
+                required
+                min={1}
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => removeAvailability(idx)}
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+          <Button type="button" variant="outline" onClick={addAvailability}>
+            Add Availability
+          </Button>
+        </div>
         {error && <div className="text-red-600 text-sm">{error}</div>}
-        {success && <div className="text-green-600 text-sm">Event updated! Redirecting...</div>}
+        {success && (
+          <div className="text-green-600 text-sm">
+            Event updated! Redirecting...
+          </div>
+        )}
         <Button type="submit" className="w-full" disabled={saving}>
           {saving ? "Saving..." : "Save Changes"}
         </Button>

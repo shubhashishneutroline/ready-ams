@@ -447,6 +447,9 @@ model Individual {
   user           User     @relation(fields: [userId], references: [id])
   events        Event[]   
   videoIntegrations VideoIntegration[]
+    company        String?  // Organization they work for
+  website        String?  // Personal/company website
+  linkedinUrl   String?
 }
 
 
@@ -472,6 +475,11 @@ model VideoIntegration {
   @@unique([individualId, provider])
 }
 
+enum EventType {
+  ONE_TO_ONE
+  GENERAL
+}
+
 model Event {
   id            String   @id @default(cuid())
   title         String
@@ -482,7 +490,8 @@ model Event {
   userId        String
   user          User     @relation(fields: [userId], references: [id])
   createdAt     DateTime @default(now())
-  individualId   String     
+  individualId   String
+  type           EventType      @default(ONE_TO_ONE)     
   individual     Individual @relation(fields: [individualId], references: [id])
   availability  Availability[]
   meetings      Meeting[]

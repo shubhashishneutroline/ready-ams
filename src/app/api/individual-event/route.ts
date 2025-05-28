@@ -5,7 +5,7 @@ import {
   meetingSchema,
 } from "@/features/individual-event/schemas/schema";
 import { ZodError } from "zod";
-import { VideoProvider } from "@/features/individual-event/types/types";
+import { EventType, VideoProvider } from "@/features/individual-event/types/types";
 import { Event } from "@/features/individual-event/types/types";
 import { refreshZoomToken } from "@/lib/zoom";
 import { refreshGoogleToken } from "@/lib/google-meet";
@@ -153,6 +153,10 @@ if (provider === "WEBEX" && videoIntegration) {
       );
     }
 
+     if (parsedData.type = EventType.ONE_TO_ONE) {
+    //generate link as of booking meeting
+     }
+     
     // Create the event type with nested availability creation
     const event/* : Event  */= await prisma.event.create({
       data: {
@@ -163,6 +167,7 @@ if (provider === "WEBEX" && videoIntegration) {
         slug: parsedData.slug,
         userId: parsedData.userId,
         individualId: individualId,
+        type: parsedData.type,
         availability: {
           create: parsedData.availability?.map((availability) => ({
             dayOfWeek: availability.dayOfWeek,

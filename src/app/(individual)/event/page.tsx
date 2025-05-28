@@ -42,6 +42,7 @@ export default function EventFormPage() {
     location: "",
     timezone: "",
     slug: "",
+    type: "",
     // userId is set internally, not in the UI
     availability: [{ dayOfWeek: "", startTime: "", endTime: "", duration: "" }],
   });
@@ -90,6 +91,11 @@ export default function EventFormPage() {
     });
   };
 
+  const EVENT_TYPES = [
+    { label: "One-to-One Meeting", value: "ONE_TO_ONE" },
+    { label: "General Meeting", value: "GENERAL" },
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -99,7 +105,7 @@ export default function EventFormPage() {
     const payload = {
       ...form,
       userId,
-       slug: form.slug,
+      slug: form.slug,
       availability: form.availability.map((slot) => ({
         ...slot,
         dayOfWeek: DAYS_OF_WEEK.indexOf(slot.dayOfWeek), // convert day name to number
@@ -123,10 +129,9 @@ export default function EventFormPage() {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      console.log("data",data);
+      console.log("data", data);
       if (data.success) {
         setSuccess(true);
-       
       } else {
         setError(data.message || "Failed to create event");
       }
@@ -188,6 +193,26 @@ export default function EventFormPage() {
             {VIDEO_PROVIDERS.map((provider) => (
               <option key={provider.value} value={provider.value}>
                 {provider.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="type" className="block text-sm font-medium mb-1">
+            Event Type
+          </label>
+          <select
+            id="type"
+            name="type"
+            value={form.type}
+            onChange={handleChange}
+            required
+            className="block w-full border rounded px-3 py-2"
+          >
+            <option value="">Select event type</option>
+            {EVENT_TYPES.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
               </option>
             ))}
           </select>

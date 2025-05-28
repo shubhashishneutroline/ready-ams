@@ -10,6 +10,11 @@ export enum VideoProvider {
   GOTO_MEETING = "GOTO_MEETING",
 }
 
+export enum EventType {
+  ONE_TO_ONE = "ONE_TO_ONE",
+  GENERAL = "GENERAL",
+}
+
 // Days of the week
 export enum DayOfWeek {
   SUNDAY = 0,
@@ -64,4 +69,5 @@ export interface Event {
   createdAt: Date; // ISO Date string
   availability: Availability[];
   meeting?: Meeting[];
+   type: EventType;
 }
