@@ -16,7 +16,8 @@ export const sendDelayedReminder = inngestClient.createFunction(
         appointmentTime,
         appointment,
       } = event.data;
-  
+      console.log('test')
+      console.log('event name is',event.name)
       await processReminder(now, reminder, email, name, appointmentTime, appointment, event);
     }
   );

@@ -659,28 +659,9 @@ import { toast } from "sonner"
 import { useEffect } from "react"
 import { useBusinessStore } from "@/app/(admin)/business-settings/_store/business-store"
 
+
 export const transformBusinessData = (data: any) => {
   return {
-<<<<<<< HEAD:src/features/business-detail/components/business-detail-form.tsx
-    id: data.id,
-    businessName: data.businessName,
-    industry: data.industry,
-    email: data.email,
-    phone: data.phone,
-    website: data.website,
-    city: data.city,
-    street: data.street,
-    state: data.state,
-    zipCode: data.zipCode,
-    country: data.country,
-    googleMap: data.googleMap,
-    registrationNumber: data.registrationNumber,
-    taxId: data.taxId,
-    taxIdFileId:data.taxIdFileId,
-    logo: data.logo,
-    logoFileId:data.logoFileId,
-    visibility: data.visibility,
-=======
     id: data.id || "",
     businessName: data.businessName || "",
     industry: data.industry || "",
@@ -697,7 +678,6 @@ export const transformBusinessData = (data: any) => {
     taxId: data.taxId || null,
     logo: data.logo || null,
     visibility: data.visibility || "",
->>>>>>> 4a11b972d424497fb108a438637b992faf35f7c5:src/app/(admin)/business-settings/_components/business-detail-form.tsx
   }
 }
 
@@ -754,25 +734,6 @@ const BusinessDetailForm = ({
 
   const form = useForm({
     defaultValues: {
-<<<<<<< HEAD:src/features/business-detail/components/business-detail-form.tsx
-      businessName: businessData?.businessName || "",
-      industry: businessData?.industry || "",
-      email: businessData?.email || "",
-      phone: businessData?.phone || "",
-      website: businessData?.website || "",
-      city: businessData?.city || "",
-      street: businessData?.street || "",
-      state: businessData?.state || "",
-      zipCode: businessData?.zipCode || "",
-      country: businessData?.country || "",
-      googleMap: businessData?.googleMap || "",
-      registrationNumber: businessData?.registrationNumber || "",
-      taxId: businessData?.taxId || null,
-      taxIdFileId: businessData?.taxIdFileId || "",
-      logo: businessData?.logo || null,
-      logoFileId: businessData?.logoFileId || "",
-      visibility: businessData?.visibility || "",
-=======
       id: "",
       businessName: "",
       industry: "",
@@ -789,7 +750,6 @@ const BusinessDetailForm = ({
       taxId: null,
       logo: null,
       visibility: "",
->>>>>>> 4a11b972d424497fb108a438637b992faf35f7c5:src/app/(admin)/business-settings/_components/business-detail-form.tsx
     },
     resolver: zodResolver(schema),
   })

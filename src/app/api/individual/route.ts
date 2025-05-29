@@ -5,7 +5,7 @@ import { ZodError } from "zod";
 import { Individual } from "@/features/individual/types/types";
 
 export async function POST(req: NextRequest) {
-  const userId = "cmaemhw500006vdawrh8umbqp"; //fetch userId from clerk authentication
+  const userId = "cmb8pvkt80000vdz0z6yfg58p"; //fetch userId from clerk authentication
   if (!userId) {
     return NextResponse.json(
       { message: "User ID not found!", success: false },

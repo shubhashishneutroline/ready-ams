@@ -48,7 +48,7 @@ type FormData = z.infer<typeof appointmentSchema>
 const availableTimeSlots = [
   "09:00 AM",
   "10:00 AM",
-  "10:15 AM",
+  "10:35 AM",
   "11:00 AM",
   "12:00 PM",
   "01:00 PM",
@@ -56,8 +56,6 @@ const availableTimeSlots = [
   "03:00 PM",
   "04:00 PM",
   "05:00 PM",
-  "08:55 PM",
-  "10:10 PM"
 ]
 
 export default function AppointmentForm() {
@@ -175,10 +173,10 @@ export default function AppointmentForm() {
         selectedDate: formData.date, // Converts Date to ISO string (e.g., "2025-05-06T00:00:00.000Z")
         selectedTime: formData.time, // Converts time to ISO format
         message: formData.message,
-        userId: "cmaemhw500006vdawrh8umbqp", // TODO: Replace with dynamic user ID
+        userId: "cmb8pvkt80000vdz0z6yfg58p", // TODO: Replace with dynamic user ID
         isForSelf: false,
-        bookedById: "cmaemhw500006vdawrh8umbqp", // TODO: Replace with dynamic bookedById
-        createdById: "cmaemhw500006vdawrh8umbqp", // TODO: Replace with dynamic createdById
+        bookedById: "cmb8pvkt80000vdz0z6yfg58p", // TODO: Replace with dynamic bookedById
+        createdById: "cmb8pvkt80000vdz0z6yfg58p", // TODO: Replace with dynamic createdById
         status: AppointmentStatus.SCHEDULED, // TODO: Add status dropdown
       }
 

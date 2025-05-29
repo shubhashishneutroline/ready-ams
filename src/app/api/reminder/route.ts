@@ -8,8 +8,8 @@ import { syncNewReminderOffset } from "@/lib/appointment";
 // Create a new reminder
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const parsedData = ReminderSchema.parse(body)
+    const body = await req.json();
+    const parsedData = ReminderSchema.parse(body);
 
     const newReminder = await prisma.reminder.create({
       data: {
@@ -27,11 +27,7 @@ export async function POST(req: NextRequest) {
         },
         reminderOffset: {
           create: parsedData.reminderOffset.map((reminderOffset) => ({
-            customScheduleAt: reminderOffset.scheduledAt,
-            sendOffset: reminderOffset.sendOffset
-              ? reminderOffset.sendOffset
-              : null,
-            // scheduledAt: new Date(reminderOffset.scheduledAt),
+            sendOffset: reminderOffset.sendOffset,
             sendBefore: reminderOffset.sendBefore,
           })),
         },
@@ -43,35 +39,27 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    //  After creating, sync only "custom" reminderOffsets
+    //  After creating, sync  reminderOffsets
     for (const offset of newReminder.reminderOffset) {
       await syncNewReminderOffset(offset.id);
     }
 
     return NextResponse.json(
-      {
-        data: newReminder,
-        success: true,
-        message: "Reminder created successfully!",
-      },
+      { message: "Reminder created successfully", reminder: newReminder },
       { status: 201 }
-    )
+    );
   } catch (error) {
-    console.error("Error in POST /api/reminder:", error)
+    console.error("Error in POST /api/reminder:", error);
     if (error instanceof ZodError) {
       return NextResponse.json(
-        {
-          message: "Validation failed!",
-          error: error.errors[0].message,
-          success: false,
-        },
+        { error: "Validation failed", details: error.errors },
         { status: 400 }
-      )
+      );
     }
     return NextResponse.json(
-      { message: "Failed to create reminder!", success: false, error: error },
+      { error: "Internal server error", details: error },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -84,29 +72,58 @@ export async function GET() {
         notifications: true,
         reminderOffset: true,
       },
-    })
+    });
 
     if (reminders.length === 0) {
       return NextResponse.json(
-        { message: "No reminders found!", success: false },
+        { error: "No reminders found" },
         { status: 404 }
       );
     }
-    return NextResponse.json(
-      {
-        data: reminders,
-        success: true,
-        message: "Reminder fetched successfully!",
-      },
-      { status: 200 }
-    )
+    return NextResponse.json(reminders, { status: 200 });
   } catch (error) {
     return NextResponse.json(
-      { message: "Failed to fetch reminders!", success: false, error: error},
+      { error: "Failed to fetch reminders" },
       { status: 500 }
-    )
+    );
   }
 }
 
 
 
+// Delete a reminder
+export async function DELETE(req: NextRequest) {
+  try {
+    const { id } = await req.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Reminder Id required!" },
+        { status: 400 }
+      );
+    }
+
+    const existingReminder = await getReminderById(id);
+
+    if (!existingReminder) {
+      return NextResponse.json(
+        { error: "Reminder not found" },
+        { status: 404 }
+      );
+    }
+
+    const deletedReminder = await prisma.reminder.delete({
+      where: { id },
+    });
+
+    return NextResponse.json(
+      { message: "Reminder deleted successfully", reminder: deletedReminder },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to delete reminder" },
+      { status: 500 }
+    );
+  }
+}

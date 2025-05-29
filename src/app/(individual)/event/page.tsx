@@ -46,7 +46,7 @@ export default function EventFormPage() {
     // userId is set internally, not in the UI
     availability: [{ dayOfWeek: "", startTime: "", endTime: "", duration: "" }],
   });
-  const userId = "cmaemhw500006vdawrh8umbqp"; // Set from your auth system or context
+  const userId = "cmb8pvkt80000vdz0z6yfg58p"; // Set from your auth system or context
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);

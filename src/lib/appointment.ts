@@ -23,18 +23,15 @@ export async function createAppointment(appointmentData: Appointment) {
   });
   console.log("reminder is", reminders);
 
-  // Extract just the date part (yyyy-MM-dd)
-  const dateOnly = appointment.selectedDate.toISOString().slice(0, 10);
-
-  // Combine date and time in a format Luxon can parse
-  const dateTimeString = `${dateOnly} ${appointment.selectedTime}`;
-
   // Combine selectedDate and selectedTime in Kathmandu timezone for now ,later we will replace with dynamic timezone from user
   // Parse using Luxon fromFormat
-  const date = DateTime.fromFormat(dateTimeString, "yyyy-MM-dd hh:mm a", {
-    zone: "Asia/Kathmandu",
-  });
-  console.log("date is", date);
+  const localDate = DateTime.fromJSDate(appointment.selectedDate, { zone: "Asia/Kathmandu" }).toFormat("yyyy-MM-dd");
+  console.log("date is", localDate);
+
+   // Combine date and time in a format Luxon can parse
+  const dateTimeString = `${localDate} ${appointment.selectedTime}`;
+
+   const date = DateTime.fromFormat(dateTimeString, "yyyy-MM-dd h:mm a", { zone: "Asia/Kathmandu" });
 
   // Create AppointmentReminderOffset for each reminder offset
   for (const reminder of reminders) {
@@ -92,17 +89,16 @@ export async function updateAppointment(
     include: { reminderOffset: true },
   });
 
-  // Extract just the date part (yyyy-MM-dd)
-  const dateOnly = updatedAppointment.selectedDate.toISOString().slice(0, 10);
-
-  // Combine date and time in a format Luxon can parse
-  const dateTimeString = `${dateOnly} ${updatedAppointment.selectedTime}`;
-
-  // Combine selectedDate and selectedTime in Kathmandu timezone for now ,later we will replace with dynamic timezone from user
+   // Combine selectedDate and selectedTime in Kathmandu timezone for now ,later we will replace with dynamic timezone from user
   // Parse using Luxon fromFormat
-  const date = DateTime.fromFormat(dateTimeString, "yyyy-MM-dd hh:mm a", {
-    zone: "Asia/Kathmandu",
-  });
+  const localDate = DateTime.fromJSDate(updatedAppointment.selectedDate, { zone: "Asia/Kathmandu" }).toFormat("yyyy-MM-dd");
+  console.log("date is", localDate);
+
+   // Combine date and time in a format Luxon can parse
+  const dateTimeString = `${localDate} ${updatedAppointment.selectedTime}`;
+
+   const date = DateTime.fromFormat(dateTimeString, "yyyy-MM-dd h:mm a", { zone: "Asia/Kathmandu" });
+
 
   // Recreate offsets based on the new state
   for (const reminder of reminders) {
@@ -149,8 +145,9 @@ export async function syncNewReminderOffset(reminderOffsetId: string) {
   );
   if (!serviceIds.length) return;
 
-  const now = new Date();
-  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+ const now = new Date();
+const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   // Default where clause (for "scheduled" type)
   let appointmentWhere: any = {
@@ -160,19 +157,19 @@ export async function syncNewReminderOffset(reminderOffsetId: string) {
   // Adjust the query based on reminder type
   const reminderType = reminderOffset.reminder.type; // scheduled, followup, missed, cancellation
 
-  if (reminderType === "REMINDER") {
-    appointmentWhere.selectedDate = { gt: now };
-    appointmentWhere.status = "SCHEDULED";
-  } else if (reminderType === "FOLLOW_UP") {
-    appointmentWhere.selectedDate = { lte: now, gte: oneWeekAgo };
-    appointmentWhere.status = "COMPLETED";
-  } else if (reminderType === "MISSED") {
-    appointmentWhere.selectedDate = { lte: now, gte: oneWeekAgo };
-    appointmentWhere.status = "MISSED";
-  } else if (reminderType === "CANCELLATION") {
-    appointmentWhere.cancelledDate = { gte: oneWeekAgo, lte: now };
-    appointmentWhere.status = "CANCELLED";
-  }
+if (reminderType === "REMINDER") {
+  appointmentWhere.selectedDate = { gte: oneWeekAgo, lte: oneWeekLater };
+  appointmentWhere.status = "SCHEDULED";
+} else if (reminderType === "FOLLOW_UP") {
+  appointmentWhere.selectedDate = { gte: oneWeekAgo, lte: oneWeekLater };
+  appointmentWhere.status = "COMPLETED";
+} else if (reminderType === "MISSED") {
+  appointmentWhere.selectedDate = { gte: oneWeekAgo, lte: oneWeekLater };
+  appointmentWhere.status = "MISSED";
+} else if (reminderType === "CANCELLATION") {
+  appointmentWhere.cancelledDate = { gte: oneWeekAgo, lte: oneWeekLater };
+  appointmentWhere.status = "CANCELLED";
+}
 
   // Fetch appointments based on the dynamic where condition
   const appointments = await prisma.appointment.findMany({
@@ -181,17 +178,17 @@ export async function syncNewReminderOffset(reminderOffsetId: string) {
   console.log("appointment", appointments);
 
   for (const appointment of appointments) {
-    // Extract just the date part (yyyy-MM-dd)
-    const dateOnly = appointment.selectedDate.toISOString().slice(0, 10);
 
-    // Combine date and time in a format Luxon can parse
-    const dateTimeString = `${dateOnly} ${appointment.selectedTime}`;
+  // Combine selectedDate and selectedTime in Kathmandu timezone for now ,later we will replace with dynamic timezone from user
+  // Parse using Luxon fromFormat
+  const localDate = DateTime.fromJSDate(appointment.selectedDate, { zone: "Asia/Kathmandu" }).toFormat("yyyy-MM-dd");
+  console.log("date is", localDate);
 
-    // Combine selectedDate and selectedTime in Kathmandu timezone for now ,later we will replace with dynamic timezone from user
-    // Parse using Luxon fromFormat
-    const date = DateTime.fromFormat(dateTimeString, "yyyy-MM-dd hh:mm a", {
-      zone: "Asia/Kathmandu",
-    });
+   // Combine date and time in a format Luxon can parse
+  const dateTimeString = `${localDate} ${appointment.selectedTime}`;
+
+   const date = DateTime.fromFormat(dateTimeString, "yyyy-MM-dd h:mm a", { zone: "Asia/Kathmandu" });
+
     // Skip if sendOffset is null
     if (reminderOffset.sendOffset === null) continue;
 
@@ -203,8 +200,10 @@ export async function syncNewReminderOffset(reminderOffsetId: string) {
     // Convert to UTC
     const scheduledAtUTC = scheduledTime.toUTC().toJSDate();
 
+
     // Only create appointmentReminderOffset if scheduledAt is still in future
     if (scheduledAtUTC > now) {
+      console.log('hi')
       await prisma.appointmentReminderOffset.create({
         data: {
           appointmentId: appointment.id,

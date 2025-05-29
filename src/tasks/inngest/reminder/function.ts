@@ -127,15 +127,24 @@ export async function processReminder(
 
     let shouldSend = false; // Flag to determine if email should be sent
     let message = ""; // Email message content
+    let diffFromNow
 
     // Get the scheduled time for this reminder
     const reminderTime = new Date(appointmentOffset.scheduledAt);
 
+    if (!isTriggerEvent) {
     // Calculate time difference from now in minutes
-    const diffFromNow = (reminderTime.getTime() - now.getTime()) / 1000 / 60;
+     diffFromNow = (reminderTime.getTime() - now.getTime()) / 1000 / 60;
     console.log("diff from now", diffFromNow);
+    }
+    else {
+    diffFromNow = 0;
+    }
+
+  console.log('diff from now after',diffFromNow)
 
     //  For short gap reminders
+     if (!isTriggerEvent) {
     if (
       appointmentOffset.status === 'PENDING' && 
       offset.sendOffset <= 55 &&
@@ -155,7 +164,7 @@ export async function processReminder(
           appointmentTime,
           appointment,
         },
-        ts: reminderTime.getTime(),
+        ts:  reminderTime.getTime(), 
       });
 
       // Mark reminder as 'triggered' when the reminder is scheduled to be sent
@@ -166,24 +175,9 @@ export async function processReminder(
 
       continue;
     }
+  }
 
-    //check for cancellation first
-    if (reminder.type === "CANCELLATION") {
-      if (
-        !offset.sendBefore &&
-        appointment.status === "CANCELLED" &&
-        appointment.cancelledAt
-      ) {
-        const timeSinceCancellation =
-          (now.getTime() - new Date(appointment.cancelledAt).getTime()) /
-          1000 /
-          60;
-        if (timeSinceCancellation >= 0 && timeSinceCancellation <= 15) {
-          shouldSend = true;
-          message = "Cancellation confirmation";
-        }
-      }
-    } else if (diffFromNow >= 0 && diffFromNow <= 15) {
+   if (diffFromNow >= 0 && diffFromNow <= 15) {
       // Determine action based on reminder type
       switch (reminder.type) {
         case "REMINDER":
@@ -206,15 +200,15 @@ export async function processReminder(
           }
           break;
 
-        /*    case "CANCELLATION": */
+        case "CANCELLATION":
         // Send after cancellation if status is CANCELLED and within window
-        /*    if (
+          if (
             !offset.sendBefore &&
             appointment.status === "CANCELLED" &&
             appointment.cancelledAt
-          ) { */
+          ) { 
         // Calculate time since cancellation
-        /*      const timeSinceCancellation =
+             const timeSinceCancellation =
               (now.getTime() - new Date(appointment.cancelledAt).getTime()) /
               1000 /
               60;
@@ -224,7 +218,7 @@ export async function processReminder(
               message = "Cancellation confirmation";
             }
           }
-          break; */
+          break; 
 
         case "MISSED":
           // Send after appointment if status is MISSED

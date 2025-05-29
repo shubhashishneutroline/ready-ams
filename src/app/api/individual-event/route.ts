@@ -14,7 +14,7 @@ import { refreshWebexToken } from "@/lib/webex";
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = "cmaemhw500006vdawrh8umbqp"; // Get from your auth system (Clerk)
+    const userId = "cmb8pvkt80000vdz0z6yfg58p"; // Get from your auth system (Clerk)
     if (!userId) {
       return NextResponse.json(
         { message: "Unauthorized!", success: false },
@@ -204,7 +204,7 @@ if (provider === "WEBEX" && videoIntegration) {
 //get request
 export async function GET(req: NextRequest) {
   // Replace with your auth system
-  const userId = "cmaemhw500006vdawrh8umbqp";
+  const userId = "cmb8pvkt80000vdz0z6yfg58p";
   if (!userId) {
     return NextResponse.json({ message: "Unauthorized", success: false }, { status: 401 });
   }

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAnnouncementOrOfferById } from "@/db/announcement-offer";
+import { getAppointmentById } from "@/db/appointment";
 import { getReminderById } from "@/db/reminder";
 import { ReminderSchema } from "@/features/reminder/schemas/schema";
 import { prisma } from "@/lib/prisma";
@@ -22,7 +24,7 @@ export async function GET(req: NextRequest, { params }: ParamsProps) {
     }
     return NextResponse.json(
       {
-        data: reminder,
+         reminder,
         success: true,
         message: "Reminder fetched successfully!",
       },
@@ -36,7 +38,6 @@ export async function GET(req: NextRequest, { params }: ParamsProps) {
   }
 }
 
-// Update an existing reminder
 export async function PUT(req: NextRequest, { params }: ParamsProps) {
   try {
     const { id } = await params;
@@ -95,12 +96,8 @@ export async function PUT(req: NextRequest, { params }: ParamsProps) {
         },
         reminderOffset: {
           create: parsedData.reminderOffset.map((offset) => ({
-           customScheduleAt: offset.scheduledAt,
-              sendOffset: offset.sendOffset
-                ? offset.sendOffset
-                : null,
-                  // scheduledAt: new Date(reminderOffset.scheduledAt),
-              sendBefore: offset.sendBefore,
+            sendOffset: offset.sendOffset,
+            sendBefore: offset.sendBefore,
           })),
         },
       },

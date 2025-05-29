@@ -6,7 +6,7 @@ import {
 } from "./admin";
 import axios from "axios";
 import { BusinessDetail } from "@/data/structure";
-import { Service } from "@/features/service/types/types";
+
 // Post User data
 export const createUser = createAsyncThunk(
   "admin/user/add",
