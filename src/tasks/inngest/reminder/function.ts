@@ -12,8 +12,7 @@ export const appointmentReminder = inngestClient.createFunction(
     name: "Send Appointment Reminders", // Human-readable name
   },
   {
-    // cron: "*/15 * * * *", // Run every 15 minutes
-    cron: "* * * * *",
+   cron: "*/15 * * * *", // Run every 15 minutes
   },
   async ({ step }) => {
     // Step 1: Fetch relevant appointments
