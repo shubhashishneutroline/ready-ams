@@ -70,7 +70,7 @@ export async function GET() {
       include: {
         user: true,
         service: true,
-        Resource: true,
+        resource: true,
       },
     })
     if (appointments.length === 0) {
