@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+/* import { NextRequest, NextResponse } from "next/server";
 import { ReminderSchema } from "@/features/reminder/schemas/schema"; // Adjust the path accordingly
 import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -127,3 +127,4 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
+ */

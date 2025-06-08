@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+/* import { NextRequest, NextResponse } from "next/server";
 import { getAnnouncementOrOfferById } from "@/db/announcement-offer";
 import { getAppointmentById } from "@/db/appointment";
 import { getReminderById } from "@/db/reminder";
@@ -179,3 +179,4 @@ export async function DELETE(req: NextRequest, { params }: ParamsProps) {
     );
   }
 }
+ */
