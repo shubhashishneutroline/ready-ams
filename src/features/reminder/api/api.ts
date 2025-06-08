@@ -1,4 +1,4 @@
-import { getBaseUrl } from "@/lib/baseUrl"
+/* import { getBaseUrl } from "@/lib/baseUrl"
 import axios from "axios"
 
 const api = axios.create({
@@ -107,3 +107,4 @@ export {
   updateReminder,
   deleteReminder,
 }
+ */
