@@ -85,7 +85,7 @@ if (!appointmentId) {
     data: {
       customerName: parsedData.bookedByName,
       email: parsedData.bookedByEmail,
-      phone: /* parsedData.bookerPhone || */ "", // or handle as needed
+      phone: body.bookerPhone , // or handle as needed
       serviceId: shareableLink.service.id,
       selectedDate: new Date(parsedData.startTime),
       selectedTime: new Date(parsedData.startTime).toTimeString().slice(0,5), // "HH:mm"
@@ -105,7 +105,7 @@ if (!appointmentId) {
         bookedByName: parsedData.bookedByName,
         bookedByEmail: parsedData.bookedByEmail,
         bookerTimezone: parsedData.bookerTimezone,
-        customAnswers: parsedData.customAnswers,
+        comment: parsedData.comment,
         videoUrl: meetingUrl,
         videoProvider: videoProvider as any,
         slug: parsedData.slug,

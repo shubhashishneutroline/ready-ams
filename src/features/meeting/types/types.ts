@@ -10,7 +10,7 @@ export interface Meeting {
   bookedByName: string;
   bookedByEmail: string;
   bookerTimezone?: string;
-  customAnswers?: any;
+  comment?: string;
   videoUrl?: string;
   videoProvider?: VideoProvider;
   slug?: string;

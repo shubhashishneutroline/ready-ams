@@ -1,3 +1,5 @@
+import { Individual } from "@/features/individual/types/types";
+
 export interface Service {
   id: string
   title: string
@@ -10,6 +12,7 @@ export interface Service {
   createdAt: Date
   updatedAt: Date
   businessDetailId: string | null
+  individual?: Individual;
    imageUrl?: string         
   imageUrlFileId?: string
 }

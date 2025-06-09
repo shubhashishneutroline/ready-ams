@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { ShareableLink } from "@/features/individual-event/types/types";
 
 // Helper: Prisma WeekDays enum to JS Date.getDay()
 const weekDayEnumToIndex = {
@@ -19,12 +20,14 @@ const weekDayEnumToIndex = {
 
 export default function BookingPage() {
   const { slug } = useParams();
-  const [link, setLink] = useState(null); // ShareableLink object
+  const [link, setLink] = useState<ShareableLink | null>(null); // ShareableLink object
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+const [phone, setPhone] = useState("");
   const [comment, setComment] = useState("");
 
   useEffect(() => {
@@ -118,8 +121,10 @@ export default function BookingPage() {
       shareableLinkId: link.id,
       type: link.type, // 'ONE_TO_ONE' or 'GENERAL'
       timeSlot: timeSlot.toISOString(),
-      duration: service.estimatedDuration,
+      duration: service?.estimatedDuration,
       bookedByEmail: email,
+      bookedByName: name,
+      bookerPhone: phone,
       comment,
     };
 
@@ -261,8 +266,8 @@ export default function BookingPage() {
                   <input
                     type="text"
                     required
-                    /* value={email} */
-                    /*  onChange={(e) => setEmail(e.target.value)} */
+                    value={name}
+                     onChange={(e) => setName(e.target.value)}
                     className="border rounded px-2 py-1 w-full"
                   />
                 </div>
@@ -280,21 +285,12 @@ export default function BookingPage() {
                 <input
                   type="phone"
                   required
-                  /* value={email} */
-                  /*  onChange={(e) => setEmail(e.target.value)} */
+                  value={phone}
+                   onChange={(e) => setPhone(e.target.value)}
                   className="border rounded px-2 py-1 w-full"
                 />
               </div>
-              <div>
-                <label className="block mb-1">Timezone:</label>
-                <input
-                  type="text"
-                  required
-                  /* value={email} */
-                  /*  onChange={(e) => setEmail(e.target.value)} */
-                  className="border rounded px-2 py-1 w-full"
-                />
-              </div>
+             
 
               <div>
                 <label className="block mb-1">Comment:</label>
@@ -331,7 +327,7 @@ export default function BookingPage() {
                   }
                   className="w-full"
                 >
-                  {slot.startTime} - {slot.endTime} ({service.estimatedDuration}{" "}
+                  {slot.startTime} - {slot.endTime} ({service?.estimatedDuration}{" "}
                   min)
                 </Button>
               ))}

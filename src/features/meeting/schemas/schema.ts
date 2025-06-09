@@ -10,7 +10,7 @@ export const meetingSchema = z.object({
   bookedByName: z.string().min(1, "Booker name is required"),
   bookedByEmail: z.string().email("Invalid email"),
   bookerTimezone: z.string().optional(),
-  customAnswers: z.any().optional(),
+  comment: z.any().optional(),
   videoUrl: z.string().url("Invalid video URL").optional(),
   videoProvider: z.string().optional(), // Or z.nativeEnum(VideoProvider).optional()
   slug: z.string().optional(),

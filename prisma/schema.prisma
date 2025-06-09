@@ -565,7 +565,7 @@ model Meeting {
   bookedByName   String
   bookedByEmail  String
   bookerTimezone String?        // Store the timezone of the person booking
-  customAnswers  Json?
+  comment        String?
   videoUrl       String?
   videoProvider  VideoProvider?
   slug           String? @unique
